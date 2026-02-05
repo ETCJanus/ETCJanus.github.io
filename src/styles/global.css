@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  font-family: 'Outfit', sans-serif; /* <--- UPDATE THIS */
+  background-color: #0f172a; /* Dark Slate 900 */
+  color: white;
+  scroll-behavior: smooth;
+}
