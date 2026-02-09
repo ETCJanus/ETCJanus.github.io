@@ -354,7 +354,7 @@ canvas {
     margin-bottom: 15px;
 }
 
-/* --- NEW HERO LAYOUT (Split Screen) & HOLOGRAPHIC TILT --- */
+/* --- NEW HERO LAYOUT (Split Screen) --- */
 .hero-grid {
     display: grid;
     grid-template-columns: 1.2fr 0.8fr;
@@ -384,87 +384,18 @@ canvas {
     margin: 0 0 20px 0;
 }
 
-/* Wrapper for the 3D Hologram Effect */
+/* Wrapper structure for the Profile Area */
 .hero-image-wrapper {
     /* Layout: Forces everything into one stack */
     display: grid;
     grid-template-columns: 1fr;
     grid-template-rows: 1fr;
     place-items: center;
-
-    /* 3D Physics */
     position: relative;
     z-index: 10;
-    perspective: 1000px; /* Critical for depth */
-    transform-style: preserve-3d;
-    
     width: 100%;
     max-width: 350px;
     margin: 0 auto;
-}
-
-/* Force children (Images + Blob) to overlap perfectly */
-.hero-image-wrapper > * {
-    grid-area: 1 / 1;
-    width: 100%;
-    height: auto;
-    border-radius: 24px;
-}
-
-/* The Background Glow Blob */
-.glow-blob {
-    z-index: 0;
-    pointer-events: none; /* Let mouse pass through to container */
-    transform: translateZ(-50px); /* Push deep into background */
-    width: 120% !important; /* Override standard width */
-    height: 120% !important;
-    background: radial-gradient(circle, rgba(167, 139, 250, 0.2) 0%, rgba(0,0,0,0) 70%);
-}
-
-/* The Profile Images */
-.profile-img {
-    aspect-ratio: 1 / 1.1;
-    object-fit: cover;
-    
-    /* Animation smoothing for the mouse tilt */
-    transition: transform 0.1s ease-out; 
-    will-change: transform;
-    transform-style: preserve-3d;
-    
-    /* Disabling the 'float' animation here so it doesn't fight the mouse */
-    animation: none; 
-}
-
-/* The Main Image (Front) */
-.profile-img.main-img {
-    z-index: 10;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5), 
-                0 0 0 1px rgba(255, 255, 255, 0.1);
-    transform: translateZ(20px); 
-}
-
-/* The Ghost Layers (Back) */
-.glitch-layer {
-    z-index: 1; 
-    opacity: 0.; /* Hidden by default */
-    mix-blend-mode: screen; 
-    pointer-events: none;
-    transition: opacity 0.3s;
-}
-
-/* Reveal ghosts on hover */
-.hero-image-wrapper:hover .glitch-layer {
-    opacity: 0.7;
-}
-
-.glitch-layer.cyan {
-    filter: sepia(100%) hue-rotate(130deg) saturate(300%) opacity(0.5);
-    transform: translateZ(-20px); 
-}
-
-.glitch-layer.magenta {
-    filter: sepia(100%) hue-rotate(280deg) saturate(300%) opacity(0.5);
-    transform: translateZ(-10px); 
 }
 
 /* --- MOBILE RESPONSIVENESS --- */
@@ -479,9 +410,6 @@ canvas {
     }
     .hero-text h1 {
         font-size: 3rem;
-    }
-    .profile-img {
-        max-width: 280px;
     }
 }
 
@@ -554,73 +482,67 @@ canvas {
     pointer-events: none;
 }
 
-/* Add a glowing border that reacts to the 3D space */
-.hero-image-wrapper {
-    transition: filter 0.3s ease;
+.project-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
-/* Create a "Scanning" effect on the layers */
-.glitch-layer::after {
-    content: "";
+/* --- CYBER PROFILE EFFECT (The Clean Version) --- */
+
+#profile-wrapper {
+    position: relative;
+    width: 300px; /* Or your preferred width */
+    height: auto;
+    /* This ensures scanlines don't bleed outside border */
+    overflow: hidden; 
+    border-radius: 20px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 20px 50px rgba(0,0,0,0.5);
+    transition: box-shadow 0.3s ease;
+    cursor: crosshair;
+    z-index: 50;
+}
+
+#profile-wrapper:hover {
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.3), 
+                0 0 0 2px rgba(45, 212, 191, 0.6);
+}
+
+/* The Image */
+#profile-static {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 20px;
+    position: relative;
+    z-index: 1;
+    transition: filter 0.2s;
+    user-select: none;
+}
+
+/* Darken image slightly on hover to make data pop */
+#profile-wrapper:hover #profile-static {
+    /* Lower brightness makes the glowing text pop much harder */
+    filter: grayscale(100%) contrast(1.1) brightness(0.4); 
+}
+
+/* The HUD Canvas (Data Layer) - Fixes applied here */
+#hud-canvas {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-        rgba(167, 139, 250, 0.1) 50%, 
-        rgba(0, 0, 0, 0.1) 50%
-    );
-    background-size: 100% 4px; /* Scanlines */
-    pointer-events: none;
-}
-
-/* Exaggerate the Main Image glow */
-.profile-img.main-img {
-    box-shadow: 0 0 20px rgba(45, 212, 191, 0.2), 
-                0 0 40px rgba(167, 139, 250, 0.2);
-}
-
-/* Optional: Add a 'shiver' animation to the color layers */
-@keyframes shiver {
-    0% { transform: translate(0,0); }
-    25% { transform: translate(1px, -1px); }
-    50% { transform: translate(-1px, 1px); }
-    100% { transform: translate(0,0); }
-}
-
-.hero-image-wrapper:hover .glitch-layer {
-    animation: shiver 0.2s infinite;
-}
-
-.project-thumb {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* This prevents stretching by cropping the image to fit */
-    display: block;
-}
-
-/* --- PROFILE WRAPPER --- */
-#profile-wrapper {
-    position: relative;
-    width: 300px; /* Adjust to match your image width preference */
-    height: auto;
+    z-index: 10;
+    pointer-events: none; /* Let mouse pass through */
     border-radius: 20px;
-    z-index: 50; /* Above normal content */
-    cursor: crosshair; /* Tech feel */
-    overflow: visible; /* Allow hints to hang out */
+    opacity: 0;
+    transition: opacity 0.2s;
 }
 
-#profile-static {
-    width: 100%;
-    height: auto;
-    border-radius: 20px;
-    display: block;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-    transition: opacity 0.1s;
-    /* Ensure image doesn't drag/ghost when interacting */
-    pointer-events: auto; 
-    user-select: none;
+#profile-wrapper:hover #hud-canvas {
+    opacity: 1;
 }
 
 /* --- HOVER INDICATOR --- */
@@ -640,6 +562,7 @@ canvas {
     pointer-events: none;
     transition: opacity 0.3s, transform 0.3s;
     opacity: 1;
+    z-index: 20;
 }
 
 #profile-hint i {
@@ -661,13 +584,17 @@ canvas {
     transform: translateX(-50%) translateY(10px);
 }
 
-/* --- EXPLOSION CANVAS --- */
-#explosion-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 9999; /* Extreme top z-index */
-    pointer-events: none; /* Let clicks pass through */
+/* --- THE GLITCH ANIMATION CLASS (Applied via JS) --- */
+.glitching {
+    /* Increased from 0.3s to 2s for a slow "breathing" drift */
+    animation: glitch-anim 2s ease-in-out infinite; 
 }
+
+@keyframes glitch-anim {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+}   

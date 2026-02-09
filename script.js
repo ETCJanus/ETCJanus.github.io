@@ -30,7 +30,7 @@
     if (aboutCanvas) initAboutEffect(aboutCanvas);
     
 
-    initProfileParticles();
+    initCyberProfile();
 });
 
 // --- EFFECT 1: HERO (Constellations) ---
@@ -241,146 +241,152 @@ function initHolographicTilt() {
     });
 }
 
-// --- EFFECT 4: EXPLODING PORTRAIT (Fullscreen Particles) ---
-function initProfileParticles() {
-    const staticImg = document.getElementById('profile-static');
-    const canvas = document.getElementById('explosion-canvas');
-    if (!staticImg || !canvas) return;
+// --- EFFECT 4: CYBER HUD DECODE (Slower & Smoother) ---
+function initCyberProfile() {
+    const wrapper = document.getElementById('profile-wrapper');
+    const img = document.getElementById('profile-static');
+    const canvas = document.getElementById('hud-canvas');
+    
+    if (!wrapper || !img || !canvas) return;
 
     const ctx = canvas.getContext('2d');
-    let particles = [];
-    let isExploding = false;
+    let width, height;
     let animationId;
+    let isHovering = false;
+    let scanLineY = 0;
+    let frameCount = 0;
     
-    // Configuration
-    const particleSize = 3; // Size of chunks
-    const explosionForce = 15; // How far they shoot
-    const returnSpeed = 0.08; // How fast they reform
+    // Mouse tracking
+    let mouseX = 0;
+    let mouseY = 0;
 
-    // Resize Canvas to Fullscreen
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+    function setSize() {
+        const rect = img.getBoundingClientRect();
+        if (rect.width === 0) return;
+        
+        width = rect.width;
+        height = rect.height;
+        
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
     }
-    window.addEventListener('resize', resize);
-    resize();
 
-    // --- INTERACTION ---
-    staticImg.addEventListener('mouseenter', () => {
-        if (!isExploding) startExplosion();
+    if (img.complete) { setSize(); } else { img.onload = setSize; }
+    window.addEventListener('resize', setSize);
+
+    wrapper.addEventListener('mousemove', (e) => {
+        const rect = wrapper.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
     });
 
-    staticImg.addEventListener('mouseleave', () => {
-        isExploding = false; // They will naturally return to origin
-    });
-
-    // --- CORE LOGIC ---
-    function startExplosion() {
-        isExploding = true;
-        
-        // 1. Get position of the image on screen
-        const rect = staticImg.getBoundingClientRect();
-        
-        // 2. Create a temporary canvas to read pixel data (Security bypass)
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = rect.width;
-        tempCanvas.height = rect.height;
-        const tempCtx = tempCanvas.getContext('2d');
-        tempCtx.drawImage(staticImg, 0, 0, rect.width, rect.height);
-        
-        // 3. Read Pixels
-        let pixelData;
-        try {
-            pixelData = tempCtx.getImageData(0, 0, rect.width, rect.height).data;
-        } catch (e) {
-            console.warn("CORS restricted. Using fallback colors.");
-            // Fallback if local file security blocks reading
-            pixelData = []; 
-        }
-
-        // 4. Generate Particles
-        particles = [];
-        const gap = 5; // Resolution (lower = more particles = slower)
-
-        for (let y = 0; y < rect.height; y += gap) {
-            for (let x = 0; x < rect.width; x += gap) {
-                // Calculate color
-                let color = 'rgba(167, 139, 250, 1)'; // Default Purple
-                
-                if (pixelData.length > 0) {
-                    const i = (y * rect.width + x) * 4;
-                    const r = pixelData[i];
-                    const g = pixelData[i+1];
-                    const b = pixelData[i+2];
-                    const a = pixelData[i+3];
-                    if (a < 128) continue; // Skip transparent pixels
-                    color = `rgb(${r},${g},${b})`;
-                }
-
-                // Create Particle
-                // originX/Y = Where it sits on the page (Canvas coordinates)
-                const originX = rect.left + x;
-                const originY = rect.top + y;
-
-                particles.push({
-                    x: originX,
-                    y: originY,
-                    originX: originX,
-                    originY: originY,
-                    color: color,
-                    vx: (Math.random() - 0.5) * explosionForce,
-                    vy: (Math.random() - 0.5) * explosionForce,
-                    size: Math.random() * particleSize + 1,
-                    friction: 0.94
-                });
-            }
-        }
-
-        // 5. Hide the real image and start animating
-        staticImg.style.opacity = '0';
+    wrapper.addEventListener('mouseenter', () => {
+        isHovering = true;
+        img.classList.add('glitching');
+        scanLineY = 0;
         animate();
-    }
+    });
+
+    wrapper.addEventListener('mouseleave', () => {
+        isHovering = false;
+        img.classList.remove('glitching');
+        ctx.clearRect(0, 0, width, height);
+        cancelAnimationFrame(animationId);
+    });
 
     function animate() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        let activeParticles = false;
+        if (!isHovering) return;
 
-        particles.forEach(p => {
-            // PHYSICS
-            if (isExploding) {
-                // Explode mode: Move based on velocity
-                p.x += p.vx;
-                p.y += p.vy;
-                p.vx *= p.friction;
-                p.vy *= p.friction;
-                
-                // Add slight mouse repulsion so you can "swirl" them
-                // (Optional, can remove if too chaotic)
-            } else {
-                // Return mode: Lerp back to origin
-                const dx = p.originX - p.x;
-                const dy = p.originY - p.y;
-                p.x += dx * returnSpeed;
-                p.y += dy * returnSpeed;
-            }
+        ctx.clearRect(0, 0, width, height);
 
-            // Draw
-            ctx.fillStyle = p.color;
-            ctx.fillRect(p.x, p.y, p.size, p.size);
+        // 1. SLOWER SCAN LINE
+        // Changed from 4 to 1.5 for a smooth, deep scan
+        scanLineY += 1.5; 
+        if (scanLineY > height) scanLineY = 0;
 
-            // Check if particle is still "loose" (not at home)
-            const dist = Math.abs(p.x - p.originX) + Math.abs(p.y - p.originY);
-            if (dist > 1 || isExploding) activeParticles = true;
-        });
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(45, 212, 191, 0.8)';
+        ctx.lineWidth = 2;
+        ctx.moveTo(0, scanLineY);
+        ctx.lineTo(width, scanLineY);
+        ctx.stroke();
 
-        if (activeParticles) {
-            animationId = requestAnimationFrame(animate);
+        // 2. SLOWER DATA REFRESH
+        // Changed from % 5 to % 20 (Updates text only every 20 frames instead of 5)
+        // This makes the text readable rather than strobing
+        if (frameCount % 20 === 0) {
+            drawCyberText();
         } else {
-            // Animation finished (everything is back home)
-            staticImg.style.opacity = '1';
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            cancelAnimationFrame(animationId);
+            // Redraw the previous text state (simulated here by just calling it less chaos)
+             drawCyberText(); 
         }
+
+        drawReticle(mouseX, mouseY);
+
+        frameCount++;
+        animationId = requestAnimationFrame(animate);
+    }
+
+    // Store text positions so they don't jitter every frame
+    let cachedText = [];
+    
+    function drawCyberText() {
+        ctx.font = '10px "Space Grotesk", monospace';
+        ctx.fillStyle = 'rgba(167, 139, 250, 0.9)'; 
+        
+        // Only generate new text positions every 20 frames
+        if (frameCount % 20 === 0) {
+            cachedText = [];
+            const columns = 4;
+            const colWidth = width / columns;
+            for (let i = 0; i < columns; i++) {
+                if (Math.random() > 0.6) {
+                    cachedText.push({
+                        x: i * colWidth + 10,
+                        y: Math.random() * height,
+                        val: '0x' + Math.floor(Math.random() * 65535).toString(16).toUpperCase()
+                    });
+                }
+            }
+        }
+
+        // Draw the cached text
+        cachedText.forEach(t => {
+            ctx.fillText(t.val, t.x, t.y);
+        });
+    }
+
+    function drawReticle(mx, my) {
+        // ... (Same as before)
+        const size = 30;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.lineWidth = 1.5;
+        
+        ctx.beginPath();
+        // Top Left
+        ctx.moveTo(mx - size, my - size + 10);
+        ctx.lineTo(mx - size, my - size);
+        ctx.lineTo(mx - size + 10, my - size);
+        // Top Right
+        ctx.moveTo(mx + size - 10, my - size);
+        ctx.lineTo(mx + size, my - size);
+        ctx.lineTo(mx + size, my - size + 10);
+        // Bottom Right
+        ctx.moveTo(mx + size, my + size - 10);
+        ctx.lineTo(mx + size, my + size);
+        ctx.lineTo(mx + size - 10, my + size);
+        // Bottom Left
+        ctx.moveTo(mx - size + 10, my + size);
+        ctx.lineTo(mx - size, my + size);
+        ctx.lineTo(mx - size, my + size - 10);
+        ctx.stroke();
+
+        ctx.fillStyle = '#2dd4bf';
+        ctx.font = '9px monospace';
+        ctx.fillText(`X:${Math.floor(mx)} Y:${Math.floor(my)}`, mx + size + 5, my + size);
     }
 }
