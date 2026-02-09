@@ -21,7 +21,6 @@
 
 
     // --- 2. CANVAS MANAGER ---
-    // Detect which canvas is on the page and launch the right effect
     const heroCanvas = document.getElementById('hero-canvas');
     const projectCanvas = document.getElementById('project-canvas');
     const aboutCanvas = document.getElementById('about-canvas');
@@ -29,6 +28,9 @@
     if (heroCanvas) initHeroEffect(heroCanvas);
     if (projectCanvas) initProjectEffect(projectCanvas);
     if (aboutCanvas) initAboutEffect(aboutCanvas);
+    
+    // Initialize the glitch effect
+    initProfileGlitch();
 });
 
 // --- EFFECT 1: HERO (Constellations) ---
@@ -66,7 +68,6 @@ function initHeroEffect(canvas) {
             if (p.x < 0 || p.x > width) p.vx *= -1;
             if (p.y < 0 || p.y > height) p.vy *= -1;
 
-            // Mouse interaction
             let dx = mouse.x - p.x;
             let dy = mouse.y - p.y;
             let distance = Math.sqrt(dx*dx + dy*dy);
@@ -82,7 +83,6 @@ function initHeroEffect(canvas) {
             ctx.fill();
         });
         
-        // Draw lines
         particles.forEach((p1, i) => {
             for (let j = i; j < particles.length; j++) {
                 const p2 = particles[j];
@@ -129,28 +129,24 @@ function initProjectEffect(canvas) {
         ctx.clearRect(0, 0, width, height);
         
         dots.forEach(dot => {
-            // Calculate distance to mouse
             const dx = mouse.x - dot.x;
             const dy = mouse.y - dot.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
             const maxDist = 150;
 
-            // If mouse is close, scale up and connect
             if (dist < maxDist) {
                 const alpha = 1 - (dist / maxDist);
                 ctx.beginPath();
-                ctx.fillStyle = `rgba(0, 255, 136, ${alpha})`; // Tech Green
+                ctx.fillStyle = `rgba(0, 255, 136, ${alpha})`;
                 ctx.arc(dot.x, dot.y, 2 + alpha*1.5, 0, Math.PI*2);
                 ctx.fill();
 
-                // Draw subtle line to mouse
                 ctx.beginPath();
                 ctx.strokeStyle = `rgba(0, 255, 136, ${alpha * 0.5})`;
                 ctx.moveTo(dot.x, dot.y);
                 ctx.lineTo(mouse.x, mouse.y);
                 ctx.stroke();
             } else {
-                // Idle state: tiny grey dots
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
                 ctx.fillRect(dot.x, dot.y, 1, 1);
             }
@@ -164,7 +160,6 @@ function initProjectEffect(canvas) {
 function initAboutEffect(canvas) {
     const ctx = canvas.getContext('2d');
     let width, height, symbols = [];
-    // A mix of code, music, and shape symbols
     const chars = ['{ }', '</>', '01', '♫', '⚡', '✎', 'cube', '●']; 
 
     const resize = () => {
@@ -173,7 +168,7 @@ function initAboutEffect(canvas) {
         canvas.width = width;
         canvas.height = height;
         symbols = [];
-        const count = 30; // Fewer particles, more floaty
+        const count = 30;
         for(let i=0; i<count; i++) {
             symbols.push({
                 x: Math.random() * width,
@@ -192,22 +187,56 @@ function initAboutEffect(canvas) {
         ctx.clearRect(0, 0, width, height);
         
         symbols.forEach(s => {
-            s.y -= s.speed; // Move up slowly
-            s.opacity += (Math.random() - 0.5) * 0.01; // Flicker opacity
+            s.y -= s.speed;
+            s.opacity += (Math.random() - 0.5) * 0.01;
             if(s.opacity < 0) s.opacity = 0;
             if(s.opacity > 0.5) s.opacity = 0.5;
 
-            // Reset to bottom if it goes off top
             if (s.y < -50) {
                 s.y = height + 50;
                 s.x = Math.random() * width;
             }
 
             ctx.font = `${s.size}px monospace`;
-            ctx.fillStyle = `rgba(167, 139, 250, ${s.opacity})`; // Lavender
+            ctx.fillStyle = `rgba(167, 139, 250, ${s.opacity})`;
             ctx.fillText(s.text, s.x, s.y);
         });
         requestAnimationFrame(animate);
     }
     animate();
+}
+
+// --- EFFECT 4: SCROLL DECONSTRUCTION (EXTREME VERSION) ---
+function initProfileGlitch() {
+    const wrapper = document.getElementById('glitch-wrapper');
+    if (!wrapper) return;
+
+    const cyan = wrapper.querySelector('.cyan');
+    const magenta = wrapper.querySelector('.magenta');
+    const mainImg = wrapper.querySelector('.main-img');
+
+    window.addEventListener('scroll', () => {
+        // Stop calculating if we are way down the page
+        if (window.scrollY > 1000) return;
+
+        const scroll = window.scrollY;
+
+        // 1. Main Image "Stickiness" (Parallax)
+        // Moves down at 40% of scroll speed, making it look heavy
+        mainImg.style.transform = `translateY(${scroll * 0.4}px)`;
+
+        // 2. Cyan Layer (Explodes Up-Left)
+        // MOVES FAST (-1.5x speed) and ROTATES left
+        cyan.style.transform = `translate(${scroll * -1.2}px, ${scroll * -0.5}px) rotate(${scroll * -0.05}deg)`;
+
+        // 3. Magenta Layer (Explodes Down-Right)
+        // MOVES FAST (1.2x speed) and ROTATES right
+        magenta.style.transform = `translate(${scroll * 1.2}px, ${scroll * 0.5}px) rotate(${scroll * 0.05}deg)`;
+        
+        // 4. Fade Out
+        // Stays visible for longer (up to 600px of scrolling)
+        const fade = Math.max(0, 1 - scroll / 600);
+        cyan.style.opacity = 0.6 * fade;
+        magenta.style.opacity = 0.6 * fade;
+    });
 }

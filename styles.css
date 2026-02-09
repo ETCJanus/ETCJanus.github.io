@@ -387,12 +387,11 @@ canvas {
     margin: 0 0 20px 0; /* Remove auto margins to keep left alignment */
 }
 
-/* --- THE IMAGE STYLING --- */
 .hero-image-wrapper {
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    z-index: 10;
+    overflow: visible; /* CRITICAL: Must be visible or layers get cut off */
+    perspective: 1000px; /* Adds 3D depth to the movement */
 }
 
 .profile-img {
@@ -550,4 +549,46 @@ canvas {
     z-index: -1; /* Puts it behind everything */
     opacity: 0.5; /* Subtle blend */
     pointer-events: none; /* Let clicks pass through to links */
+}
+
+/* --- SCROLL DECONSTRUCTION STYLES --- */
+.hero-image-wrapper {
+    position: relative;
+    z-index: 10;
+    overflow: visible; /* CRITICAL */
+    perspective: 1000px; 
+}
+
+.profile-img.main-img {
+    position: relative;
+    z-index: 10;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+
+.glitch-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 24px;
+    /* CHANGE TO NORMAL temporarily to guarantee you see them */
+    mix-blend-mode: normal; 
+    opacity: 0.5;
+    pointer-events: none;
+    transition: none; /* CRITICAL: Removes lag so movement is instant */
+    will-change: transform;
+}
+
+.glitch-layer.cyan {
+    /* Pure Cyan Tint */
+    filter: sepia(100%) hue-rotate(130deg) saturate(300%) opacity(0.5);
+    z-index: 1;
+}
+
+.glitch-layer.magenta {
+    /* Pure Magenta Tint */
+    filter: sepia(100%) hue-rotate(280deg) saturate(300%) opacity(0.5);
+    z-index: 2;
 }
