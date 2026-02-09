@@ -67,6 +67,55 @@
             margin-top: 5px;
             line-height: 1.4;
         }
+
+                /* --- NEW GALLERY STYLES --- */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px; /* More breathing room */
+            margin-top: 30px;
+        }
+
+        .tinker-card {
+            background: rgba(255, 255, 255, 0.03); /* Subtle glass background */
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            overflow: hidden; /* Clips the image to the rounded corners */
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tinker-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(167, 139, 250, 0.5); /* Lavender glow border */
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Force all images to be exactly the same size */
+        .tinker-card img {
+            width: 100%;
+            height: 200px; /* Fixed height for uniformity */
+            object-fit: cover; /* Crops the image smartly to fill the space */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-content strong {
+            color: #a78bfa; /* Accent color for titles */
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .card-content .caption {
+            font-size: 0.9rem;
+            color: #9ca3af; /* Muted text */
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -82,7 +131,7 @@
         
         <header class="journal-header">
             <h1>Mastering Tinkering</h1>
-            <p>A living log of construction, failure, and iteration.</p>
+            <p>A log of the projects I do for the course Mastering Tinkering</p>
         </header>
 
         <div class="toc">
@@ -101,37 +150,51 @@
             </p>
             <p>
                 This allows me to have full control over the presentation of my 3D assets later in the course.
-                <br><em>(Link submitted: This website)</em>
             </p>
         </article>
 
 
         <article id="a1-1" class="assignment">
-            <span class="assignment-meta">Assignment 1.1 • In Progress</span>
+            <span class="assignment-meta">Assignment 1.1 • Completed</span>
             <h2>Tinkering Spaces (Photo Safari)</h2>
             <p>
-                Exploration of environments designed for creation. I looked at my home setup and the University labs.
+                A look at the three environments where I spend most of my time creating, learning, and experimenting.
             </p>
 
             <div class="gallery-grid">
-                <div class="gallery-item">
-                    <img src="https://via.placeholder.com/600x400/333/555?text=Home+Desk" alt="Home Desk">
-                    <div class="gallery-caption">
-                        <strong>The Home Station</strong><br>
-                        Characterized by a mix of digital inputs (screens, tablets) and analog chaos (notepads, cables).
+                
+                <div class="tinker-card">
+                    <img src="../assets/images/desk.jpg" alt="My Desk">
+                    <div class="card-content">
+                        <strong>The Desk</strong>
+                        <div class="caption">
+                            This is where I can try whatever I like. It is the dedicated space for tinkering with whatever new technical obsession has captured my interest that week.
+                        </div>
                     </div>
                 </div>
 
-                <div class="gallery-item">
-                    <img src="https://via.placeholder.com/600x400/333/555?text=UT+Lab" alt="UT Lab">
-                    <div class="gallery-caption">
-                        <strong>University Lab</strong><br>
-                        A shared space optimized for collaboration. Tools are accessible but require social negotiation to use.
+                <div class="tinker-card">
+                    <img src="../assets/images/piano.jpg" alt="Piano">
+                    <div class="card-content">
+                        <strong>The Piano</strong>
+                        <div class="caption">
+                            The place where I feel most at ease. It allows me to step away from the screen and tinker purely with music, rhythm, and flow.
+                        </div>
                     </div>
                 </div>
+
+                <div class="tinker-card">
+                    <img src="../assets/images/classroom.jpg" alt="Classroom">
+                    <div class="card-content">
+                        <strong>The Classroom</strong>
+                        <div class="caption">
+                            A space for talking and socializing. This is where I go to learn from other people's insights and bounce my own ideas off a group.
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </article>
-
 
         <article id="a2-1" class="assignment">
             <span class="assignment-meta">Assignment 2.1 • To Do</span>
