@@ -34,10 +34,14 @@ function showSlides(n) {
    ========================================= */
 
 document.addEventListener("DOMContentLoaded", function() {
+    // 1. Start Background Animation
     const canvas = document.getElementById('tinker-canvas');
     if (canvas) {
         initTinkerEffect(canvas);
     }
+
+    // 2. Generate Navigation Menu
+    generateTOC();
 });
 
 function initTinkerEffect(canvas) {
@@ -81,15 +85,10 @@ function initTinkerEffect(canvas) {
                 baseSize: Math.random() * 20 + 15,
                 sides: shapeTypes[Math.floor(Math.random() * shapeTypes.length)],
                 angle: Math.random() * Math.PI * 2,
-                
-                // PROPERTIES FOR SPIN MOMENTUM
-                // baseSpin: very slow "idle" rotation
                 baseSpin: (Math.random() - 0.5) * 0.005, 
-                // currentSpin: starts at base, changes with mouse
                 currentSpin: 0, 
                 color: colors[Math.floor(Math.random() * colors.length)]
             });
-            // Initialize current spin to base spin
             shapes[i].currentSpin = shapes[i].baseSpin;
         }
     }
@@ -109,7 +108,6 @@ function initTinkerEffect(canvas) {
         ctx.closePath();
     }
 
-    // Linear Interpolation helper for smooth speed changes
     function lerp(start, end, amt) {
         return (1 - amt) * start + amt * end;
     }
@@ -118,56 +116,39 @@ function initTinkerEffect(canvas) {
         ctx.clearRect(0, 0, width, height);
         
         shapes.forEach(s => {
-            // 1. STANDARD MOVEMENT
             s.x += s.vx;
             s.y += s.vy;
 
-            // 2. MOUSE INTERACTION (Spin Up)
             const dx = s.x - mouse.x;
             const dy = s.y - mouse.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
             const interactRadius = 200;
-
-            // Target Speed: 0.1 rad/frame is approx 1 rotation per second at 60fps
             const maxSpeed = 0.1; 
 
             if (dist < interactRadius) {
-                // If mouse is near, smoothly accelerate to maxSpeed
                 s.currentSpin = lerp(s.currentSpin, maxSpeed, 0.05);
-                
-                // Gentle push away (magnetic field)
                 const force = (interactRadius - dist) / interactRadius;
                 s.x += (dx / dist) * force * 1.5; 
                 s.y += (dy / dist) * force * 1.5;
-                
-                // Gentle grow
                 s.size = lerp(s.size, s.baseSize + 10, 0.1);
             } else {
-                // If mouse is far, smoothly decelerate back to idle drift
                 s.currentSpin = lerp(s.currentSpin, s.baseSpin, 0.02);
                 s.size = lerp(s.size, s.baseSize, 0.05);
             }
 
-            // Apply the spin
             s.angle += s.currentSpin;
-
-            // 3. SCROLL INTERACTION (The Gear Effect)
-            // Adds a direct rotation based on scroll position so it feels connected
             const renderAngle = s.angle + (scrollY * 0.002);
 
-            // 4. SCREEN WRAPPING
             if (s.x < -50) s.x = width + 50;
             if (s.x > width + 50) s.x = -50;
             if (s.y < -50) s.y = height + 50;
             if (s.y > height + 50) s.y = -50;
 
-            // DRAW
             ctx.strokeStyle = s.color;
             ctx.lineWidth = 1.5; 
             drawPolygon(ctx, s.x, s.y, s.size, s.sides, renderAngle);
             ctx.stroke();
             
-            // Draw Center Dot
             ctx.fillStyle = s.color;
             ctx.beginPath();
             ctx.arc(s.x, s.y, 2, 0, Math.PI*2);
@@ -177,4 +158,46 @@ function initTinkerEffect(canvas) {
         requestAnimationFrame(animate);
     }
     animate();
+}
+
+/* =========================================
+   3. AUTOMATIC TOC GENERATOR (UPDATED)
+   ========================================= */
+function generateTOC() {
+    const toc = document.querySelector('.toc');
+    if (!toc) return;
+
+    // 1. Reset the menu
+    toc.innerHTML = '<span>Jump to:</span>';
+
+    // 2. Find ONLY the tags that are marked "Completed"
+    const completedTags = document.querySelectorAll('.status-completed');
+
+    completedTags.forEach(tag => {
+        // Find the Article that holds this tag
+        const assignment = tag.closest('.assignment');
+        
+        if (assignment) {
+            const id = assignment.id; // e.g., "a0-1"
+            const titleElement = assignment.querySelector('h2'); 
+
+            if (id && titleElement) {
+                // Create clean ID: "a0-1" -> "0.1"
+                const shortId = id.replace('a', '').replace('-', '.');
+                
+                // Create link
+                const link = document.createElement('a');
+                link.href = `#${id}`;
+                
+                // Clean Title (remove everything after a colon if it's too long)
+                let titleText = titleElement.innerText;
+                if (titleText.includes(":")) {
+                    titleText = titleText.split(":")[0];
+                }
+                
+                link.innerText = `${shortId} ${titleText}`;
+                toc.appendChild(link);
+            }
+        }
+    });
 }

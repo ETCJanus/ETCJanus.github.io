@@ -334,3 +334,48 @@ article.assignment {
     border-radius: 8px;
     margin-top: 15px;
 }
+
+/* =========================================
+   STATUS TAGS (The Badge Look)
+   ========================================= */
+.assignment-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+/* The Assignment Number (e.g. Assignment 0.1) */
+.assignment-id {
+    color: var(--accent-color); /* Purple */
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+/* The Base Tag Style */
+.status-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    backdrop-filter: blur(4px);
+}
+
+/* COMPLETED: Green/Teal Glow */
+.status-completed {
+    background: rgba(45, 212, 191, 0.1); 
+    color: #2dd4bf; 
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    box-shadow: 0 0 10px rgba(45, 212, 191, 0.1);
+}
+
+/* COMING UP: Gray/Dim */
+.status-coming {
+    background: rgba(255, 255, 255, 0.05); 
+    color: #666; 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
