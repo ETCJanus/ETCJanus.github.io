@@ -599,3 +599,75 @@ canvas {
     object-fit: cover; /* This prevents stretching by cropping the image to fit */
     display: block;
 }
+
+/* --- PROFILE WRAPPER --- */
+#profile-wrapper {
+    position: relative;
+    width: 300px; /* Adjust to match your image width preference */
+    height: auto;
+    border-radius: 20px;
+    z-index: 50; /* Above normal content */
+    cursor: crosshair; /* Tech feel */
+    overflow: visible; /* Allow hints to hang out */
+}
+
+#profile-static {
+    width: 100%;
+    height: auto;
+    border-radius: 20px;
+    display: block;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    transition: opacity 0.1s;
+    /* Ensure image doesn't drag/ghost when interacting */
+    pointer-events: auto; 
+    user-select: none;
+}
+
+/* --- HOVER INDICATOR --- */
+#profile-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    opacity: 1;
+}
+
+#profile-hint i {
+    color: #2dd4bf; /* Teal accent */
+    font-size: 1.1rem;
+}
+
+#profile-hint span {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #fff;
+}
+
+/* Hide hint on hover */
+#profile-wrapper:hover #profile-hint {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+}
+
+/* --- EXPLOSION CANVAS --- */
+#explosion-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999; /* Extreme top z-index */
+    pointer-events: none; /* Let clicks pass through */
+}

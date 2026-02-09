@@ -29,8 +29,8 @@
     if (projectCanvas) initProjectEffect(projectCanvas);
     if (aboutCanvas) initAboutEffect(aboutCanvas);
     
-    // Initialize the glitch effect
-    initHolographicTilt(); // <-- New
+
+    initProfileParticles();
 });
 
 // --- EFFECT 1: HERO (Constellations) ---
@@ -239,4 +239,148 @@ function initHolographicTilt() {
         // Add a dynamic glare/brightness based on mouse position
         mainImg.style.filter = `brightness(${1 + Math.abs(x) * 0.3}) contrast(1.1)`;
     });
+}
+
+// --- EFFECT 4: EXPLODING PORTRAIT (Fullscreen Particles) ---
+function initProfileParticles() {
+    const staticImg = document.getElementById('profile-static');
+    const canvas = document.getElementById('explosion-canvas');
+    if (!staticImg || !canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let isExploding = false;
+    let animationId;
+    
+    // Configuration
+    const particleSize = 3; // Size of chunks
+    const explosionForce = 15; // How far they shoot
+    const returnSpeed = 0.08; // How fast they reform
+
+    // Resize Canvas to Fullscreen
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // --- INTERACTION ---
+    staticImg.addEventListener('mouseenter', () => {
+        if (!isExploding) startExplosion();
+    });
+
+    staticImg.addEventListener('mouseleave', () => {
+        isExploding = false; // They will naturally return to origin
+    });
+
+    // --- CORE LOGIC ---
+    function startExplosion() {
+        isExploding = true;
+        
+        // 1. Get position of the image on screen
+        const rect = staticImg.getBoundingClientRect();
+        
+        // 2. Create a temporary canvas to read pixel data (Security bypass)
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = rect.width;
+        tempCanvas.height = rect.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(staticImg, 0, 0, rect.width, rect.height);
+        
+        // 3. Read Pixels
+        let pixelData;
+        try {
+            pixelData = tempCtx.getImageData(0, 0, rect.width, rect.height).data;
+        } catch (e) {
+            console.warn("CORS restricted. Using fallback colors.");
+            // Fallback if local file security blocks reading
+            pixelData = []; 
+        }
+
+        // 4. Generate Particles
+        particles = [];
+        const gap = 5; // Resolution (lower = more particles = slower)
+
+        for (let y = 0; y < rect.height; y += gap) {
+            for (let x = 0; x < rect.width; x += gap) {
+                // Calculate color
+                let color = 'rgba(167, 139, 250, 1)'; // Default Purple
+                
+                if (pixelData.length > 0) {
+                    const i = (y * rect.width + x) * 4;
+                    const r = pixelData[i];
+                    const g = pixelData[i+1];
+                    const b = pixelData[i+2];
+                    const a = pixelData[i+3];
+                    if (a < 128) continue; // Skip transparent pixels
+                    color = `rgb(${r},${g},${b})`;
+                }
+
+                // Create Particle
+                // originX/Y = Where it sits on the page (Canvas coordinates)
+                const originX = rect.left + x;
+                const originY = rect.top + y;
+
+                particles.push({
+                    x: originX,
+                    y: originY,
+                    originX: originX,
+                    originY: originY,
+                    color: color,
+                    vx: (Math.random() - 0.5) * explosionForce,
+                    vy: (Math.random() - 0.5) * explosionForce,
+                    size: Math.random() * particleSize + 1,
+                    friction: 0.94
+                });
+            }
+        }
+
+        // 5. Hide the real image and start animating
+        staticImg.style.opacity = '0';
+        animate();
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        let activeParticles = false;
+
+        particles.forEach(p => {
+            // PHYSICS
+            if (isExploding) {
+                // Explode mode: Move based on velocity
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vx *= p.friction;
+                p.vy *= p.friction;
+                
+                // Add slight mouse repulsion so you can "swirl" them
+                // (Optional, can remove if too chaotic)
+            } else {
+                // Return mode: Lerp back to origin
+                const dx = p.originX - p.x;
+                const dy = p.originY - p.y;
+                p.x += dx * returnSpeed;
+                p.y += dy * returnSpeed;
+            }
+
+            // Draw
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+
+            // Check if particle is still "loose" (not at home)
+            const dist = Math.abs(p.x - p.originX) + Math.abs(p.y - p.originY);
+            if (dist > 1 || isExploding) activeParticles = true;
+        });
+
+        if (activeParticles) {
+            animationId = requestAnimationFrame(animate);
+        } else {
+            // Animation finished (everything is back home)
+            staticImg.style.opacity = '1';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            cancelAnimationFrame(animationId);
+        }
+    }
 }
