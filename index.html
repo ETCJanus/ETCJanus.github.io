@@ -10,10 +10,10 @@
 <body>
 
     <nav>
-        <div class="logo">EJ.</div>
+        <div class="logo"><a href="index.html">EJ.</a></div>
         <div class="links">
             <a href="projects.html">Projects</a>
-            <a href="#contact">Contact</a>
+            <a href="about.html">About</a> <a href="#contact">Contact</a>
         </div>
     </nav>
 
@@ -22,21 +22,31 @@
         <canvas id="hero-canvas"></canvas>
 
         <div class="scroll-content">
-            <section class="step">
-                <h1>Ewoud Janus</h1>
-                <p>Interaction Technologist & Developer</p>
-                <p class="scroll-hint">↓ Scroll to deconstruct</p>
+            
+            <section class="step hero-step">
+                <h1 class="glitch-text">Ewoud Janus</h1>
+                <p class="typewriter">Interaction Technologist & Developer</p>
+                <div class="scroll-hint-wrapper">
+                    <p class="scroll-hint">↓ Scroll to deconstruct</p>
+                </div>
             </section>
             
             <section class="step">
-                <h2>The Builder</h2>
-                <p>Python, C++, and System Architecture.</p>
+                <div class="glass-card card-left">
+                    <div class="icon-header">🛠️</div>
+                    <h2>The Builder</h2>
+                    <p>I architect robust systems in Python & C++. My code is clean, efficient, and built for scalability.</p>
+                </div>
             </section>
 
             <section class="step">
-                <h2>The Artist</h2>
-                <p>3D Design, Blender, and Visual Storytelling.</p>
+                <div class="glass-card card-right">
+                    <div class="icon-header">🎨</div>
+                    <h2>The Artist</h2>
+                    <p>I breathe life into pixels. Using Blender and WebGL, I create immersive visual stories that engage the user.</p>
+                </div>
             </section>
+
         </div>
     </div>
 

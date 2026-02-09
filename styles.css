@@ -1,87 +1,553 @@
-﻿/* --- EXISTING STYLES (Keep these) --- */
-:root {
-    --bg-color: #0a0a0a;
-    --text-color: #f0f0f0;
-    --accent-color: #00ff88;
-    --font-main: 'Space Grotesk', sans-serif;
-}
-body { margin: 0; background: var(--bg-color); color: var(--text-color); font-family: var(--font-main); }
-nav { position: fixed; top: 0; width: 100%; padding: 20px 40px; display: flex; justify-content: space-between; z-index: 100; mix-blend-mode: difference; box-sizing: border-box; }
-nav a { color: white; text-decoration: none; margin-left: 20px; font-weight: 500; }
-nav a.highlight { color: var(--accent-color); border: 1px solid var(--accent-color); padding: 5px 10px; border-radius: 4px; }
-.scroll-container { position: relative; height: 400vh; }
-canvas { position: sticky; top: 0; width: 100%; height: 100vh; object-fit: cover; z-index: 1; background: #111; }
-.scroll-content { position: absolute; top: 0; width: 100%; z-index: 2; pointer-events: none; }
-.step { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transform: translateY(20px); transition: opacity 0.5s, transform 0.5s; }
-.step:nth-child(1) { opacity: 1; transform: translateY(0); }
-
-/* --- NEW DASHBOARD STYLES (Keep these) --- */
-.container { max-width: 1000px; margin: 100px auto; padding: 20px; }
-.assignment-card { background: #1a1a1a; border: 1px solid #333; padding: 20px; margin-bottom: 20px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; transition: transform 0.2s; }
-.assignment-card:hover { transform: translateX(10px); border-color: var(--accent-color); }
-.status { font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; }
-.status.done { color: var(--accent-color); }
-.status.todo { color: #ff4444; }
-.meta { color: #888; font-size: 0.9em; margin-top: 5px; }
-a.card-link { text-decoration: none; color: inherit; display: block; width: 100%; }
-
-/* --- NEW PROJECT GRID STYLES (Add this section!) --- */
-
-.project-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 30px;
+﻿:root {
+    /* --- NEW PALETTE: "Deep Ether" --- */
+    --bg-dark: #050507;
+    --bg-panel: rgba(255, 255, 255, 0.05); /* Glass effect */
+    --text-main: #e0e0e0;
+    --text-muted: #9ca3af;
+    
+    /* Soothing Gradients */
+    --gradient-accent: linear-gradient(135deg, #a78bfa, #2dd4bf); /* Lavender to Teal */
+    --gradient-glow: radial-gradient(circle at 50% -20%, #2e1065, #050507);
+    
+    /* Fonts */
+    --font-heading: 'Space Grotesk', sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif; /* Cleaner reading font */
 }
 
-.project-card {
-    background: #151515;
-    border-radius: 12px;
-    overflow: hidden;
-    text-decoration: none;
+/* Add a subtle noise texture to the background for a "film" look */
+body {
+    margin: 0;
+    background-color: var(--bg-dark);
+    background-image: var(--gradient-glow);
+    background-attachment: fixed; /* Background stays still while you scroll */
+    color: var(--text-main);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* --- TYPOGRAPHY --- */
+h1, h2, h3 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    margin-top: 0;
+    letter-spacing: -0.02em; /* Tighter tracking looks more modern */
+}
+
+h1 {
+    font-size: 3.5rem;
+    background: linear-gradient(to right, #fff, #9ca3af);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* Gradient Text */
+    margin-bottom: 1rem;
+}
+
+a {
     color: inherit;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #222;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+/* --- NAVIGATION (Floating Glass Bar) --- */
+nav {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1000px;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    
+    /* The Glass Effect */
+    background: rgba(10, 10, 12, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+}
+
+nav .logo {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+nav .links a {
+    margin-left: 25px;
+    font-size: 0.95rem;
+    opacity: 0.7;
+}
+
+nav .links a:hover, nav .links a.highlight {
+    opacity: 1;
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* --- LAYOUT UTILS --- */
+.container {
+    max-width: 1000px;
+    margin: 160px auto 100px; /* More top margin to clear the floating nav */
+    padding: 20px;
+}
+
+/* --- HERO / SCROLLYTELLING --- */
+.scroll-container {
+    position: relative;
+    height: 400vh;
+}
+
+canvas {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 1;
+    opacity: 0.6; /* Slight fade so text pops */
+    mix-blend-mode: screen; /* Blends 3D render with the background gradient */
+}
+
+.scroll-content {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.step {
+    min-height: 100vh; /* CHANGED: Allows the box to grow if text is long */
+    height: auto;      /* CHANGED: Removes the hard limit */
+    padding: 40px 0;   /* ADDED: Breathing room so text doesn't touch edges */
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.step.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.step p {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    max-width: 600px;
+}
+
+/* --- CARDS (Projects & About) --- */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 40px;
+}
+
+.project-card, .about-section {
+    background: var(--bg-panel);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 0.3s;
 }
 
 .project-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.5);
-    border-color: var(--accent-color);
+    transform: translateY(-8px);
+    border-color: rgba(167, 139, 250, 0.5); /* Lavender border on hover */
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
 .card-image {
-    height: 200px;
+    height: 220px;
     width: 100%;
-    background: #222;
+    background: #111;
     position: relative;
+}
+
+/* Gradient overlay for placeholders */
+.card-image div { 
+    width: 100%; 
+    height: 100%; 
+    background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.8) 100%), 
+                linear-gradient(45deg, #1e1e24, #2d2d35); 
 }
 
 .tag {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0,0,0,0.7);
-    color: var(--accent-color);
-    padding: 4px 8px;
+    top: 15px;
+    right: 15px;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    color: #fff;
+    padding: 6px 12px;
     font-size: 0.75rem;
-    border-radius: 4px;
-    border: 1px solid var(--accent-color);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
 }
 
 .card-info {
-    padding: 20px;
+    padding: 25px;
 }
 
 .card-info h3 {
-    margin: 0 0 10px 0;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+    color: #fff;
 }
 
 .card-info p {
-    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* --- ABOUT PAGE SPECIFIC --- */
+.about-section {
+    padding: 40px;
+    margin-bottom: 40px;
+}
+
+.about-meta {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.8rem;
+    color: #a78bfa; /* Lavender */
+    margin-bottom: 15px;
+    display: block;
+    font-weight: 600;
+}
+
+/* --- ABOUT PAGE UPGRADES --- */
+
+/* Hero Text */
+.about-hero {
+    text-align: center;
+    margin-bottom: 80px;
+}
+.about-hero h1 {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+.lead {
+    font-size: 1.3rem;
+    color: #e0e0e0;
+    max-width: 700px;
+    margin: 0 auto 20px;
+}
+.sub-lead {
+    font-style: italic;
+    color: var(--accent-color); /* Neon Green/Teal */
+    font-size: 1.1rem;
+    opacity: 0.8;
+}
+
+/* 1. ANIMATED SKILL BARS */
+.skill-dashboard {
+    margin-bottom: 100px;
+}
+.skill-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+}
+.skill-category h3 {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    color: #a78bfa; /* Lavender */
+}
+.skill-bar-container {
+    margin-bottom: 20px;
+}
+.skill-label {
+    display: block;
+    margin-bottom: 5px;
     font-size: 0.9rem;
-    color: #aaa;
-    line-height: 1.5;
+    font-weight: 500;
+}
+.bar-bg {
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.bar-fill {
+    height: 100%;
+    background: var(--gradient-accent);
+    width: 0%; /* Starts at 0, JS animates this */
+    border-radius: 4px;
+    transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 2. GLOWING TIMELINE */
+.timeline {
+    position: relative;
+    max-width: 800px;
+    margin: 40px auto;
+    border-left: 2px solid rgba(167, 139, 250, 0.3); /* Faint Purple Line */
+    padding-left: 40px;
+}
+.timeline-item {
+    position: relative;
+    margin-bottom: 50px;
+}
+.timeline-dot {
+    position: absolute;
+    left: -49px; /* Aligns dot on the line */
+    top: 5px;
+    width: 16px;
+    height: 16px;
+    background: var(--bg-dark);
+    border: 2px solid var(--accent-color);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent-color);
+}
+.timeline-content {
+    background: var(--bg-panel); /* Glass effect */
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: transform 0.3s;
+}
+.timeline-content:hover {
+    transform: translateX(10px);
+    border-color: rgba(167, 139, 250, 0.5);
+}
+.timeline-content .date {
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.timeline-content h3 { margin: 5px 0 2px; font-size: 1.2rem; }
+.timeline-content h4 { margin: 0 0 10px; font-size: 1rem; color: #999; font-weight: 400; }
+
+/* 3. PERSONALITY CARDS */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+.info-card {
+    background: rgba(255,255,255,0.03);
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid transparent;
+    transition: 0.3s;
+}
+.info-card:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.1);
+    transform: translateY(-5px);
+}
+.info-card .icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+/* --- NEW HERO LAYOUT (Split Screen) --- */
+.hero-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr; /* Text takes more space than image */
+    align-items: center;
+    gap: 60px;
+    text-align: left; /* Aligns text to the left instead of center */
+    width: 100%;
+}
+
+/* Typography Adjustments */
+.hero-text h1 {
+    font-size: 4rem; /* Bigger Name */
+    margin-bottom: 5px;
+    line-height: 1.1;
+}
+
+.accent-subtitle {
+    font-family: var(--font-body);
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 30px;
+    display: block;
+}
+
+.hero-text .lead {
+    margin: 0 0 20px 0; /* Remove auto margins to keep left alignment */
+}
+
+/* --- THE IMAGE STYLING --- */
+.hero-image-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-img {
+    width: 100%;
+    max-width: 350px; /* Controls max size of your face */
+    aspect-ratio: 1 / 1.1; /* Slight portrait ratio */
+    object-fit: cover;
+    border-radius: 24px; /* Soft squircle shape */
+    
+    /* The Glassy Border Look */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 
+                0 0 0 1px rgba(255, 255, 255, 0.05); /* Inner stroke */
+    
+    /* Animation */
+    animation: float 6s ease-in-out infinite;
+    position: relative;
+    z-index: 2;
+}
+
+/* The Ambient Glow Behind You */
+.glow-blob {
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle, rgba(167, 139, 250, 0.2) 0%, rgba(0,0,0,0) 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* --- ANIMATIONS --- */
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-15px); } /* Moves up */
+    100% { transform: translateY(0px); }
+}
+
+/* --- MOBILE RESPONSIVENESS --- */
+@media (max-width: 768px) {
+    .hero-grid {
+        grid-template-columns: 1fr; /* Stack visually */
+        text-align: center;
+        gap: 40px;
+    }
+    
+    /* Re-order so Image appears ABOVE Name on mobile? 
+       Or keep Image below. Let's keep image below for flow. */
+    
+    .hero-text .lead {
+        margin: 0 auto 20px; /* Center text again on mobile */
+    }
+    
+    .hero-text h1 {
+        font-size: 3rem;
+    }
+    
+    .profile-img {
+        max-width: 280px; /* Smaller image on phones */
+    }
+}
+/* --- HOMEPAGE UPGRADES --- */
+
+/* 1. TYPEWRITER EFFECT */
+.typewriter {
+    font-family: monospace; /* Tech feel */
+    overflow: hidden; /* Ensures the content is not revealed until the animation */
+    border-right: .15em solid var(--accent-color); /* The cursor */
+    white-space: nowrap; /* Keeps the content on a single line */
+    margin: 0 auto; /* Gives that scrolling effect as the typing happens */
+    letter-spacing: .15em;
+    animation: 
+      typing 3.5s steps(40, end),
+      blink-caret .75s step-end infinite;
+    max-width: fit-content;
+}
+
+/* The typing animation */
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: var(--accent-color); }
+}
+
+/* 2. GLASS CARDS FOR SECTIONS */
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 60px;
+    border-radius: 24px;
+    max-width: 500px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+    text-align: left;
+}
+
+.glass-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: var(--accent-color);
+}
+
+.icon-header {
+    font-size: 3rem;
+    margin-bottom: 20px;
+}
+
+/* 3. DYNAMIC ENTRANCE ANIMATIONS */
+/* Make the left card slide in from left */
+.card-left {
+    transform: translateX(-50px);
+    opacity: 0;
+    transition: all 1s ease;
+}
+.visible .card-left {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Make the right card slide in from right */
+.card-right {
+    transform: translateX(50px);
+    opacity: 0;
+    transition: all 1s ease;
+}
+.visible .card-right {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* 4. SCROLL HINT BOUNCE */
+.scroll-hint-wrapper {
+    margin-top: 50px;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+  40% {transform: translateY(-10px);}
+  60% {transform: translateY(-5px);}
+}
+/* --- BACKGROUND CANVASES --- */
+.bg-canvas {
+    position: fixed; /* Stays in place while you scroll */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    z-index: -1; /* Puts it behind everything */
+    opacity: 0.5; /* Subtle blend */
+    pointer-events: none; /* Let clicks pass through to links */
 }
