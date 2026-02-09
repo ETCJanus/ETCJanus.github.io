@@ -1,0 +1,276 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastering Tinkering</title>
+    
+    <link rel="stylesheet" href="../../styles.css"> 
+    
+    <link rel="stylesheet" href="styles.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav>
+        <div class="logo"><a href="../../index.html">EJ.</a></div>
+        <div class="links">
+            <a href="../../projects.html">Projects</a>
+            <a href="../../about.html">About</a>
+            <a href="../../index.html#contact">Contact</a>
+        </div>
+    </nav>
+
+    <canvas id="tinker-canvas" class="bg-canvas"></canvas>
+
+    <div class="container">
+        
+        <header class="journal-header">
+            <h1>Mastering Tinkering</h1>
+            <p>A log of the projects I do for the course Mastering Tinkering</p>
+        </header>
+
+        <div class="toc">
+            <span>Jump to:</span>
+            <a href="#a0-1">0.1 Portfolio</a>
+            <a href="#a1-1">1.1 Spaces</a>
+            <a href="#a2-1">2.1 Building Block</a>
+        </div>
+
+        <article id="a0-1" class="assignment">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 0.1</span>
+                <span class="status-tag status-completed">Completed</span>
+            </div>
+            <h2>Portfolio Setup</h2>
+            <p>
+                The goal was to set up a simple and practical online portfolio. I chose to build a custom solution 
+                using HTML5 and GitHub Pages to demonstrate my web development skills.
+            </p>
+
+            <div class="tinker-card" style="max-width: 500px; margin: 30px auto;">
+                <img src="../../assets/images/assignment0.png" alt="Portfolio Homepage" style="height: auto; width: 100%;">
+            </div>
+        </article>
+
+        <article id="a1-1" class="assignment">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 1.1</span>
+                <span class="status-tag status-completed">Completed</span>
+            </div>
+            <h2>Tinkering Spaces (Photo Safari)</h2>
+            <p>
+                A look at the three environments where I spend most of my time creating, learning, and experimenting.
+            </p>
+
+            <div class="gallery-grid">
+                <div class="tinker-card">
+                    <img src="../../assets/images/desk.jpg" alt="My Desk">
+                    <div class="card-content">
+                        <strong>The Desk</strong>
+                        <div class="caption">
+                            This is where I can try whatever I like. It is the dedicated space for tinkering with whatever new technical obsession has captured my interest that week.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tinker-card">
+                    <img src="../../assets/images/piano.jpg" alt="Piano">
+                    <div class="card-content">
+                        <strong>The Piano</strong>
+                        <div class="caption">
+                            The place where I feel most at ease. It allows me to step away from the screen and tinker purely with music, rhythm, and flow.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tinker-card">
+                    <img src="../../assets/images/classroom.jpg" alt="Classroom">
+                    <div class="card-content">
+                        <strong>The Classroom</strong>
+                        <div class="caption">
+                            A space for talking and socializing. This is where I go to learn from other people's insights and bounce my own ideas off a group.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article id="a2-1" class="assignment">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 2.1</span>
+                <span class="status-tag status-completed">Completed</span>
+            </div>
+            <h2>Design a Building Block: Screw Shapes</h2>
+            <p>
+                <strong>Challenge:</strong> Design a block that can be used for tinkering and quick prototyping.
+            </p>
+
+            <div class="carousel-container">
+                <div class="carousel-slide active">
+                    <img src="../../assets/images/omni-final.png" alt="Final Render" class="studio-bg">
+                    <div class="carousel-caption-bar">
+                        <strong>Final Design:</strong> The screw shapes help iterate quickly.
+                    </div>
+                </div>
+
+                <div class="carousel-slide">
+                    <img src="../../assets/images/omni-sketches.png" alt="Initial Sketches" class="studio-bg">
+                    <div class="carousel-caption-bar">
+                        <strong>Process:</strong> 8 different sketch iterations exploring the hinge mechanism.
+                    </div>
+                </div>
+
+                <div class="carousel-slide">
+                    <img src="../../assets/images/omni-ai.jpg" alt="AI Rendering">
+                    <div class="carousel-caption-bar">
+                        <strong>AI Rendering:</strong> Using AI to visualize material textures.
+                    </div>
+                </div>
+
+                <button class="prev" onclick="plusSlides(-1)">&#10094;</button>
+                <button class="next" onclick="plusSlides(1)">&#10095;</button>
+            </div>
+        </article>
+
+        <article id="a2-2" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 2.2</span>
+                <span class="status-tag status-completed">Next Up</span>
+            </div>
+            <h2>Design a building block - fabricate</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a3-1" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 3.1</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Properties of Tinkering Materials</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a2-3" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 2.3</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Design a building block - make it interoperable</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a3-2" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 3.2</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Properties of Tinkering Materials - extension</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a4-0" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 4.0</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Scaffolding material: programming metaphor</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a2-4" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 2.4</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Design your building block - evaluate</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a3-3" class="assignment placeholder">
+            <div class="assignment-header">
+        <span class="assignment-id">Assignment 3.3</span>
+        <span class="status-tag status-coming">Coming Up</span>
+    </div>
+            <h2>Properties of Tinkering Materials - wide walls</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a5-1" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 5.1</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Group Assignment: concept design</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a1-2" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 1.2</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Tinkering Spaces - reflect back</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a4-1" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 4.1</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Overview on Design Methods</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a5-2" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 5.2</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Group Assignment: physical MVP, first iteration</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a4-2" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 4.2</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Tinkering as Design Method in your Field</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a5-3" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 5.3</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Group Assignment - complete design, digital poster</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a5-4" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 5.4</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Group Project - evaluation</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+        <article id="a0-2" class="assignment placeholder">
+            <div class="assignment-header">
+                <span class="assignment-id">Assignment 0.2</span>
+                <span class="status-tag status-coming">Coming Up</span>
+            </div>
+            <h2>Portfolio - submission</h2>
+            <div class="placeholder-box"></div>
+        </article>
+
+
+    </div> 
+    <script src="script.js"></script>
+</body>
+</html>

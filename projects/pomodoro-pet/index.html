@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Pet | Ewoud Janus</title>
+    
+    <link rel="stylesheet" href="../../styles.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=VT323&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- PROJECT SPECIFIC STYLES --- */
+        
+        /* 1. Tech Stack Tags */
+        .tech-stack {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .tech-tag {
+            background: rgba(45, 212, 191, 0.1);
+            border: 1px solid rgba(45, 212, 191, 0.3);
+            color: #2dd4bf;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+
+        /* 2. Hero Section Layout */
+        .project-hero {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 50px;
+            align-items: center;
+            margin-bottom: 80px;
+        }
+        
+        .hero-img-container {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .hero-img {
+            width: 100%;
+            display: block;
+            transition: transform 0.3s;
+        }
+        .hero-img:hover { transform: scale(1.02); }
+
+        /* 3. The "Pixel Vibe" Section */
+        .pixel-section {
+            background: rgba(20, 20, 25, 0.8);
+            border: 2px solid #2dd4bf;
+            border-radius: 12px;
+            padding: 40px;
+            font-family: 'VT323', monospace; /* Pixel Font */
+            color: #e0e0e0;
+            margin: 60px 0;
+            position: relative;
+            box-shadow: 0 0 20px rgba(45, 212, 191, 0.1);
+        }
+        
+        .pixel-section h2 {
+            font-family: 'VT323', monospace;
+            font-size: 2.5rem;
+            color: #a78bfa;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .pixel-section p {
+            font-size: 1.4rem; /* Pixel fonts need to be larger */
+            line-height: 1.4;
+        }
+
+        /* 4. Feature Grid */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 30px;
+            border-radius: 16px;
+        }
+        
+        .feature-card h3 { color: #a78bfa; margin-bottom: 15px; }
+        .feature-card strong { color: #fff; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .project-hero { grid-template-columns: 1fr; }
+            .hero-img-container { order: -1; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo"><a href="../../index.html">EJ.</a></div>
+        <div class="links">
+            <a href="../../projects.html">Back to Projects</a>
+        </div>
+    </nav>
+
+    <div class="container" style="margin-top: 120px;">
+        
+        <span style="color: #9ca3af; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem;">Mobile Application</span>
+        <h1 style="font-size: 3.5rem; margin: 10px 0 20px;">Pomodoro Pet</h1>
+        
+        <div class="tech-stack">
+            <span class="tech-tag">Flutter / Dart</span>
+            <span class="tech-tag">Hive DB</span>
+            <span class="tech-tag">Provider State</span>
+            <span class="tech-tag">Android / iOS</span>
+        </div>
+
+        <div class="project-hero">
+            <div class="hero-content">
+                <p class="lead" style="font-size: 1.2rem; line-height: 1.7;">
+                    A gamified productivity tool that replaces internal willpower with <strong>external empathy</strong>. By linking real-world focus to the well-being of a digital pet, Pomodoro Pet turns the negative feedback loop of procrastination into a nurturing gameplay mechanic.
+                </p>
+                <p style="color: #9ca3af; margin-top: 20px;">
+                    Built to explore how <strong>emotional attachment</strong> can drive behavioral change in software design.
+                </p>
+            </div>
+            <div class="hero-img-container">
+                <img src="../../assets/images/pomodoro-thumb.jpg" alt="Pomodoro Pet Interface" class="hero-img">
+            </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 60px 0;">
+
+        <div class="pixel-section">
+            <h2>> THE_CONCEPT_</h2>
+            <p>
+                [SYSTEM LOG]: Procrastination is a failure of emotional regulation, not time management.<br><br>
+                User "Willpower" = LOW.<br>
+                User "Empathy" = HIGH.<br><br>
+                <strong>SOLUTION:</strong> If you don't work, the cat gets sad. The user studies not for themselves, but to keep "Kato" fed and happy.
+            </p>
+        </div>
+
+        <h2 style="margin-bottom: 30px;">Key Features & Engineering</h2>
+        <div class="features">
+            
+            <div class="feature-card">
+                <h3>The "Watchdog" Engine</h3>
+                <p>
+                    Unlike standard timers, this app actively monitors user behavior. Using <strong>Android UsageStatsManager</strong>, the app detects if a "Blacklisted" app (e.g., TikTok) is opened during a focus session.
+                </p>
+                <br>
+                <p style="font-size: 0.9rem; color: #9ca3af;">
+                    <strong>Result:</strong> Immediate punishment mechanic (Pet HP loss) creating a high-stakes environment for focus.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3>State Management (Provider)</h3>
+                <p>
+                    The app handles complex, interconnected state logic. A background timer service must sync with the <strong>Pet Provider</strong> (Hunger/Happiness stats) and the <strong>Economy Provider</strong> (Gold/Inventory) in real-time, even when the app is minimized.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <h3>The Gameplay Loop</h3>
+                <ul>
+                    <li style="margin-bottom: 10px;"><strong>Study:</strong> 25m Focus = 50 Gold + XP.</li>
+                    <li style="margin-bottom: 10px;"><strong>Earn:</strong> Economy balanced to require consistent work to afford "High Tier" food.</li>
+                    <li><strong>Grow:</strong> Leveling up unlocks new 16-bit skins, driving long-term retention.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="margin-top: 80px; text-align: center;">
+            <h2 style="margin-bottom: 40px;">Interface Design</h2>
+            <div style="max-width: 400px; margin: 0 auto; border-radius: 20px; overflow: hidden; border: 4px solid #111; box-shadow: 0 0 40px rgba(167, 139, 250, 0.2);">
+                <img src="../../assets/images/pomodoro-gameplay.jpg" alt="Gameplay UI" style="width: 100%; display: block;">
+            </div>
+            <p style="margin-top: 20px; color: #9ca3af; font-size: 0.9rem;">
+                Custom 8-bit assets and UI components built in Flutter.
+            </p>
+        </div>
+
+    </div>
+    
+    <div style="height: 100px;"></div>
+</body>
+</html>
