@@ -30,7 +30,7 @@
     if (aboutCanvas) initAboutEffect(aboutCanvas);
     
     // Initialize the glitch effect
-    initProfileGlitch();
+    initHolographicTilt(); // <-- New
 });
 
 // --- EFFECT 1: HERO (Constellations) ---
@@ -206,37 +206,37 @@ function initAboutEffect(canvas) {
     animate();
 }
 
-// --- EFFECT 4: SCROLL DECONSTRUCTION (EXTREME VERSION) ---
-function initProfileGlitch() {
+// --- EFFECT 4: HOLOGRAPHIC TILT (Interactive) ---
+function initHolographicTilt() {
     const wrapper = document.getElementById('glitch-wrapper');
     if (!wrapper) return;
 
+    const mainImg = wrapper.querySelector('.main-img');
     const cyan = wrapper.querySelector('.cyan');
     const magenta = wrapper.querySelector('.magenta');
-    const mainImg = wrapper.querySelector('.main-img');
 
-    window.addEventListener('scroll', () => {
-        // Stop calculating if we are way down the page
-        if (window.scrollY > 1000) return;
+    const maxTilt = 25; // Increased for exaggeration
 
-        const scroll = window.scrollY;
-
-        // 1. Main Image "Stickiness" (Parallax)
-        // Moves down at 40% of scroll speed, making it look heavy
-        mainImg.style.transform = `translateY(${scroll * 0.4}px)`;
-
-        // 2. Cyan Layer (Explodes Up-Left)
-        // MOVES FAST (-1.5x speed) and ROTATES left
-        cyan.style.transform = `translate(${scroll * -1.2}px, ${scroll * -0.5}px) rotate(${scroll * -0.05}deg)`;
-
-        // 3. Magenta Layer (Explodes Down-Right)
-        // MOVES FAST (1.2x speed) and ROTATES right
-        magenta.style.transform = `translate(${scroll * 1.2}px, ${scroll * 0.5}px) rotate(${scroll * 0.05}deg)`;
+    // Tracking the window instead of just the wrapper
+    window.addEventListener('mousemove', (e) => {
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
         
-        // 4. Fade Out
-        // Stays visible for longer (up to 600px of scrolling)
-        const fade = Math.max(0, 1 - scroll / 600);
-        cyan.style.opacity = 0.6 * fade;
-        magenta.style.opacity = 0.6 * fade;
+        // Calculate distance from center (-1 to 1)
+        const x = (e.clientX - centerX) / centerX;
+        const y = (e.clientY - centerY) / centerY;
+
+        const rotateY = x * maxTilt;
+        const rotateX = -y * maxTilt;
+
+        // Update the main image with a deeper Z-translation
+        mainImg.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(50px)`;
+
+        // Push the color layers further back for a more "exploded" view
+        cyan.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(-40px) translateX(${-x * 60}px) translateY(${-y * 60}px)`;
+        magenta.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(-20px) translateX(${-x * 30}px) translateY(${-y * 30}px)`;
+        
+        // Add a dynamic glare/brightness based on mouse position
+        mainImg.style.filter = `brightness(${1 + Math.abs(x) * 0.3}) contrast(1.1)`;
     });
 }
