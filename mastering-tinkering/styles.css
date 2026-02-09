@@ -7,35 +7,134 @@
     padding-bottom: 20px;
 }
 
-/* The Quick-Jump Menu */
+/* =========================================
+   FLOATING SIDE NAVIGATION (The Rail)
+   ========================================= */
 .toc {
-    background: #111;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 40px;
+    /* 1. Fix to the Right Side */
+    position: fixed;
+    right: 30px; 
+    top: 50%;
+    transform: translateY(-50%); /* Centers it vertically */
+    z-index: 100;
+    
+    /* 2. Vertical Layout */
     display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 15px; /* Space between links */
+    align-items: flex-end; /* Aligns text to the right */
+    
+    /* 3. Glassy Pill Style */
+    background: rgba(10, 10, 10, 0.6); /* More transparent */
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px 15px;
+    
+    transition: all 0.3s ease;
 }
 
+/* Hide the "Jump to:" text on the side to keep it clean */
+.toc span {
+    display: none; 
+}
+
+/* Link Styles */
 .toc a {
-    color: #888;
+    color: #666;
     text-decoration: none;
-    font-size: 0.9rem;
-    transition: color 0.2s;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    padding-right: 15px; /* Space for the dot */
+}
+
+/* The "Active/Hover" Dot indicator */
+.toc a::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background-color: #333; /* Inactive dot color */
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+/* HOVER EFFECTS */
+.toc:hover {
+    background: rgba(10, 10, 10, 0.9); /* Darkens when you mouse over */
+    border-color: rgba(167, 139, 250, 0.3);
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
 }
 
 .toc a:hover {
-    color: var(--accent-color);
+    color: #fff; /* White text on hover */
+    transform: translateX(-5px); /* Slide text slightly left */
 }
 
+.toc a:hover::after {
+    background-color: #a78bfa; /* Dot turns purple */
+    width: 8px;
+    height: 8px;
+    box-shadow: 0 0 10px #a78bfa; /* Glowing dot */
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+   ========================================= */
+/* On screens smaller than 1200px, move it back to the top */
+@media (max-width: 1200px) {
+    .toc {
+        position: static; /* Put back in normal flow */
+        transform: none;
+        flex-direction: row; /* Horizontal again */
+        width: 100%;
+        justify-content: center;
+        background: #111;
+        margin-bottom: 40px;
+        padding: 15px;
+        align-items: center;
+        border-radius: 8px;
+    }
+
+    .toc span {
+        display: block; /* Show "Jump to:" again */
+        color: #555;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        margin-right: 10px;
+    }
+
+    .toc a {
+        padding-right: 0;
+    }
+
+    .toc a::after {
+        display: none; /* No dots on mobile */
+    }
+    
+    .toc:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .toc a:hover {
+        transform: none;
+    }
+}
 /* The Assignment Block */
 article.assignment {
     margin-bottom: 80px; /* Space between assignments */
     padding-top: 20px;
     border-top: 1px dashed #333;
-}
 
+    /* FIX: Adds a buffer so the Fixed Nav doesn't cover the title */
+    scroll-margin-top: 100px; 
+}
 .assignment-meta {
     color: var(--accent-color);
     font-family: monospace;
