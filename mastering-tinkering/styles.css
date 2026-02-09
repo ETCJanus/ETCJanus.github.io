@@ -1,0 +1,213 @@
+/* =========================================
+   1. JOURNAL LAYOUT & NAVIGATION
+   ========================================= */
+.journal-header {
+    margin-bottom: 60px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 20px;
+}
+
+/* The Quick-Jump Menu */
+.toc {
+    background: #111;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.toc a {
+    color: #888;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.2s;
+}
+
+.toc a:hover {
+    color: var(--accent-color);
+}
+
+/* The Assignment Block */
+article.assignment {
+    margin-bottom: 80px; /* Space between assignments */
+    padding-top: 20px;
+    border-top: 1px dashed #333;
+}
+
+.assignment-meta {
+    color: var(--accent-color);
+    font-family: monospace;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* =========================================
+   2. GALLERY & TINKER CARDS
+   ========================================= */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.tinker-card {
+    background: rgba(255, 255, 255, 0.03); /* Subtle glass background */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.tinker-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(167, 139, 250, 0.5); /* Lavender glow border */
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* Force all images to be exactly the same size */
+.tinker-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.card-content strong {
+    color: #a78bfa;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+.card-content .caption {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    line-height: 1.5;
+}
+
+/* =========================================
+   3. DESIGNER CAROUSEL (Fixed)
+   ========================================= */
+.carousel-container {
+    position: relative;
+    max-width: 800px;
+    margin: 40px auto;
+
+    /* Glass Container */
+    background: rgba(255, 255, 255, 0.03); 
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    height: 550px; /* Increased slightly to fit caption below image */
+    
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.carousel-slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    
+    /* NEW: Flex Column ensures Caption sits UNDER image */
+    flex-direction: column; 
+    
+    animation: fadeEffect 0.5s;
+}
+
+.carousel-slide.active {
+    display: flex; 
+}
+
+/* --- IMAGE STYLES --- */
+
+/* 1. The Image Area */
+.carousel-slide img {
+    width: 100%;
+    /* Flex-grow 1 makes image take all space NOT used by caption */
+    flex-grow: 1; 
+    object-fit: cover;
+    
+    /* Reset margins so it touches the top/sides */
+    margin: 0;
+    display: block;
+    
+    /* Ensure image doesn't overflow its flexible area */
+    min-height: 0; 
+}
+
+/* 2. The Studio/Sketch Style (Lighter Gradient) */
+.carousel-slide img.studio-bg {
+    object-fit: contain; /* Shows whole sketch */
+    padding: 30px;
+    
+    /* NEW LIGHTER GRADIENT (The Lightbox Effect) */
+    /* Starts Pure White (for visibility) -> Fades to transparent */
+    background: radial-gradient(circle at center, 
+        rgba(255, 255, 255, 1.0) 0%, 
+        rgba(255, 255, 255, 0.8) 40%, 
+        rgba(255, 255, 255, 0.1) 100%
+    );
+}
+
+/* --- CAPTION STYLES (Under the Block) --- */
+.carousel-caption-bar {
+    /* REMOVED: position: absolute; */
+    position: relative; 
+    width: 100%;
+    padding: 15px 20px;
+    
+    /* Solid background to separate from image */
+    background: #0f0f0f; 
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    
+    color: #e5e5e5;
+    font-family: 'Space Grotesk', sans-serif;
+    
+    /* Ensures caption doesn't shrink if text is long */
+    flex-shrink: 0; 
+}
+
+.carousel-caption-bar strong {
+    color: #a78bfa;
+    margin-right: 8px;
+}
+
+/* --- BUTTON STYLES --- */
+.prev, .next {
+    cursor: pointer;
+    position: absolute;
+    /* Center vertically based on the CONTAINER, not just the image */
+    top: 45%; 
+    transform: translateY(-50%);
+    padding: 16px;
+    color: rgba(255,255,255,0.4); /* Subtle until hover */
+    font-weight: bold;
+    font-size: 24px;
+    border: none;
+    background: transparent;
+    z-index: 20;
+    transition: 0.2s;
+}
+
+.next { right: 5px; }
+.prev { left: 5px; }
+
+.prev:hover, .next:hover {
+    color: #a78bfa;
+    transform: translateY(-50%) scale(1.2);
+}
