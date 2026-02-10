@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture Log | Mastering Tinkering</title>
+    
+    <link rel="stylesheet" href="../../styles.css"> 
+    <link rel="stylesheet" href="styles.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <nav>
+        <div class="nav-left">
+            <div class="logo"><a href="../../index.html">EJ.</a></div>
+            
+            <div class="nav-icons">
+                <a href="mailto:etcjanus@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
+                <a href="https://www.linkedin.com/in/ewoudjanus/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                <a href="https://www.instagram.com/etc_modeling" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="https://github.com/ETCJanus" target="_blank"><i class="fab fa-github"></i></a>
+            </div>
+        </div>
+
+        <div class="links">
+            <a href="../../projects.html">Projects</a>
+            <a href="../../about.html">About</a>
+            <a href="../../index.html#contact">Contact</a>
+        </div>
+    </nav>
+
+    <canvas id="tinker-canvas" class="bg-canvas"></canvas>
+
+    <div class="container">
+        
+        <header class="journal-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h1>Lecture Log</h1>
+                    <p>In-class exercises and more.</p>
+                </div>
+                
+                <a href="index.html" class="mode-switch-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Assignments
+                </a>
+            </div>
+        </header>
+
+        <div class="toc">
+            <span>Jump to:</span>
+        </div>
+
+        <article id="lec-1" class="assignment">
+            <div class="assignment-header">
+                <span class="assignment-id">Lecture 1</span>
+                <span class="status-tag status-completed">Completed</span>
+            </div>
+            <h2>Introduction: Defining the Tinkering Playground</h2>
+            
+            <p>
+                During our first session, we started by surfacing our own real-world tinkering experiences through a quick post-it braindump. The goal was to identify moments where we learned through open-ended exploration rather than strict instruction.
+            </p>
+
+            <h3>1. The Braindump</h3>
+            <p>I listed three recent experiences where I found myself deep in the tinkering mindset:</p>
+            <ul>
+                <li><strong>Chicken wire art:</strong> Bending physical materials into organic shapes.</li>
+                <li><strong>Piano visualizer:</strong> Bridging audio inputs with generative visuals.</li>
+                <li><strong>Hospital @ Home toolkit:</strong> Iterating on physical product design for patients.</li>
+            </ul>
+
+            <div class="tinker-card" style="max-width: 500px; margin: 30px 0;">
+                <img src="../../assets/images/postits.jpg" alt="Post-it Brainstorm" style="height: auto; width: 100%;">
+                <div class="card-content">
+                    <div class="caption">Mapping out past tinkering experiences during Lecture 1.</div>
+                </div>
+            </div>
+
+            <h3>2. Deep Dive: Chicken-Wire Art</h3>
+            <p>
+                Next, we had to pick one specific experience and deconstruct it using the course's framework: Goal, Seed, and Toolbox. I chose my chicken-wire art project because it perfectly represents bridging the physical and digital worlds.
+            </p>
+            
+            <div class="glass-card" style="padding: 20px; margin: 20px 0; border-radius: 12px; font-size: 0.95rem;">
+                <p><strong><i class="fas fa-bullseye" style="color: #2dd4bf; margin-right: 8px;"></i> Goal:</strong> Use a completely different physical material to create art, combined with digital code.</p>
+                <p><strong><i class="fas fa-seedling" style="color: #a78bfa; margin-right: 8px;"></i> Seed:</strong> My mom sent me a video of an amazing art installation someone else made, which sparked the initial inspiration.</p>
+                <p><strong><i class="fas fa-toolbox" style="color: #fbbf24; margin-right: 8px;"></i> Toolbox:</strong> Python, a beamer (projector), wire cutters, and chicken wire.</p>
+            </div>
+
+            <p>
+                This exercise helped me realize that a "tinkering playground" isn't just about the tools you have; it is about the initial spark (the seed) that pushes you to combine those tools in novel ways.
+            </p>
+        </article>
+
+        <article id="lec-2" class="assignment">
+            <div class="assignment-header">
+                <span class="assignment-id">Lecture 2</span>
+                <span class="status-tag status-completed">Completed</span>
+            </div>
+            <h2>Material Affordances & Physical Computing</h2>
+            
+            <p>
+                In the second lecture, we shifted our focus to physical computing and how the inherent properties (affordances) of different materials dictate how we tinker with them.
+            </p>
+
+            <h3>1. Micro:bit Deconstruction</h3>
+            <p>
+                We sketched a Micro:bit to highlight the specific hardware features that make it such a powerful tool for rapid prototyping. Its exposed pins, built-in LED matrix, and accessible sensors lower the barrier to entry while allowing for complex logical outputs.
+            </p>
+
+            <div class="tinker-card" style="max-width: 500px; margin: 30px 0;">
+                <img src="../../assets/images/microbit.jpg" alt="Microbit Sketch" style="height: auto; width: 100%; object-fit: contain; padding: 10px; background: #fff;">
+                <div class="card-content">
+                    <div class="caption">Sketch highlighting the tinkerable affordances of a Micro:bit.</div>
+                </div>
+            </div>
+
+            <h3>2. Toolkit Affordance Analysis</h3>
+            <p>
+                We evaluated three different maker kits—Totem Maker, Minecraft Maker, and LittleBits—scoring them across various design affordances. Here are my findings:
+            </p>
+
+            <div style="overflow-x: auto; margin-top: 20px;">
+                <table class="tinker-table">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Self-guiding</th>
+                            <th>Preciousness</th>
+                            <th>Skills-needed</th>
+                            <th>Interoperable</th>
+                            <th>Novelty</th>
+                            <th>Threshold / Ceiling</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Totem Maker Kit</strong></td>
+                            <td>Pretty self-explanatory, but some mistakes were easily made.</td>
+                            <td>Made of metal, feeling precious/expensive. Not cheap, but offers abundant parts.</td>
+                            <td>Barely any; just requires understanding how to connect stuff. (++)</td>
+                            <td>Its strongest suit. It allows you to connect easily with other tinkering tools.</td>
+                            <td>Not highly novel (mostly connector pieces), but the included saw is a nice touch.</td>
+                            <td>Low threshold to step in, but the ceiling isn't very advanced. Got boring quickly.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Minecraft Maker Kit</strong></td>
+                            <td>Confusing. Felt like it was missing parts; could not do much with it.</td>
+                            <td>Materials felt expensive and fragile—not made to be messed around with heavily.</td>
+                            <td>Required prior understanding of coding and technology to use effectively.</td>
+                            <td>Could be linked to a Raspberry Pi, which is nice, but very limited beyond that.</td>
+                            <td>A bit outdated, though the core idea of adapting Minecraft for learning is novel.</td>
+                            <td>The worst part of the kit. Decently high threshold, and you feel played out after a day.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LittleBits</strong></td>
+                            <td>Excellent self-guiding. Just playing around with it made us figure it out instantly.</td>
+                            <td>Materials are expensive and not easily swappable. Low score in this regard.</td>
+                            <td>Helps if you understand music, but you can successfully use it without prior skills.</td>
+                            <td>Potentially USB compatible, but unclear. Quite limited interoperability overall.</td>
+                            <td>Using sound as a primary tinkering medium is highly novel.</td>
+                            <td>Low threshold. We played outside the box, and the ceiling for sound production is quite high.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            <h3 style="margin-top: 40px;">3. Hands-on with the Kits</h3>
+            <p>
+                A look at the physical prototyping process and our experiments with each of the toolkits:
+            </p>
+
+            <div class="gallery-grid">
+                
+                <div class="tinker-card">
+                    <img src="../../assets/images/totem.jpg" alt="Totem Maker Kit">
+                    <div class="card-content">
+                        <strong>Totem Maker</strong>
+                        <div class="caption">
+                            Building structural components. The metal parts felt premium, but the creative ceiling was reached quickly.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tinker-card">
+                    <img src="../../assets/images/minecraft.jpg" alt="Minecraft Maker Kit">
+                    <div class="card-content">
+                        <strong>Minecraft Maker</strong>
+                        <div class="caption">
+                            Attempting to bridge physical inputs with the game world. Great concept, but felt fragile and confusing.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tinker-card">
+                    <img src="../../assets/images/littlebits.jpg" alt="LittleBits Kit">
+                    <div class="card-content">
+                        <strong>LittleBits</strong>
+                        <div class="caption">
+                            Experimenting with modular, magnetic sound circuits. The most novel and self-guiding kit of the three.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </article>                
+                
+            </div>
+
+        </article>
+    </div> 
+    <script src="script.js"></script>
+</body>
+</html>

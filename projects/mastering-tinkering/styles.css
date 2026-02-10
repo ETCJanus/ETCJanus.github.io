@@ -379,3 +379,106 @@ article.assignment {
     color: #666; 
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* =========================================
+   4. MODE SWITCH BUTTON (The "Portal")
+   ========================================= */
+.mode-switch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: rgba(45, 212, 191, 0.1); /* Teal Tint */
+    border: 1px solid #2dd4bf;
+    border-radius: 50px;
+    color: #2dd4bf;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.mode-switch-btn:hover {
+    background: #2dd4bf;
+    color: #050507; /* Dark text on hover */
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.4);
+    transform: translateY(-2px);
+}
+
+/* THE PULSE ANIMATION */
+.pulse-animation {
+    animation: glowPulse 3s infinite;
+}
+
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(45, 212, 191, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(45, 212, 191, 0);
+    }
+}
+
+/* Mobile Tweak: Stack them nicely */
+@media (max-width: 768px) {
+    .journal-header div {
+        width: 100%;
+    }
+    .mode-switch-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* =========================================
+   5. TINKER TABLE STYLES
+   ========================================= */
+.tinker-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    overflow: hidden; /* Keeps rounded corners */
+}
+
+.tinker-table thead tr {
+    background: rgba(45, 212, 191, 0.1);
+    color: #2dd4bf;
+    text-align: left;
+    border-bottom: 2px solid rgba(45, 212, 191, 0.3);
+}
+
+.tinker-table th, 
+.tinker-table td {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: top;
+    line-height: 1.5;
+}
+
+.tinker-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tinker-table td strong {
+    color: #a78bfa; /* Purple highlight for the Kit names */
+    font-size: 1rem;
+}
+
+/* Ensure the table scrolls horizontally on small phones */
+@media (max-width: 768px) {
+    .tinker-table th, .tinker-table td {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+}

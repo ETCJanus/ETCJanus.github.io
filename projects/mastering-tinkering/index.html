@@ -38,8 +38,16 @@
     <div class="container">
         
         <header class="journal-header">
-            <h1>Mastering Tinkering</h1>
-            <p>A log of the projects I do for the course Mastering Tinkering</p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h1>Mastering Tinkering</h1>
+                    <p>A log of the projects I do for the course Mastering Tinkering</p>
+                </div>
+
+                <a href="lectures.html" class="mode-switch-btn pulse-animation">
+                    View Lecture Log <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
         </header>
 
         <div class="toc">
@@ -145,22 +153,109 @@
             </div>
         </article>
 
-        <article id="a2-2" class="assignment placeholder">
+        <article id="a2-2" class="assignment">
             <div class="assignment-header">
                 <span class="assignment-id">Assignment 2.2</span>
-                <span class="status-tag status-completed">Next Up</span>
+                <span class="status-tag status-completed">Completed</span>
             </div>
             <h2>Design a building block - fabricate</h2>
-            <div class="placeholder-box"></div>
+            <p>
+                To bring my "screw shapes" concept into the physical world, I created a lo-fi prototype. I started by cutting basic shapes (cubes and blocks) out of wood. I then drilled holes into specific faces and attached standard screws using a glue gun. 
+            </p>
+            <p>
+                <strong>The Tinkering Process:</strong> During assembly, I quickly realized that the spacing and depth of the screws were crucial for stability. I spent a good amount of time just playing around with different hole placements, testing how the pieces slotted together before committing to the final glue-up. This messy, hands-on iteration helped me discover the physical constraints of the material, something that looked perfect in my digital sketches didn't always friction-fit well in reality.
+            </p>
+            <p>
+                Finally, to add an extra layer of "tinkerability," I finished the blocks with a coat of black chalk paint. This allows the user to draw, write, or erase labels on the blocks themselves, rapidly changing their meaning or function on the fly during a brainstorming session.
+            </p>
+
+            <div class="gallery-grid" style="margin-top: 30px;">
+                
+                <div class="tinker-card">
+                    <img src="../../assets/images/blocks-before.jpg" alt="Wooden blocks with screws before painting">
+                    <div class="card-content">
+                        <strong>1. Raw Assembly</strong>
+                        <div class="caption">Wood blocks with screws attached via hot glue.</div>
+                    </div>
+                </div>
+
+                <div class="tinker-card">
+                    <img src="../../assets/images/blocks-assembled.jpg" alt="Blocks interlocked together">
+                    <div class="card-content">
+                        <strong>2. Testing the Fit</strong>
+                        <div class="caption">Playing around with the locking mechanism to test structural stability.</div>
+                    </div>
+                </div>
+
+                <div class="tinker-card">
+                    <img src="../../assets/images/blocks-after.jpg" alt="Blocks painted with chalk paint">
+                    <div class="card-content">
+                        <strong>3. Chalk Paint Finish</strong>
+                        <div class="caption">Coated in chalk paint so the faces can be drawn on and customized.</div>
+                    </div>
+                </div>
+
+            </div>
         </article>
 
-        <article id="a3-1" class="assignment placeholder">
+        <article id="a3-1" class="assignment">
             <div class="assignment-header">
                 <span class="assignment-id">Assignment 3.1</span>
-                <span class="status-tag status-coming">Coming Up</span>
+                <span class="status-tag status-completed">Completed</span>
             </div>
             <h2>Properties of Tinkering Materials</h2>
-            <div class="placeholder-box"></div>
+            <p>
+                Based on our discussions during the course, we evaluated several existing tinkering sets to identify which material properties score highest and lowest across different affordances. 
+            </p>
+
+            <div style="overflow-x: auto; margin-top: 30px; margin-bottom: 30px;">
+                <table class="tinker-table">
+                    <thead>
+                        <tr>
+                            <th>Material</th>
+                            <th>Self-guiding</th>
+                            <th>Preciousness</th>
+                            <th>Skills-needed</th>
+                            <th>Interoperable</th>
+                            <th>Novelty</th>
+                            <th>Threshold / Ceiling</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Totem Maker Kit</strong></td>
+                            <td>Pretty self-explanatory, but some mistakes were easily made.</td>
+                            <td>Made of metal, feeling precious/expensive. Not cheap, but offers abundant parts.</td>
+                            <td>Barely any; just requires understanding how to connect stuff. (++)</td>
+                            <td>Its strongest suit. It allows you to connect easily with other tinkering tools.</td>
+                            <td>Not highly novel (mostly connector pieces), but the included saw is a nice touch.</td>
+                            <td>Low threshold to step in, but the ceiling isn't very advanced. Got boring quickly.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Minecraft Maker Kit</strong></td>
+                            <td>Confusing. Felt like it was missing parts; could not do much with it.</td>
+                            <td>Materials felt expensive and fragile—not made to be messed around with heavily.</td>
+                            <td>Required prior understanding of coding and technology to use effectively.</td>
+                            <td>Could be linked to a Raspberry Pi, which is nice, but very limited beyond that.</td>
+                            <td>A bit outdated, though the core idea of adapting Minecraft for learning is novel.</td>
+                            <td>The worst part of the kit. Decently high threshold, and you feel played out after a day.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LittleBits</strong></td>
+                            <td>Excellent self-guiding. Just playing around with it made us figure it out instantly.</td>
+                            <td>Materials are expensive and not easily swappable. Low score in this regard.</td>
+                            <td>Helps if you understand music, but you can successfully use it without prior skills.</td>
+                            <td>Potentially USB compatible, but unclear. Quite limited interoperability overall.</td>
+                            <td>Using sound as a primary tinkering medium is highly novel.</td>
+                            <td>Low threshold. We played outside the box, and the ceiling for sound production is quite high.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <p style="color: #9ca3af; font-style: italic; border-left: 2px solid #2dd4bf; padding-left: 15px;">
+                For more context, hands-on photos, and details of our experiments with these specific kits, please see my <a href="lectures.html#lec-2" style="color: #a78bfa; text-decoration: underline; font-weight: 500;">Lecture 2 Log</a>.
+            </p>
         </article>
 
         <article id="a2-3" class="assignment placeholder">
