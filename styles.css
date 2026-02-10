@@ -133,6 +133,7 @@ canvas {
     opacity: 0;
     transform: translateY(30px);
     transition: opacity 0.8s ease, transform 0.8s ease;
+    pointer-events: auto;
 }
 
 .step.visible {
@@ -598,3 +599,160 @@ canvas {
     80% { transform: translate(2px, -2px); }
     100% { transform: translate(0); }
 }   
+
+
+/* --- UPGRADED CONTACT TERMINAL --- */
+
+.contact-step {
+    padding-bottom: 80px;
+    pointer-events: auto; /* ENSURES BUTTONS ARE CLICKABLE */
+}
+
+.contact-terminal {
+    max-width: 650px;
+    width: 90%;
+    text-align: center;
+    border: 1px solid rgba(45, 212, 191, 0.2);
+    box-shadow: 0 0 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(45, 212, 191, 0.05);
+    background: linear-gradient(180deg, rgba(20,20,25,0.9) 0%, rgba(10,10,12,0.95) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Terminal Header */
+.terminal-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.terminal-id {
+    font-family: monospace;
+    color: #2dd4bf;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+}
+
+.status-badge {
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #00ff88;
+    background: rgba(0, 255, 136, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.blink-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: #00ff88;
+    border-radius: 50%;
+    margin-right: 5px;
+    animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+    0% { opacity: 1; box-shadow: 0 0 5px #00ff88; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; box-shadow: 0 0 5px #00ff88; }
+}
+
+/* Cyber Button (CV) */
+.cyber-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(45, 212, 191, 0.05);
+    border: 1px solid #2dd4bf;
+    color: #2dd4bf;
+    padding: 14px 30px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-radius: 4px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.cyber-button:hover {
+    background: #2dd4bf;
+    color: #000;
+    box-shadow: 0 0 30px rgba(45, 212, 191, 0.4);
+    transform: translateY(-3px);
+}
+
+/* Social Grid */
+.social-grid {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin-top: 35px;
+}
+
+.social-link {
+    width: 55px;
+    height: 55px;
+    border-radius: 12px; /* Squircle looks more tech */
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: #9ca3af;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+}
+
+/* Brand Colors on Hover */
+.social-link.email:hover {
+    color: #fbbf24; /* Amber */
+    border-color: #fbbf24;
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    transform: translateY(-5px);
+}
+
+.social-link.linkedin:hover {
+    color: #0077b5; /* LinkedIn Blue */
+    border-color: #0077b5;
+    box-shadow: 0 0 20px rgba(0, 119, 181, 0.3);
+    transform: translateY(-5px);
+}
+
+.social-link.instagram:hover {
+    color: #d62976; /* Insta Pink */
+    border-color: #d62976;
+    box-shadow: 0 0 20px rgba(214, 41, 118, 0.3);
+    transform: translateY(-5px);
+}
+
+.social-link.github:hover {
+    color: #ffffff; /* White */
+    border-color: #ffffff;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    transform: translateY(-5px);
+}
+
+/* Terminal Footer */
+.terminal-footer {
+    margin-top: 40px;
+    padding-top: 15px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    font-family: monospace;
+    font-size: 0.9rem;
+    text-align: left;
+    padding-left: 10px;
+}
+
+.prompt { color: #2dd4bf; margin-right: 10px; }
+.typing-cursor { color: #9ca3af; border-right: 2px solid #2dd4bf; animation: blink-cursor 1s steps(1) infinite; }
+
+@keyframes blink-cursor { 50% { border-color: transparent; } }
