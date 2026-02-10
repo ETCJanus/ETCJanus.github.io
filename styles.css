@@ -756,3 +756,45 @@ canvas {
 .typing-cursor { color: #9ca3af; border-right: 2px solid #2dd4bf; animation: blink-cursor 1s steps(1) infinite; }
 
 @keyframes blink-cursor { 50% { border-color: transparent; } }
+
+/* --- UPDATED NAVIGATION STYLES --- */
+
+/* 1. Wrapper for Logo + Icons */
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* 2. The Icons Container */
+.nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Space between individual icons */
+    padding-left: 20px;
+    border-left: 1px solid rgba(255, 255, 255, 0.15); /* The vertical divider line */
+    height: 20px; /* Height of the divider */
+}
+
+/* 3. The Icons Themselves */
+.nav-icons a {
+    font-size: 1rem; /* Smaller than the big footer icons */
+    color: var(--text-muted); /* Start grey/muted */
+    transition: all 0.2s ease;
+    opacity: 0.8;
+}
+
+/* 4. Hover Effects (Glow) */
+.nav-icons a:hover {
+    color: #2dd4bf; /* Teal Accent */
+    transform: translateY(-2px); /* Slight float up */
+    opacity: 1;
+    text-shadow: 0 0 10px rgba(45, 212, 191, 0.4);
+}
+
+/* 5. Mobile Adjustment (Hide icons if screen is too small) */
+@media (max-width: 600px) {
+    .nav-icons {
+        display: none; /* Hide top icons on mobile to save space */
+    }
+}
