@@ -73,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initCyberProfile();
     initFeaturedProjects();
     initContactModal();
+    initImageViewer();
 });
 
 // --- EFFECT 1: HERO (Constellations) ---
@@ -490,6 +491,65 @@ function initContactModal() {
     });
 
     // Escape key closes modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+}
+
+// --- FULLSCREEN IMAGE VIEWER ---
+function initImageViewer() {
+    // 1. Create the modal elements dynamically
+    const modal = document.createElement('div');
+    modal.className = 'image-modal-overlay hidden';
+    
+    const modalImg = document.createElement('img');
+    modalImg.className = 'image-modal-content';
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'image-modal-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.setAttribute('aria-label', 'Close fullscreen image');
+    
+    modal.appendChild(modalImg);
+    modal.appendChild(closeBtn);
+    document.body.appendChild(modal);
+
+    // 2. Select images we want to make zoomable
+    // Targets images inside .container, but ignores project thumbnails and the profile pic
+    const images = document.querySelectorAll('.container img:not(.project-thumb):not(#profile-static)');
+
+    // 3. Add click events to open the modal
+    images.forEach(img => {
+        img.style.cursor = 'zoom-in'; // Changes the mouse to a magnifying glass
+        img.title = 'Click to expand';
+        
+        img.addEventListener('click', () => {
+            modalImg.src = img.src; // Copy the clicked image source to the modal
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        });
+    });
+
+    // 4. Logic to close the modal
+    const closeModal = () => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = ''; // Restore background scrolling
+        
+        // Wait for fade-out animation before clearing source
+        setTimeout(() => { modalImg.src = ''; }, 300); 
+    };
+
+    // Close on X button click
+    closeBtn.addEventListener('click', closeModal);
+    
+    // Close when clicking the dark background overlay
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal(); 
+    });
+    
+    // Close on Escape key press
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
             closeModal();
