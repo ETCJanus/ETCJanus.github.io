@@ -24,7 +24,7 @@
 
         <div class="links">
             <a href="projects.html" class="highlight">Projects</a> <a href="about.html">About</a>
-            <a href="index.html#contact">Contact</a>
+            <a href="#" class="contact-trigger">Contact</a>
         </div>
     </nav>
 <canvas id="about-canvas" class="bg-canvas"></canvas>
@@ -55,7 +55,6 @@
                     </div>
                 </div>
 
-                <canvas id="explosion-canvas"></canvas>
             </div>
         </div>
 
@@ -168,5 +167,45 @@
     </div>
     
     <script src="script.js"></script>
+
+    <div id="contact-modal" class="modal-overlay hidden" aria-hidden="true">
+        <div class="glass-card contact-terminal" role="dialog" aria-modal="true">
+            <div class="terminal-header-row">
+                <span class="terminal-id">/// TERMINAL_01</span>
+                <span class="status-badge"><span class="blink-dot"></span> ONLINE</span>
+            </div>
+            <button class="close-modal-btn" aria-label="Close contact modal">&times;</button>
+
+            <h2 class="glitch-text" style="font-size: 2.5rem; margin-bottom: 20px; margin-top: 10px;">Initialize Protocol</h2>
+            <p style="color: #9ca3af; margin-bottom: 40px; max-width: 500px; margin-left: auto; margin-right: auto;">
+                I am currently open to roles in <strong>Creative Technology</strong> and <strong>Interaction Design</strong>.
+            </p>
+
+            <div class="contact-actions">
+                <a href="assets/documents/cv.pdf" target="_blank" class="cyber-button">
+                    <i class="fas fa-file-download"></i> Download CV
+                </a>
+
+                <div class="social-grid">
+                    <a href="mailto:etcjanus@gmail.com" class="social-link email" title="Send Transmission">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/ewoudjanus/" target="_blank" class="social-link linkedin" title="Network Link">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="https://www.instagram.com/etc_modeling" target="_blank" class="social-link instagram" title="Visual Database">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://github.com/ETCJanus" target="_blank" class="social-link github" title="Code Repository">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="terminal-footer">
+                <span class="prompt">root@ewoud:~$</span> <span class="typing-cursor">awaiting_signal...</span>
+            </div>
+        </div>
+    </div>
 </body>
-</html> 
+</html>

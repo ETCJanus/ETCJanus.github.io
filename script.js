@@ -1,4 +1,44 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
+﻿// --- PROJECT DATABASE ---
+const projectData = [
+    {
+        id: 'mastering-tinkering',
+        title: 'Mastering Tinkering',
+        description: 'Documentation of construction, failures, and rapid prototyping experiments.',
+        image: 'assets/images/tinkering-thumb.jpg',
+        tag: 'Coursework',
+        link: 'projects/mastering-tinkering/index.html',
+        featured: true // Change to true to show on homepage
+    },
+    {
+        id: 'pomodoro-pet',
+        title: 'Pomodoro Pet',
+        description: 'A gamified productivity app blending the Pomodoro technique with Tamagotchi-style mechanics to build better focus habits.',
+        image: 'assets/images/pomodoro-thumb.jpg',
+        tag: 'Mobile App',
+        link: 'projects/pomodoro-pet/index.html',
+        featured: false // Currently featured!
+    },
+    {
+        id: 'portfolio-2026',
+        title: 'Portfolio 2026',
+        description: 'A custom-built scrollytelling experience using HTML5 Canvas and Blender.',
+        image: 'assets/images/portfolio-thumb.jpg',
+        tag: 'Web Dev',
+        link: 'projects/portfolio-2026/index.html',
+        featured: false
+    },
+    {
+        id: 'hospital-at-home',
+        title: 'Hospital at Home Toolkit',
+        description: 'A user-centered redesign of medical take-home kits to improve patient accessibility and usability.',
+        image: 'assets/images/HaH-thumb.png',
+        tag: 'UX/UI Design',
+        link: 'projects/hospital-at-home/index.html',
+        featured: true // Currently featured!
+    }
+];
+
+document.addEventListener("DOMContentLoaded", () => {
     
     // --- 1. GLOBAL SCROLL REVEAL ---
     const observer = new IntersectionObserver((entries) => {
@@ -31,6 +71,8 @@
     
 
     initCyberProfile();
+    initFeaturedProjects();
+    initContactModal();
 });
 
 // --- EFFECT 1: HERO (Constellations) ---
@@ -389,4 +431,68 @@ function initCyberProfile() {
         ctx.font = '9px monospace';
         ctx.fillText(`X:${Math.floor(mx)} Y:${Math.floor(my)}`, mx + size + 5, my + size);
     }
+}
+
+// --- DYNAMIC PROJECT RENDERING ---
+function initFeaturedProjects() {
+    const featuredContainer = document.getElementById('featured-grid');
+    if (!featuredContainer) return; // Only runs if the container exists on the page
+
+    // Filter the array for only featured projects
+    const featuredProjects = projectData.filter(project => project.featured);
+
+    // Map the data into your existing HTML structure
+    featuredContainer.innerHTML = featuredProjects.map(p => `
+        <a href="${p.link}" class="project-card">
+            <div class="card-image">
+                <img src="${p.image}" alt="${p.title}" class="project-thumb">
+                <span class="tag">${p.tag}</span>
+            </div>
+            <div class="card-info">
+                <h3>${p.title}</h3>
+                <p>${p.description}</p>
+            </div>
+        </a>
+    `).join('');
+}
+
+// --- CONTACT MODAL INITIALIZER ---
+function initContactModal() {
+    const modal = document.getElementById('contact-modal');
+    if (!modal) return;
+
+    const triggers = document.querySelectorAll('.contact-trigger');
+    const closeBtn = modal.querySelector('.close-modal-btn');
+
+    function openModal() {
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        // Prevent background scroll while modal is open
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    triggers.forEach(t => t.addEventListener('click', (e) => {
+        e.preventDefault();
+        openModal();
+    }));
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+    // Click outside the terminal content closes modal
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // Escape key closes modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            closeModal();
+        }
+    });
 }

@@ -211,6 +211,17 @@ canvas {
 }
 
 /* --- ABOUT PAGE SPECIFIC --- */
+/* --- OVERRIDE FULL-SCREEN HEIGHT FOR ABOUT PAGE --- */
+.about-hero.step,
+.skill-dashboard.step,
+.timeline-section.step,
+.personality-section.step {
+    min-height: auto !important;
+    height: auto !important;
+    padding: 60px 0 !important;
+    /* We remove display: block to keep everything centered and aligned properly */
+}
+
 .about-section {
     padding: 40px;
     margin-bottom: 40px;
@@ -230,6 +241,8 @@ canvas {
 .about-hero {
     text-align: center;
     margin-bottom: 80px;
+    min-height: auto !important;
+    padding: 20px 0 !important;
 }
 .about-hero h1 {
     font-size: 3rem;
@@ -797,4 +810,65 @@ canvas {
     .nav-icons {
         display: none; /* Hide top icons on mobile to save space */
     }
+}
+
+/* --- GLOBAL CONTACT MODAL --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(5, 5, 7, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 220ms ease, visibility 220ms ease;
+}
+
+.modal-overlay:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.modal-overlay .contact-terminal {
+    max-width: 720px;
+    width: calc(100% - 48px);
+    padding: 48px;
+    border-radius: 18px;
+}
+
+.close-modal-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: transparent;
+    border: none;
+    color: #2dd4bf;
+    font-size: 1.8rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: color 0.18s ease, transform 0.12s ease;
+}
+
+.close-modal-btn:hover {
+    color: #a78bfa;
+    transform: translateY(-2px);
+}
+
+/* Ensure modal content is accessible on small screens */
+@media (max-width: 520px) {
+    .modal-overlay .contact-terminal { padding: 28px; }
+    .close-modal-btn { top: 10px; right: 10px; font-size: 1.6rem; }
 }
