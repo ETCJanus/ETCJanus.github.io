@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mastering Tinkering</title>
     
-    <link rel="stylesheet" href="../../styles.css"> 
+    <link rel="stylesheet" href="../../css/styles.css"> 
     
     <link rel="stylesheet" href="styles.css">
 
@@ -29,7 +29,7 @@
         <div class="links">
             <a href="../../projects.html">Projects</a>
             <a href="../../about.html">About</a>
-            <a href="../../index.html#contact">Contact</a>
+            <a href="#" class="contact-trigger">Contact</a>
         </div>
     </nav>
 
@@ -126,18 +126,25 @@
                 <strong>Challenge:</strong> Design a block that can be used for tinkering and quick prototyping.
             </p>
 
-            <div class="carousel-container">
+<div class="carousel-container">
                 <div class="carousel-slide active">
-                    <img src="../../assets/images/omni-final.png" alt="Final Render" class="studio-bg">
+                    <img src="../../assets/images/omni-final.jpg" alt="Final Render" class="studio-bg">
                     <div class="carousel-caption-bar">
                         <strong>Final Design:</strong> The screw shapes help iterate quickly.
                     </div>
                 </div>
 
                 <div class="carousel-slide">
-                    <img src="../../assets/images/omni-sketches.png" alt="Initial Sketches" class="studio-bg">
+                    <img src="../../assets/images/omni-sketches.jpg" alt="Initial Sketches" class="studio-bg">
                     <div class="carousel-caption-bar">
-                        <strong>Process:</strong> 8 different sketch iterations exploring diifferent options.
+                        <strong>Process:</strong> Exploring different shapes and connection types.
+                    </div>
+                </div>
+
+                <div class="carousel-slide">
+                    <img src="../../assets/images/omni-sketches-2.jpg" alt="Alternative Sketches" class="studio-bg">
+                    <div class="carousel-caption-bar">
+                        <strong>More Ideas:</strong> Brainstorming alternative attachments like magnets, velcro, and cardboard.
                     </div>
                 </div>
 
@@ -151,6 +158,7 @@
                 <button class="prev" onclick="plusSlides(-1)">&#10094;</button>
                 <button class="next" onclick="plusSlides(1)">&#10095;</button>
             </div>
+
         </article>
 
         <article id="a2-2" class="assignment">
@@ -169,32 +177,46 @@
                 Finally, to add an extra layer of "tinkerability," I finished the blocks with a coat of black chalk paint. This allows the user to draw, write, or erase labels on the blocks themselves, rapidly changing their meaning or function on the fly during a brainstorming session.
             </p>
 
-            <div class="gallery-grid" style="margin-top: 30px;">
-                
-                <div class="tinker-card">
-                    <img src="../../assets/images/blocks-before.jpg" alt="Wooden blocks with screws before painting">
+                <div class="gallery-grid" style="margin-top: 30px;">
+                    
+                    <div class="tinker-card">
+                        <img src="../../assets/images/blocks-before.jpg" alt="Wooden blocks with screws before painting">
+                        <div class="card-content">
+                            <strong>1. Raw Assembly</strong>
+                            <div class="caption">Wood blocks with screws attached via hot glue.</div>
+                        </div>
+                    </div>
+
+                    <div class="tinker-card">
+                        <img src="../../assets/images/blocks-assembled.jpg" alt="Blocks interlocked together">
+                        <div class="card-content">
+                            <strong>2. Testing the Fit</strong>
+                            <div class="caption">Playing around with the locking mechanism to test structural stability.</div>
+                        </div>
+                    </div>
+
+                    <div class="tinker-card">
+                        <img src="../../assets/images/blocks-after.jpg" alt="Blocks painted with chalk paint">
+                        <div class="card-content">
+                            <strong>3. Chalk Paint Finish</strong>
+                            <div class="caption">Coated in chalk paint so the faces can be drawn on and customized.</div>
+                        </div>
+                    </div>
+
+            </div>
+
+            <!-- Featured Final Result -->
+            <div style="text-align: center; margin: 50px auto; max-width: 600px;">
+                <h3 style="color: #a78bfa; margin-bottom: 20px; font-size: 1.5rem;">Final Result</h3>
+                <div class="tinker-card" style="max-width: 100%; border: 2px solid rgba(167, 139, 250, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+                    <img src="../../assets/images/blocks-backdrop.png" alt="Final assembled blocks with chalk paint" style="height: auto; width: 100%;">
                     <div class="card-content">
-                        <strong>1. Raw Assembly</strong>
-                        <div class="caption">Wood blocks with screws attached via hot glue.</div>
+                        <strong style="color: #a78bfa; font-size: 1.1rem;">Complete Project</strong>
+                        <div class="caption" style="margin-top: 10px; font-size: 1rem;">
+                            The finished building blocks with chalk paint coating, ready for rapid prototyping and ideation sessions.
+                        </div>
                     </div>
                 </div>
-
-                <div class="tinker-card">
-                    <img src="../../assets/images/blocks-assembled.jpg" alt="Blocks interlocked together">
-                    <div class="card-content">
-                        <strong>2. Testing the Fit</strong>
-                        <div class="caption">Playing around with the locking mechanism to test structural stability.</div>
-                    </div>
-                </div>
-
-                <div class="tinker-card">
-                    <img src="../../assets/images/blocks-after.jpg" alt="Blocks painted with chalk paint">
-                    <div class="card-content">
-                        <strong>3. Chalk Paint Finish</strong>
-                        <div class="caption">Coated in chalk paint so the faces can be drawn on and customized.</div>
-                    </div>
-                </div>
-
             </div>
         </article>
 
@@ -376,8 +398,49 @@
         </article>
 
 
-    </div> 
-    <script src="../../script.js"></script>
+    </div>
+    
+    <script src="../../js/script.js"></script>
     <script src="script.js"></script>
+
+    <div id="contact-modal" class="modal-overlay hidden" aria-hidden="true">
+        <div class="glass-card contact-terminal" role="dialog" aria-modal="true">
+            <div class="terminal-header-row">
+                <span class="terminal-id">/// TERMINAL_01</span>
+                <span class="status-badge"><span class="blink-dot"></span> ONLINE</span>
+            </div>
+            <button class="close-modal-btn" aria-label="Close contact modal">&times;</button>
+
+            <h2 class="glitch-text" style="font-size: 2.5rem; margin-bottom: 20px; margin-top: 10px;">Initialize Protocol</h2>
+            <p style="color: #9ca3af; margin-bottom: 40px; max-width: 500px; margin-left: auto; margin-right: auto;">
+                I am currently open to roles in <strong>Creative Technology</strong> and <strong>Interaction Design</strong>.
+            </p>
+
+            <div class="contact-actions">
+                <a href="../../assets/documents/cv.pdf" target="_blank" class="cyber-button">
+                    <i class="fas fa-file-download"></i> Download CV
+                </a>
+
+                <div class="social-grid">
+                    <a href="mailto:etcjanus@gmail.com" class="social-link email" title="Send Transmission">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/ewoudjanus/" target="_blank" class="social-link linkedin" title="Network Link">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="https://www.instagram.com/etc_modeling" target="_blank" class="social-link instagram" title="Visual Database">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://github.com/ETCJanus" target="_blank" class="social-link github" title="Code Repository">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="terminal-footer">
+                <span class="prompt">root@ewoud:~$</span> <span class="typing-cursor">awaiting_signal...</span>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

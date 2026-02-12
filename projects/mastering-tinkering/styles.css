@@ -249,18 +249,18 @@ article.assignment {
     min-height: 0; 
 }
 
-/* 2. The Studio/Sketch Style (Lighter Gradient) */
+/* 2. The Studio/Sketch Style (Floating Hologram Effect) */
 .carousel-slide img.studio-bg {
-    object-fit: contain; /* Shows whole sketch */
-    padding: 30px;
+    object-fit: contain; 
+    padding: 20px;
+    background: transparent; 
     
-    /* NEW LIGHTER GRADIENT (The Lightbox Effect) */
-    /* Starts Pure White (for visibility) -> Fades to transparent */
-    background: radial-gradient(circle at center, 
-        rgba(255, 255, 255, 1.0) 0%, 
-        rgba(255, 255, 255, 0.8) 40%, 
-        rgba(255, 255, 255, 0.1) 100%
-    );
+    /* 1. Inverts colors (white paper becomes black, pencil becomes white) */
+    /* 2. Boosts brightness so the pencil lines glow */
+    filter: invert(1) brightness(1.5) contrast(1.2);
+    
+    /* 3. THE MAGIC: Makes all black pixels 100% transparent! */
+    mix-blend-mode: screen;
 }
 
 /* --- CAPTION STYLES (Under the Block) --- */
