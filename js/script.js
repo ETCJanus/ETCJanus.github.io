@@ -1,22 +1,31 @@
 ﻿// --- PROJECT DATABASE ---
 const projectData = [
     {
+        id: 'pomodoro-pet',
+        title: 'Pomodoro Pet',
+        description: 'A Flutter mobile app combining Pomodoro focus timers with Tamagotchi-style pet care mechanics.',
+        image: 'assets/images/pomodoro-thumb.jpg',
+        tag: 'Mobile App',
+        link: 'projects/pomodoro-pet/index.html',
+        featured: true
+    },
+    {
+        id: 'hospital-at-home',
+        title: 'Hospital at Home Toolkit',
+        description: 'A user-centered redesign of medical take-home kits to improve patient accessibility and usability.',
+        image: 'assets/images/HaH-thumb.png',
+        tag: 'UX/UI Design',
+        link: 'projects/hospital-at-home/index.html',
+        featured: true
+    },
+    {
         id: 'mastering-tinkering',
         title: 'Mastering Tinkering',
         description: 'Documentation of construction, failures, and rapid prototyping experiments.',
         image: 'assets/images/tinkering-thumb.jpg',
         tag: 'Coursework',
         link: 'projects/mastering-tinkering/index.html',
-        featured: true // Change to true to show on homepage
-    },
-    {
-        id: 'pomodoro-pet',
-        title: 'Pomodoro Pet',
-        description: 'A gamified productivity app blending the Pomodoro technique with Tamagotchi-style mechanics to build better focus habits.',
-        image: 'assets/images/pomodoro-thumb.jpg',
-        tag: 'Mobile App',
-        link: 'projects/pomodoro-pet/index.html',
-        featured: false // Currently featured!
+        featured: true
     },
     {
         id: 'portfolio-2026',
@@ -26,15 +35,6 @@ const projectData = [
         tag: 'Web Dev',
         link: 'projects/portfolio-2026/index.html',
         featured: false
-    },
-    {
-        id: 'hospital-at-home',
-        title: 'Hospital at Home Toolkit',
-        description: 'A user-centered redesign of medical take-home kits to improve patient accessibility and usability.',
-        image: 'assets/images/HaH-thumb.png',
-        tag: 'UX/UI Design',
-        link: 'projects/hospital-at-home/index.html',
-        featured: true // Currently featured!
     }
 ];
 
