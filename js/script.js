@@ -25,7 +25,7 @@ const projectData = [
         image: 'assets/images/tinkering-thumb.jpg',
         tag: 'Coursework',
         link: 'projects/mastering-tinkering/index.html',
-        featured: true
+        featured: false
     },
     {
         id: 'portfolio-2026',
@@ -40,6 +40,36 @@ const projectData = [
 
 document.addEventListener("DOMContentLoaded", () => {
     
+    // --- 0. BURGER MENU ---
+    const burgerBtn = document.querySelector('.burger-btn');
+    const navLinks = document.querySelector('nav .links');
+
+    if (burgerBtn && navLinks) {
+        burgerBtn.addEventListener('click', () => {
+            burgerBtn.classList.toggle('active');
+            navLinks.classList.toggle('open');
+            document.body.style.overflow = navLinks.classList.contains('open') ? 'hidden' : '';
+        });
+
+        // Close menu when a nav link is clicked
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                burgerBtn.classList.remove('active');
+                navLinks.classList.remove('open');
+                document.body.style.overflow = '';
+            });
+        });
+
+        // Close menu on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && navLinks.classList.contains('open')) {
+                burgerBtn.classList.remove('active');
+                navLinks.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        });
+    }
+
     // --- 1. GLOBAL SCROLL REVEAL ---
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {

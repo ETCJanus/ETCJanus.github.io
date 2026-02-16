@@ -48,6 +48,165 @@ a {
     transition: color 0.3s ease;
 }
 
+/* --- UTILITY CLASSES --- */
+
+/* Text Alignment */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+
+/* Container Widths */
+.container-sm { max-width: 650px; margin: 0 auto; }
+.container-md { max-width: 700px; margin: 0 auto; }
+.container-lg { max-width: 1000px; margin: 0 auto; }
+
+/* Spacing */
+.mt-20 { margin-top: 20px; }
+.mt-35 { margin-top: 35px; }
+.mt-50 { margin-top: 50px; }
+.mb-15 { margin-bottom: 15px; }
+.mb-20 { margin-bottom: 20px; }
+.mb-30 { margin-bottom: 30px; }
+.mb-40 { margin-bottom: 40px; }
+.mb-50 { margin-bottom: 50px; }
+
+/* Text Styles */
+.intro-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text-main);
+}
+
+.sub-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+}
+
+.section-title {
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.section-subtitle {
+    color: var(--text-muted);
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.accent-text { color: #2dd4bf; }
+.muted-text { color: var(--text-muted); }
+
+/* Card Styles */
+.skill-card, .feature-card {
+    text-align: left;
+}
+
+.card-title {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+}
+
+.card-text {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+/* Skill/Tech Tags */
+.tech-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tech-tag {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    background: rgba(45, 212, 191, 0.1);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    border-radius: 12px;
+    color: #2dd4bf;
+}
+
+/* Grid Layouts */
+.skills-grid, .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Icon Headers */
+.icon-header {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+/* Status Badge */
+.status-pill {
+    display: inline-block;
+    padding: 6px 16px;
+    background: rgba(167, 139, 250, 0.1);
+    border: 1px solid rgba(167, 139, 250, 0.4);
+    border-radius: 20px;
+    margin-bottom: 25px;
+    font-size: 0.85rem;
+    color: #a78bfa;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #a78bfa;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse-dot 2s infinite;
+}
+
+/* Job Seeking Section */
+.seeking-card {
+    max-width: 650px;
+    margin: 0 auto;
+    text-align: center;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+}
+
+.seeking-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.seeking-intro {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--text-main);
+    margin-bottom: 10px;
+}
+
+.seeking-list {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0 30px;
+    color: var(--text-muted);
+    font-size: 1rem;
+    line-height: 2;
+}
+
+.seeking-note {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.seeking-action {
+    margin-top: 35px;
+}
+
 /* --- NAVIGATION (Floating Glass Bar) --- */
 nav {
     position: fixed;
@@ -806,9 +965,373 @@ canvas {
 }
 
 /* 5. Mobile Adjustment (Hide icons if screen is too small) */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .nav-icons {
         display: none; /* Hide top icons on mobile to save space */
+    }
+}
+
+/* =========================================
+   BURGER MENU BUTTON
+   ========================================= */
+.burger-btn {
+    display: none; /* Hidden on desktop */
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    z-index: 200;
+}
+
+.burger-btn span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Burger to X animation */
+.burger-btn.active span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.burger-btn.active span:nth-child(2) {
+    opacity: 0;
+}
+.burger-btn.active span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* =========================================
+   MOBILE RESPONSIVE BREAKPOINTS
+   ========================================= */
+
+/* --- TABLET & SMALL DESKTOP (max 768px) --- */
+@media (max-width: 768px) {
+
+    /* Show burger button */
+    .burger-btn {
+        display: flex;
+    }
+
+    /* Mobile Nav Overlay */
+    nav .links {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(5, 5, 7, 0.97);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+        z-index: 150;
+    }
+
+    nav .links.open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    nav .links a {
+        margin-left: 0;
+        font-size: 1.6rem;
+        padding: 20px 0;
+        opacity: 1;
+        color: #e0e0e0;
+        letter-spacing: 1px;
+        font-weight: 500;
+    }
+
+    nav .links a:hover,
+    nav .links a.highlight {
+        -webkit-text-fill-color: #2dd4bf;
+    }
+
+    /* Nav bar adjustments */
+    nav {
+        width: 92%;
+        padding: 12px 20px;
+        top: 12px;
+    }
+
+    /* Typography scaling */
+    h1 {
+        font-size: 2.2rem;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    /* Container */
+    .container {
+        margin-top: 100px;
+        padding: 15px;
+    }
+
+    /* Hero */
+    .step p {
+        font-size: 1rem;
+        padding: 0 15px;
+    }
+
+    .glass-card {
+        padding: 30px 25px;
+        max-width: 100%;
+        border-radius: 16px;
+    }
+
+    /* Feature grid */
+    .feature-grid, .skills-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    /* Disable sideways card animations on mobile */
+    .card-left, .card-right {
+        transform: none;
+        opacity: 1;
+    }
+
+    /* Project grid */
+    .project-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    /* About page */
+    .hero-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 30px;
+    }
+
+    .hero-text h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-text .lead {
+        margin: 0 auto 20px;
+    }
+
+    .hero-image-wrapper {
+        max-width: 250px;
+    }
+
+    #profile-wrapper {
+        width: 250px;
+    }
+
+    .about-hero h1 {
+        font-size: 2.2rem;
+    }
+
+    .lead {
+        font-size: 1.1rem;
+    }
+
+    .skill-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .timeline {
+        padding-left: 25px;
+    }
+
+    .timeline-dot {
+        left: -34px;
+        width: 12px;
+        height: 12px;
+    }
+
+    /* Typewriter on mobile */
+    .typewriter {
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+    }
+
+    /* Seeking card */
+    .seeking-card {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Social grid */
+    .social-grid {
+        gap: 15px;
+    }
+
+    .social-link {
+        width: 48px;
+        height: 48px;
+        font-size: 1.2rem;
+    }
+
+    /* Contact modal */
+    .modal-overlay .contact-terminal {
+        padding: 30px 20px;
+        width: calc(100% - 30px);
+    }
+
+    .contact-terminal h2 {
+        font-size: 1.8rem !important;
+    }
+
+    /* Scroll hint */
+    .scroll-hint {
+        font-size: 0.85rem;
+    }
+}
+
+/* --- SMALL MOBILE (max 480px) --- */
+@media (max-width: 480px) {
+
+    nav {
+        width: 94%;
+        padding: 10px 15px;
+        top: 8px;
+        border-radius: 12px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .section-title {
+        font-size: 1.6rem;
+    }
+
+    .container {
+        padding: 12px;
+        margin-top: 80px;
+    }
+
+    .glass-card {
+        padding: 25px 18px;
+    }
+
+    .step {
+        padding: 30px 0;
+    }
+
+    /* Cyber button */
+    .cyber-button {
+        padding: 12px 20px;
+        font-size: 0.85rem;
+        letter-spacing: 1px;
+    }
+
+    /* About page hero */
+    .hero-text h1 {
+        font-size: 2rem;
+    }
+
+    .about-hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .lead {
+        font-size: 1rem;
+    }
+
+    .accent-subtitle {
+        font-size: 1rem;
+        letter-spacing: 1px;
+    }
+
+    #profile-wrapper {
+        width: 200px;
+    }
+
+    .hero-image-wrapper {
+        max-width: 200px;
+    }
+
+    /* Timeline */
+    .timeline {
+        padding-left: 20px;
+    }
+
+    .timeline-dot {
+        left: -29px;
+        width: 10px;
+        height: 10px;
+    }
+
+    .timeline-content {
+        padding: 15px;
+    }
+
+    .timeline-content h3 {
+        font-size: 1rem;
+    }
+
+    /* Info cards */
+    .info-card {
+        padding: 20px;
+    }
+
+    .info-card .icon {
+        font-size: 2rem;
+    }
+
+    /* Card images */
+    .card-image {
+        height: 180px;
+    }
+
+    .card-info {
+        padding: 18px;
+    }
+
+    .card-info h3 {
+        font-size: 1.2rem;
+    }
+
+    /* Seeking */
+    .seeking-title {
+        font-size: 1.5rem;
+    }
+
+    .seeking-list li {
+        font-size: 0.9rem;
+    }
+
+    /* Social grid compact */
+    .social-grid {
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .social-link {
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+    }
+
+    /* Typewriter mobile */
+    .typewriter {
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
     }
 }
 

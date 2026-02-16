@@ -1,0 +1,10 @@
+# robots.txt for https://etcjanus.github.io/portfolio-2026/
+
+User-agent: *
+Allow: /
+
+# Disallow specific directories if needed
+# Disallow: /assets/documents/
+
+# Sitemap
+Sitemap: https://etcjanus.github.io/portfolio-2026/sitemap.xml

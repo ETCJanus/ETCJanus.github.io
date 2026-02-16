@@ -6,8 +6,8 @@
     <title>Hospital @ Home | Ewoud Janus</title>
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="A user-centered redesign of medical take-home kits for Erasmus MC to improve patient accessibility and usability through multisensory design.">
-    <meta name="keywords" content="UX Design, Healthcare, Hospital at Home, Multisensory Design, Medical Device Design, Erasmus MC">
+    <meta name="description" content="Redesigning the Hospital at Home medical toolkit for Erasmus MC. A multisensory cabinet concept that guides patients through vital sign measurements using light, sound, and intuitive interaction.">
+    <meta name="keywords" content="UX Design, Healthcare, Hospital at Home, Multisensory Design, Medical Device Design, Erasmus MC, User Research, Interaction Design">
     <meta name="author" content="Ewoud Janus">
     
     <!-- Open Graph / Facebook -->
@@ -117,7 +117,17 @@
 
         @media (max-width: 768px) {
             .sensory-grid { grid-template-columns: 1fr; }
-            .video-showcase { height: 40vh; }
+            .video-showcase { height: 35vh; border-radius: 12px; }
+            .meta-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+            .pull-quote { font-size: 1.1rem; padding-left: 20px; margin: 40px 0; }
+            .persona-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+        }
+
+        @media (max-width: 480px) {
+            .meta-grid { grid-template-columns: 1fr; }
+            .video-showcase { height: 28vh; }
+            .sensory-card { padding: 20px; }
+            .persona-grid { gap: 15px !important; }
         }
     </style>
 </head>
@@ -134,6 +144,10 @@
             </div>
         </div>
 
+        <button class="burger-btn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+
         <div class="links">
             <a href="../../projects.html">Projects</a>
             <a href="../../about.html">About</a>
@@ -143,8 +157,8 @@
 
     <div class="container" style="margin-top: 120px;">
         
-        <span style="color: #2dd4bf; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem;">Multisensory Design</span>
-        <h1 style="font-size: 3.5rem; margin: 10px 0 40px;">Hospital @ Home</h1>
+        <span style="color: #2dd4bf; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem;">Multisensory Design | University Project</span>
+        <h1 style="font-size: 3.5rem; margin: 10px 0 40px;">Hospital @ Home Toolkit Redesign</h1>
 
         <div class="video-showcase">
             <video autoplay loop muted playsinline poster="../../assets/images/HaH-thumb.png">
@@ -155,72 +169,210 @@
 
         <div class="meta-grid">
             <div class="meta-item">
-                <span>Client</span>
-                <p>Erasmus MC</p>
+                <span>Context</span>
+                <p>University of Twente | Multisensory Design Course</p>
             </div>
             <div class="meta-item">
-                <span>Role</span>
-                <p>Interaction & 3D Design</p>
+                <span>Client</span>
+                <p>Erasmus MC Rotterdam</p>
+            </div>
+            <div class="meta-item">
+                <span>My Role</span>
+                <p>3D Visualization, Interaction Design, Team Lead</p>
             </div>
             <div class="meta-item">
                 <span>Team</span>
-                <p>7 Multidisciplinary Students</p>
+                <p>7 Students (M-ITECH, M-IDE)</p>
             </div>
             <div class="meta-item">
                 <span>Timeline</span>
-                <p>8 Weeks</p>
+                <p>8 Weeks | Jan-Feb 2026</p>
+            </div>
+            <div class="meta-item">
+                <span>Methods</span>
+                <p>User Research, Personas, Journey Mapping</p>
             </div>
         </div>
 
         <div class="project-content" style="max-width: 800px; margin: 0 auto;">
             
-            <h2>The Challenge</h2>
+            <h2>Overview</h2>
             <p>
-                Hospital-at-Home programs improve efficiency but often burden patients with clinical tasks they aren't trained for. The current toolkit is a "loose collection of devices" causing cognitive overload and anxiety for older adults.
+                Hospital at Home programs let patients with chronic heart conditions monitor their vitals at home instead of making regular hospital visits. Erasmus MC Rotterdam provides patients with a medical toolkit containing a blood pressure monitor, oxygen meter, thermometer, and scale. While this reduces hospital burden, it also places new responsibilities on patients, many of whom are older adults with limited health literacy and varying sensory abilities.
             </p>
             <p>
-                Our goal was to bridge the gap between clinical accuracy and home comfort, creating a system that reduces stress through intuitive design.
+                Our challenge was to redesign this toolkit to better support patients in their home environment, reducing cognitive load and anxiety while maintaining clinical accuracy.
             </p>
 
-            <div class="pull-quote">
-                "We rethought the toolkit not as a medical box, but as a piece of furniture—a radio-like cabinet that guides the user through a calm ritual."
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 50px 0;">
+
+            <h2>What We Found: The Real Problems</h2>
+            <p>
+                To understand the patient experience, we visited the E-health House at the University of Twente, where we could test the actual medical devices in a simulated home setting. Some of us performed the full measurement routine while others observed and documented issues. We also conducted an expert interview with the program coordinator at Erasmus MC.
+            </p>
+            <p style="margin-top: 20px;">
+                What became clear was that most problems weren't about the devices themselves but about how patients interact with them at home:
+            </p>
+
+            <div style="background: rgba(255,255,255,0.03); border-left: 3px solid #2dd4bf; padding: 25px; margin: 30px 0; border-radius: 8px;">
+                <p style="margin-bottom: 15px;"><strong style="color: #2dd4bf;">Sensory Confusion</strong></p>
+                <p style="color: #9ca3af; line-height: 1.7;">
+                    Each device has its own feedback language. The thermometer beeps sharply, the blood pressure monitor flashes numbers, the scale stays silent. For patients, these ambiguous signals often feel like error warnings rather than confirmation, which increases anxiety during measurements.
+                </p>
             </div>
 
-            <h2>The Concept: "The Smart Cabinet"</h2>
+            <div style="background: rgba(255,255,255,0.03); border-left: 3px solid #a78bfa; padding: 25px; margin: 30px 0; border-radius: 8px;">
+                <p style="margin-bottom: 15px;"><strong style="color: #a78bfa;">Cognitive Overload</strong></p>
+                <p style="color: #9ca3af; line-height: 1.7;">
+                    Patients must remember the correct order, operate four different devices with different interfaces, manually write down or type in each reading, and interpret whether the values are concerning. Almost no one reads the lengthy paper manuals, especially when feeling unwell.
+                </p>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); border-left: 3px solid #fbbf24; padding: 25px; margin: 30px 0; border-radius: 8px;">
+                <p style="margin-bottom: 15px;"><strong style="color: #fbbf24;">Poor Accessibility</strong></p>
+                <p style="color: #9ca3af; line-height: 1.7;">
+                    Small displays with low contrast make it nearly impossible for users with limited vision to read results. Configuration steps (like entering your birthdate into the scale) happen at inappropriate moments and create unnecessary barriers.
+                </p>
+            </div>
+
+            <p style="margin-top: 30px;">
+                From the expert interview, we learned that many "medical errors" in the data are actually user errors that happen before the device even records a value. Things like taking blood pressure right after walking upstairs, not sitting properly, or moving during measurement. The current toolkit provides no real time guidance to prevent these upstream problems.
+            </p>
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 50px 0;">
+
+            <h2>Our Users</h2>
             <p>
-                We designed a wooden, furniture-like station that organizes all measurement tools (Blood Pressure, Oxygen, Thermometer, Scale) into a single, guided workflow.
+                Based on our research and the expert interview, we created two personas representing typical Hospital at Home patients. Both are older adults with chronic heart conditions, but with different living situations and abilities.
+            </p>
+
+            <div class="persona-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 40px 0;">
+                <div style="text-align: center;">
+                    <img src="../../assets/images/renate-persona.png" alt="Persona: Renate Felicia" style="width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px;">
+                    <p style="color: #9ca3af; font-size: 0.9rem;">Renate Felicia, 68 | Lives with husband | Part-time work</p>
+                </div>
+                <div style="text-align: center;">
+                    <img src="../../assets/images/kees-persona.png" alt="Persona: Kees de Groot" style="width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px;">
+                    <p style="color: #9ca3af; font-size: 0.9rem;">Kees de Groot, 72 | Lives alone | Lower digital literacy</p>
+                </div>
+            </div>
+
+            <p>
+                We used these personas throughout the design process to check whether our solutions would work for both someone living alone with limited tech skills and someone in a busy household with sensory constraints. We also created an empathy map and detailed patient journey to understand not just what users do, but what they think and feel during the measurement routine.
+            </p>
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 50px 0;">
+
+            <h2>Our Solution: Build-A-Care Cabinet</h2>
+            <p>
+                Instead of redesigning the medical devices themselves (which are certified and need to stay as-is), we designed a cabinet that acts as an organizer, guide, and communication hub. The concept transforms the loose collection of tools into a single, guided ritual that fits naturally into the home.
+            </p>
+            <p style="margin-top: 20px;">
+                Visually, it looks like a small wooden radio or piece of furniture. When closed, it blends into the bedroom or living room. When opened, it reveals dedicated compartments for each device arranged top to bottom: blood pressure monitor on top, oxygen meter and thermometer in the middle, and a sliding drawer with the scale at the bottom.
+            </p>
+
+            <img src="../../assets/images/HaH-thumb.png" style="width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin: 30px 0;" alt="Build-A-Care Cabinet Render">
+
+            <h3 style="margin-top: 50px; color: #2dd4bf;">How It Works</h3>
+            <p>
+                The cabinet uses a shared language of light and sound to guide users through each step:
+            </p>
+
+            <div style="margin: 30px 0;">
+                <p style="margin-bottom: 15px;"><strong>1. Reminder</strong></p>
+                <p style="color: #9ca3af; line-height: 1.7; margin-bottom: 25px;">
+                    At measurement time, the cabinet emits a soft glow and gentle chime (not a harsh alarm). It adapts to time of day: brighter and clearer in the afternoon, softer and warmer at night so it doesn't disturb others.
+                </p>
+
+                <p style="margin-bottom: 15px;"><strong>2. Guided Sequence</strong></p>
+                <p style="color: #9ca3af; line-height: 1.7; margin-bottom: 25px;">
+                    Press the large green Start button. The top compartment (blood pressure) lights up. Complete that measurement, and the system plays a confirmation chime, sends the data automatically, and lights up the next device. This continues down to the scale at the bottom. You never have to wonder what to do next or which device is which.
+                </p>
+
+                <p style="margin-bottom: 15px;"><strong>3. Error Support</strong></p>
+                <p style="color: #9ca3af; line-height: 1.7; margin-bottom: 25px;">
+                    If something goes wrong (you moved during measurement, or the reading seems off), the light turns amber and a calm voice message suggests what to try. Instead of feeling panicked, you get actionable guidance.
+                </p>
+
+                <p style="margin-bottom: 15px;"><strong>4. Automatic Data Transfer</strong></p>
+                <p style="color: #9ca3af; line-height: 1.7;">
+                    Every successful measurement is automatically transmitted to the hospital's monitoring system. No apps to open, no numbers to write down or type in. When all four measurements are done, a green status light confirms everything went through.
+                </p>
+            </div>
+
+            <h3 style="margin-top: 50px; color: #a78bfa;">Multisensory Design</h3>
+            <p>
+                The cabinet combines visual, auditory, and tactile cues to support users with different sensory abilities:
             </p>
             
             <div class="sensory-grid">
                 <div class="sensory-card">
                     <span class="sensory-icon">💡</span>
-                    <h3>Visual Guidance</h3>
-                    <p>Soft ambient lights guide the user step-by-step from top to bottom, lighting up only the device needed next.</p>
+                    <h3>Light as Guidance</h3>
+                    <p>Soft LEDs around each compartment use color meaningfully: white for "ready," green for "success," amber for "try again." The sequential lighting creates a clear top to bottom flow.</p>
                 </div>
                 <div class="sensory-card">
                     <span class="sensory-icon">🔊</span>
-                    <h3>Auditory Feedback</h3>
-                    <p>Replaced harsh medical beeps with gentle "confirmation chimes" and supportive voice cues for errors.</p>
+                    <h3>Sound as Confirmation</h3>
+                    <p>We replaced the harsh, ambiguous device beeps with a consistent confirmation chime and optional voice guidance. The speaker can also play music or radio when not in use.</p>
                 </div>
                 <div class="sensory-card">
                     <span class="sensory-icon">🪵</span>
-                    <h3>Tactile Warmth</h3>
-                    <p>Matte wood and textile finishes make the device feel like a home accessory, not a hospital machine.</p>
+                    <h3>Form as Comfort</h3>
+                    <p>Matte wood, rounded edges, and textile speaker grille make it feel like furniture, not medical equipment. This reduces the constant visual reminder of illness.</p>
                 </div>
             </div>
 
-            <h2>User Journey</h2>
-            <p>
-                The interaction follows a "Poka-Yoke" (mistake-proofing) principle.
-                <br><br>
-                1. <strong>Wake Up:</strong> The cabinet glows softly to remind the patient.<br>
-                2. <strong>The Ritual:</strong> The user presses "Start". The top shelf lights up. As they finish one task, the system automatically sends the data and lights up the next shelf.<br>
-                3. <strong>Completion:</strong> After weighing, the cabinet signals "All Done" with a green glow. No apps to open, no numbers to write down.
+            <p style="margin-top: 40px;">
+                The physical design also uses "poka-yoke" (mistake proofing). Each device has a shaped slot that only fits the correct tool, and pictographic instructions are printed inside the door so they're always visible when the cabinet is open.
             </p>
 
-            <h2 style="margin-top: 60px;">Final Prototype</h2>
-            <img src="../../assets/images/HaH-thumb.png" style="width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); margin-top: 20px;" alt="Final Prototype Render">
-            <p style="text-align: center; color: #666; font-size: 0.9rem; margin-top: 10px;">Render of the "Smart Cabinet" concept.</p>
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 50px 0;">
+
+            <h2>Design Process</h2>
+            <p>
+                We followed an iterative design process based on the understand, explore, and define model. After the e-health house visit and expert interview, we used several design methods to translate insights into solutions:
+            </p>
+
+            <div style="margin: 30px 0;">
+                <p style="margin-bottom: 10px;"><strong style="color: #e0e0e0;">Lotus Blossom Technique</strong></p>
+                <p style="color: #9ca3af; line-height: 1.7; margin-bottom: 25px;">
+                    To widen our solution space, we looked at inspiring products from other domains. From senior mobile phones we borrowed large, clear buttons. From AEDs we took guided sequences and status indicators. From continuous glucose monitors we adopted automatic data transmission. From Nespresso machines we used the idea of shaped slots for mistake proofing.
+                </p>
+
+                <p style="margin-bottom: 10px;"><strong style="color: #e0e0e0;">Journey Mapping</strong></p>
+                <p style="color: #9ca3af; line-height: 1.7; margin-bottom: 25px;">
+                    We mapped a full day in the life of Renate (one of our personas) using the redesigned toolkit. This helped us see how the multisensory cues, error handling, and ritual would work across different times of day and emotional states.
+                </p>
+
+                <p style="margin-bottom: 10px;"><strong style="color: #e0e0e0;">Design Principles</strong></p>
+                <p style="color: #9ca3af; line-height: 1.7;">
+                    From our research, we established principles that guided all design decisions: low cognitive effort, patient empowerment, multimodal feedback, tangible interaction quality, and support for habit formation. Every feature had to serve at least one of these principles.
+                </p>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 50px 0;">
+
+            <h2>My Role</h2>
+            <p>
+                In our seven person multidisciplinary team, I took on multiple responsibilities. I created all the 3D visualizations and product renders using Blender, which was important for communicating the concept to both our team and the client. I also contributed to the interaction flow design, helping define how the light and sound cues would guide users through the measurement sequence.
+            </p>
+            <p style="margin-top: 20px;">
+                Beyond the design work, I helped coordinate the team throughout the project, organizing feedback sessions and making sure we stayed aligned with our research insights and design principles as we moved from concept to final proposal.
+            </p>
+
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.08); margin: 50px 0;">
+
+            <h2>Outcome & Reflection</h2>
+            <p>
+                We presented our concept to Erasmus MC at the end of the project. They were very happy with what we delivered, particularly how we reframed the problem from "fixing devices" to "supporting the ritual." The concept showed them a direction they hadn't considered before, focusing on the emotional and sensory experience rather than just technical functionality.
+            </p>
+            <p style="margin-top: 20px;">
+                For me personally, this project reinforced how much user research matters. Going to the e-health house and actually using those devices revealed problems we never would have found by just reading the brief. The disconnect between what clinically "works" and what patients actually experience at home was eye opening. It also taught me the value of design methods like personas and journey mapping. They aren't just academic exercises, they genuinely help you stay focused on real user needs when you're deep in design decisions.
+            </p>
+            <p style="margin-top: 20px;">
+                The biggest challenge was balancing the clinic's constraints (certified devices that can't change, reusable boxes, data security) with what patients actually needed (simplicity, reassurance, home appropriate aesthetic). Finding that balance by adding a guiding layer rather than replacing everything felt like the right approach for this context.
+            </p>
 
         </div>
     </div>

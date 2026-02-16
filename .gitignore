@@ -1,0 +1,63 @@
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Editor & IDE Files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary Files
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# Build Outputs (if you add a build system later)
+dist/
+build/
+.cache/
+
+# Dependencies (if you add npm later)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Environment Files
+.env
+.env.local
+.env.*.local
+
+# Personal Notes (if you keep them in repo)
+notes.txt
+TODO.txt
+scratch.md
+
+# Large Media Files (optional - remove if you want to track them)
+# *.mp4
+# *.mov
+# *.avi
+
+# Compressed Files
+*.zip
+*.rar
+*.7z
+*.tar.gz

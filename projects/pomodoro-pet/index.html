@@ -317,13 +317,26 @@
         @media (max-width: 768px) {
             .project-hero { grid-template-columns: 1fr; }
             .hero-phone { order: -1; max-width: 250px; }
-            .title-row h1 { font-size: 2.8rem; }
+            .title-row h1 { font-size: 2.5rem; }
             .app-icon { width: 50px; height: 50px; }
             .arch-grid { grid-template-columns: 1fr; }
             .screenshot-gallery { grid-template-columns: 1fr 1fr; }
+            .pixel-section { padding: 25px; }
+            .pixel-section h2 { font-size: 2rem; }
+            .pixel-section p { font-size: 1.2rem; }
+            .features { grid-template-columns: 1fr; }
         }
         @media (max-width: 480px) {
             .screenshot-gallery { grid-template-columns: 1fr; }
+            .title-row h1 { font-size: 2rem; }
+            .title-row { gap: 12px; }
+            .hero-phone { max-width: 200px; }
+            .pixel-section { padding: 20px; }
+            .pixel-section h2 { font-size: 1.6rem; }
+            .pixel-section p { font-size: 1.1rem; }
+            .arch-card { padding: 20px; }
+            .feature-card { padding: 22px; }
+            .roadmap { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -338,6 +351,10 @@
                 <a href="https://github.com/ETCJanus" target="_blank"><i class="fab fa-github"></i></a>
             </div>
         </div>
+        <button class="burger-btn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+
         <div class="links">
             <a href="../../projects.html">Projects</a>
             <a href="../../about.html">About</a>
@@ -369,7 +386,7 @@
         <div class="project-hero">
             <div class="hero-content">
                 <p class="lead">
-                    A mobile app that combines a Pomodoro focus timer with Tamagotchi-style pet care. Instead of relying on willpower alone, your virtual pets depend on you to study &mdash; skip a session and they go hungry. Complete one and you earn gold to feed, customize, and grow them.
+                    A mobile app that combines a Pomodoro focus timer with Tamagotchi-style pet care. Instead of relying on willpower alone, your virtual pets depend on you to study. Skip a session and they go hungry. Complete one and you earn gold to feed, customize, and grow them.
                 </p>
                 <p style="color: #9ca3af; margin-top: 20px; line-height: 1.7;">
                     I built this because I used apps like Forest but always wanted something with more <strong style="color:#e0e0e0;">emotional stakes</strong>. A tree growing is nice, but a pet that needs you? That felt like real motivation. It was also a way to teach myself Flutter and mobile development from scratch.
@@ -436,7 +453,7 @@
                 <div class="card-icon">&#x1F3A8;</div>
                 <h3>Pet Customization</h3>
                 <p>
-                    Choose your pet's look and name from a <strong>personalization screen</strong>. Leveling up unlocks new skins &mdash; a long-term motivator.
+                    Choose your pet's look and name from a <strong>personalization screen</strong>. Leveling up unlocks new skins, giving you something to work toward over time.
                 </p>
             </div>
 
@@ -455,25 +472,25 @@
         <span class="section-label">Visual Design</span>
         <h2 class="section-title">Pixel Art & Interface</h2>
         <p style="color: #9ca3af; max-width: 700px; line-height: 1.7;">
-            All visual assets are custom-made pixel art. The main scene is a nature environment where your pets walk around with their name tags. I drew the backgrounds, pet sprites, and scene elements — and gained a deep appreciation for how much effort goes into even simple-looking pixel art.
+            All visual assets are custom-made pixel art. The main scene is a nature environment where your pets walk around with their name tags. I drew all the backgrounds, pet sprites, and scene elements myself, which gave me a real appreciation for how much work goes into pixel art that looks simple.
         </p>
 
         <div class="screenshot-gallery">
             <div class="screenshot-item">
                 <img src="../../assets/images/pomodoro-thumb.jpg" alt="Home screen with pets walking in a pixel art nature scene">
-                <p class="caption">Home screen &mdash; pets roaming in the day scene</p>
+                <p class="caption">Home screen with pets roaming in the day scene</p>
             </div>
             <div class="screenshot-item">
                 <img src="../../assets/images/pomodoro-gameplay.jpg" alt="Pet customization screen showing name and appearance options">
-                <p class="caption">Pet customization &mdash; pick a look and name</p>
+                <p class="caption">Pet customization - pick a look and name</p>
             </div>
             <div class="screenshot-item">
                 <img src="../../assets/images/pomodoro-store.jpg" alt="In-app store showing food and items for purchase">
-                <p class="caption">The shop &mdash; spend gold on food and items</p>
+                <p class="caption">The shop - spend gold on food and items</p>
             </div>
             <div class="screenshot-item">
                 <img src="../../assets/images/pomodoro-profile.jpg" alt="Player profile screen showing stats and progress">
-                <p class="caption">Profile &mdash; track your progress and stats</p>
+                <p class="caption">Profile - track your progress and stats</p>
             </div>
         </div>
 
@@ -508,7 +525,7 @@
             <div class="arch-card">
                 <h3>Build Pipeline</h3>
                 <p>
-                    Setting up the full build pipeline &mdash; from writing Dart code to producing a working APK/IPA &mdash; was a learning experience in itself. Understanding signing, manifests, and platform-specific configuration added a new level to my development skills.
+                    Setting up the full build pipeline took time. Converting from Dart source code to a working APK or IPA involved learning about signing, platform configs, and debugging environment-specific issues. That whole process was a learning experience on its own.
                 </p>
             </div>
         </div>
@@ -521,7 +538,7 @@
 
         <ul class="insight-list">
             <li data-icon="&#x1F4F1;">
-                <strong style="color:#e0e0e0;">Mobile architecture is its own world.</strong> Coming from web development, I had to learn about platform channels, lifecycle management, permissions models, and background services &mdash; things that don't exist on the web.
+                <strong style="color:#e0e0e0;">Mobile architecture is its own world.</strong> Coming from web development, I had to learn about platform channels, lifecycle management, permissions models, and background services. These concepts don't really exist in web development.
             </li>
             <li data-icon="&#x1F512;">
                 <strong style="color:#e0e0e0;">Permissions are harder than the feature itself.</strong> Getting app usage monitoring to work was less about the code and more about understanding Android's layered permission system and guiding the user through granting access.
@@ -530,7 +547,7 @@
                 <strong style="color:#e0e0e0;">Pixel art takes real effort.</strong> What looks "simple" on screen took hours of careful, pixel-by-pixel drawing. I have a much bigger appreciation for game artists now, even at a small scale.
             </li>
             <li data-icon="&#x1F527;">
-                <strong style="color:#e0e0e0;">The build pipeline matters.</strong> Going from source code to a working app on a physical phone involves signing, platform configs, and debugging environment-specific issues &mdash; a whole skill set on its own.
+                <strong style="color:#e0e0e0;">The build pipeline matters.</strong> Going from source code to a working app on a physical phone involves signing, platform configs, manifests, and debugging environment-specific issues. It's a whole skill set that most web developers don't deal with.
             </li>
             <li data-icon="&#x1F4A1;">
                 <strong style="color:#e0e0e0;">Emotional design works.</strong> Using empathy as a motivator (caring for a pet) instead of abstract goals (tree growth) felt more engaging, even for me as the developer. It validated the core idea.
@@ -543,7 +560,7 @@
         <span class="section-label">Current Status</span>
         <h2 class="section-title">Where It Stands</h2>
         <p style="color: #9ca3af; max-width: 700px; line-height: 1.7;">
-            The app is a working prototype that I still have on my phone. The core architecture is solid &mdash; timer, pet system, economy, blocking, and customization all function. Some visual assets are still missing, but the foundation is there for everything else to be built on top.
+            The app is a working prototype that I still have on my phone. The core architecture is solid with the timer, pet system, economy, blocking, and customization all functioning. Some visual assets are still missing, but the foundation is there for everything else to build on.
         </p>
 
         <div class="roadmap">
