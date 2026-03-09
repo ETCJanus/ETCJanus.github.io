@@ -42,6 +42,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 2. Generate Navigation Menu
     generateTOC();
+
+    // 3. Floating Mode-Switch Button
+    initFloatingModeBtn();
 });
 
 function initTinkerEffect(canvas) {
@@ -200,4 +203,35 @@ function generateTOC() {
             }
         }
     });
+}
+
+/* =========================================
+   4. FLOATING MODE-SWITCH BUTTON
+   ========================================= */
+function initFloatingModeBtn() {
+    const originalBtn = document.querySelector('.mode-switch-btn');
+    const floatingBtn = document.getElementById('floatingModeBtn');
+    if (!originalBtn || !floatingBtn) return;
+
+    function positionAboveToc() {
+        const toc = document.querySelector('.toc');
+        if (!toc || window.innerWidth <= 1200) return;
+        const tocRect = toc.getBoundingClientRect();
+        floatingBtn.style.top = (tocRect.top - floatingBtn.offsetHeight - 15) + 'px';
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                floatingBtn.classList.add('visible');
+                positionAboveToc();
+            } else {
+                floatingBtn.classList.remove('visible');
+            }
+        });
+    }, { threshold: 0 });
+
+    observer.observe(originalBtn);
+    window.addEventListener('resize', positionAboveToc);
+    positionAboveToc();
 }
