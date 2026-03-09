@@ -314,153 +314,54 @@ function initHolographicTilt() {
     });
 }
 
-// --- EFFECT 4: CYBER HUD DECODE (Slower & Smoother) ---
+// --- EFFECT 4: PROFILE IMAGE CYCLER ---
 function initCyberProfile() {
+    const img = document.getElementById('profile-img');
     const wrapper = document.getElementById('profile-wrapper');
-    const img = document.getElementById('profile-static');
-    const canvas = document.getElementById('hud-canvas');
-    
-    if (!wrapper || !img || !canvas) return;
+    if (!img || !wrapper) return;
 
-    const ctx = canvas.getContext('2d');
-    let width, height;
-    let animationId;
-    let isHovering = false;
-    let scanLineY = 0;
-    let frameCount = 0;
-    
-    // Mouse tracking
-    let mouseX = 0;
-    let mouseY = 0;
+    // ─── Images to cycle through on hover ───
+    // Add more paths here and they'll be preloaded & cycled automatically.
+    const imagePaths = [
+        'assets/images/profile.jpg',
+        // 'assets/images/profile-2.jpg',
+        // 'assets/images/profile-3.jpg',
+    ];
 
-    function setSize() {
-        const rect = img.getBoundingClientRect();
-        if (rect.width === 0) return;
-        
-        width = rect.width;
-        height = rect.height;
-        
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = width * dpr;
-        canvas.height = height * dpr;
-        ctx.scale(dpr, dpr);
-        canvas.style.width = `${width}px`;
-        canvas.style.height = `${height}px`;
-    }
-
-    if (img.complete) { setSize(); } else { img.onload = setSize; }
-    window.addEventListener('resize', setSize);
-
-    wrapper.addEventListener('mousemove', (e) => {
-        const rect = wrapper.getBoundingClientRect();
-        mouseX = e.clientX - rect.left;
-        mouseY = e.clientY - rect.top;
+    // Preload all images
+    const preloaded = imagePaths.map(src => {
+        const i = new Image();
+        i.src = src;
+        return i;
     });
 
-    wrapper.addEventListener('mouseenter', () => {
-        isHovering = true;
-        img.classList.add('glitching');
-        scanLineY = 0;
-        animate();
-    });
+    let current = 0;
 
-    wrapper.addEventListener('mouseleave', () => {
-        isHovering = false;
-        img.classList.remove('glitching');
-        ctx.clearRect(0, 0, width, height);
-        cancelAnimationFrame(animationId);
-    });
+    // Only show dots when there are 2+ images
+    if (imagePaths.length > 1) {
+        const dots = document.createElement('div');
+        dots.className = 'profile-dots';
+        wrapper.appendChild(dots);
 
-    function animate() {
-        if (!isHovering) return;
-
-        ctx.clearRect(0, 0, width, height);
-
-        // 1. SLOWER SCAN LINE
-        // Changed from 4 to 1.5 for a smooth, deep scan
-        scanLineY += 1.5; 
-        if (scanLineY > height) scanLineY = 0;
-
-        ctx.beginPath();
-        ctx.strokeStyle = 'rgba(45, 212, 191, 0.8)';
-        ctx.lineWidth = 2;
-        ctx.moveTo(0, scanLineY);
-        ctx.lineTo(width, scanLineY);
-        ctx.stroke();
-
-        // 2. SLOWER DATA REFRESH
-        // Changed from % 5 to % 20 (Updates text only every 20 frames instead of 5)
-        // This makes the text readable rather than strobing
-        if (frameCount % 20 === 0) {
-            drawCyberText();
-        } else {
-            // Redraw the previous text state (simulated here by just calling it less chaos)
-             drawCyberText(); 
-        }
-
-        drawReticle(mouseX, mouseY);
-
-        frameCount++;
-        animationId = requestAnimationFrame(animate);
-    }
-
-    // Store text positions so they don't jitter every frame
-    let cachedText = [];
-    
-    function drawCyberText() {
-        ctx.font = '10px "Space Grotesk", monospace';
-        ctx.fillStyle = 'rgba(167, 139, 250, 0.9)'; 
-        
-        // Only generate new text positions every 20 frames
-        if (frameCount % 20 === 0) {
-            cachedText = [];
-            const columns = 4;
-            const colWidth = width / columns;
-            for (let i = 0; i < columns; i++) {
-                if (Math.random() > 0.6) {
-                    cachedText.push({
-                        x: i * colWidth + 10,
-                        y: Math.random() * height,
-                        val: '0x' + Math.floor(Math.random() * 65535).toString(16).toUpperCase()
-                    });
-                }
+        function renderDots() {
+            dots.innerHTML = '';
+            for (let i = 0; i < imagePaths.length; i++) {
+                const d = document.createElement('span');
+                d.className = 'profile-dot' + (i === current ? ' active' : '');
+                dots.appendChild(d);
             }
         }
+        renderDots();
 
-        // Draw the cached text
-        cachedText.forEach(t => {
-            ctx.fillText(t.val, t.x, t.y);
+        wrapper.addEventListener('click', () => {
+            current = (current + 1) % imagePaths.length;
+            img.style.opacity = '0';
+            setTimeout(() => {
+                img.src = imagePaths[current];
+                img.style.opacity = '1';
+            }, 250);
+            renderDots();
         });
-    }
-
-    function drawReticle(mx, my) {
-        // ... (Same as before)
-        const size = 30;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.lineWidth = 1.5;
-        
-        ctx.beginPath();
-        // Top Left
-        ctx.moveTo(mx - size, my - size + 10);
-        ctx.lineTo(mx - size, my - size);
-        ctx.lineTo(mx - size + 10, my - size);
-        // Top Right
-        ctx.moveTo(mx + size - 10, my - size);
-        ctx.lineTo(mx + size, my - size);
-        ctx.lineTo(mx + size, my - size + 10);
-        // Bottom Right
-        ctx.moveTo(mx + size, my + size - 10);
-        ctx.lineTo(mx + size, my + size);
-        ctx.lineTo(mx + size - 10, my + size);
-        // Bottom Left
-        ctx.moveTo(mx - size + 10, my + size);
-        ctx.lineTo(mx - size, my + size);
-        ctx.lineTo(mx - size, my + size - 10);
-        ctx.stroke();
-
-        ctx.fillStyle = '#2dd4bf';
-        ctx.font = '9px monospace';
-        ctx.fillText(`X:${Math.floor(mx)} Y:${Math.floor(my)}`, mx + size + 5, my + size);
     }
 }
 
