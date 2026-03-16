@@ -279,6 +279,18 @@ article.assignment.placeholder {
     mix-blend-mode: screen;
 }
 
+.tinker-card img.studio-bg {
+    object-fit: contain;
+    padding: 20px;
+    background: transparent;
+    filter: invert(1) brightness(1.5) contrast(1.2);
+    mix-blend-mode: screen;
+}
+
+.tinker-card.blend-card:hover {
+    transform: none;
+}
+
 /* --- CAPTION STYLES (Under the Block) --- */
 .carousel-caption-bar {
     /* REMOVED: position: absolute; */
