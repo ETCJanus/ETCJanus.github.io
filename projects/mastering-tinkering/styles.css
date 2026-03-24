@@ -159,6 +159,47 @@ article.assignment.placeholder {
     display: block;
 }
 
+/* Subtle title accent so assignment headings stand out a bit more */
+article.assignment h2 {
+    color: #ffffff;
+    display: inline-block;
+    position: relative;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    text-shadow: 0 0 14px rgba(167, 139, 250, 0.18);
+}
+
+article.assignment h2::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 48px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #a78bfa, #2dd4bf);
+    transition: width 0.25s ease;
+}
+
+article.assignment:hover h2::after {
+    width: 72px;
+}
+
+article.assignment h3 {
+    color: #f3f4f6;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 30px 0 10px;
+    padding-left: 12px;
+    border-left: 3px solid rgba(167, 139, 250, 0.65);
+    letter-spacing: 0.01em;
+    text-shadow: 0 0 12px rgba(167, 139, 250, 0.16);
+}
+
+article.assignment h3 + p {
+    margin-top: 0;
+}
+
 /* =========================================
    2. GALLERY & TINKER CARDS
    ========================================= */
@@ -208,6 +249,36 @@ article.assignment.placeholder {
     font-size: 0.9rem;
     color: #9ca3af;
     line-height: 1.5;
+}
+
+/* Wrapped thumbnails for Assignment 1.2 reflections */
+.reflection-space {
+    margin-bottom: 26px;
+}
+
+.reflection-space::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.reflection-thumb {
+    float: right;
+    width: 220px;
+    margin: 4px 0 12px 18px;
+}
+
+.reflection-thumb img {
+    height: 150px;
+}
+
+@media (max-width: 768px) {
+    .reflection-thumb {
+        float: none;
+        width: 100%;
+        max-width: 280px;
+        margin: 14px auto;
+    }
 }
 
 /* =========================================
@@ -552,6 +623,14 @@ article.assignment.placeholder {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     vertical-align: top;
     line-height: 1.5;
+}
+
+.tinker-table th {
+    font-family: var(--font-heading);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .tinker-table tbody tr:hover {
