@@ -44,10 +44,35 @@
     color: #666;
     text-decoration: none;
     font-size: 0.85rem;
+    line-height: 1;
     font-weight: 500;
     transition: all 0.3s ease;
     position: relative;
-    padding-right: 15px; /* Space for the dot */
+    padding: 4px 16px 4px 6px; /* Compact number + room for dot */
+    min-width: 42px;
+    text-align: right;
+    letter-spacing: 0.02em;
+}
+
+/* Full title tooltip appears only on hover, keeping the rail compact */
+.toc a::before {
+    content: attr(data-full-title);
+    position: absolute;
+    right: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%) translateX(6px);
+    background: rgba(10, 10, 10, 0.95);
+    border: 1px solid rgba(167, 139, 250, 0.45);
+    color: #f3f4f6;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 /* The "Active/Hover" Dot indicator */
@@ -74,6 +99,11 @@
 .toc a:hover {
     color: #fff; /* White text on hover */
     transform: translateX(-5px); /* Slide text slightly left */
+}
+
+.toc a:hover::before {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
 }
 
 .toc a:hover::after {
@@ -110,7 +140,13 @@
     }
 
     .toc a {
-        padding-right: 0;
+        min-width: 0;
+        text-align: left;
+        padding: 4px 8px;
+    }
+
+    .toc a::before {
+        display: none;
     }
 
     .toc a::after {

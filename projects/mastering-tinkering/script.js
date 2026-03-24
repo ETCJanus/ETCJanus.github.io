@@ -197,8 +197,12 @@ function generateTOC() {
                 if (titleText.includes(":")) {
                     titleText = titleText.split(":")[0];
                 }
-                
-                link.innerText = `${shortId} ${titleText}`;
+
+                const fullLabel = `${shortId} ${titleText}`;
+                link.innerText = shortId;
+                link.title = fullLabel;
+                link.setAttribute('aria-label', fullLabel);
+                link.dataset.fullTitle = fullLabel;
                 toc.appendChild(link);
             }
         }
