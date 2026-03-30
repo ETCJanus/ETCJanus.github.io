@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Optimization Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1>Habit Optimization Dashboard</h1>
+            <p>Use your neurobiology windows to place difficult habits at the right time.</p>
+        </header>
+
+        <div class="settings-and-phase">
+            <div class="settings panel">
+                <label for="wake-up-time">Wake-up time</label>
+                <input type="time" id="wake-up-time" value="07:00" aria-label="Wake up time">
+            </div>
+            <div class="phase-indicator-container panel">
+                <h2>Current Phase</h2>
+                <div class="phase-visualizer">
+                    <div id="phase-bar" class="phase-bar"></div>
+                    <div id="phase-text" class="phase-text">Calculating...</div>
+                </div>
+                <div class="phase-tooltip-container">
+                    <span class="tooltip-trigger">(Why this phase?)</span>
+                    <div class="tooltip-content">
+                        <p id="phase-explanation">Explanation of the current phase's neurobiology.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="daily-overview panel" aria-label="Daily overview">
+            <div class="overview-item">
+                <span class="overview-label">Completed today</span>
+                <strong id="completed-count">0 / 0</strong>
+            </div>
+            <div class="overview-item">
+                <span class="overview-label">Challenge day status</span>
+                <strong id="challenge-status">Not complete</strong>
+            </div>
+            <div class="overview-item">
+                <span class="overview-label">Current window</span>
+                <strong id="phase-window">-</strong>
+            </div>
+            <div class="overview-item">
+                <span class="overview-label">Current streak</span>
+                <strong id="streak-count">0 days</strong>
+            </div>
+            <div class="overview-item">
+                <span class="overview-label">Best streak</span>
+                <strong id="best-streak-count">0 days</strong>
+            </div>
+        </section>
+
+        <main>
+            <div id="habits-container">
+                <!-- Habits will be dynamically inserted here -->
+            </div>
+            <div id="break-habits-container">
+                <!-- "Habits to Break" will be inserted here -->
+            </div>
+        </main>
+
+        <section class="challenge-tracker">
+            <h2>21-Day Stimulus Period</h2>
+            <p class="challenge-caption">Complete 4+ habits each day to mark a successful day.</p>
+            <div id="challenge-grid" class="challenge-grid">
+                <!-- 21-day grid will be generated here -->
+            </div>
+        </section>
+
+        <section class="pomodoro-panel panel" aria-label="Pomodoro timer">
+            <h2>Pomodoro Timer</h2>
+            <div id="pomodoro-inline-timer" class="pomodoro-inline-timer">25:00</div>
+            <div class="pomodoro-inline-actions">
+                <button id="pomodoro-inline-start" type="button">Start</button>
+                <button id="pomodoro-inline-pause" type="button">Pause</button>
+                <button id="pomodoro-inline-reset" type="button">Reset</button>
+            </div>
+        </section>
+
+        <details class="habit-editor panel" aria-label="Habit editor">
+            <summary class="habit-editor-summary">
+                <span>Habit Editor</span>
+                <small>Click to expand</small>
+            </summary>
+            <div class="habit-editor-content">
+                <div class="habit-editor-head">
+                    <p>Add and manage habits without touching code.</p>
+                </div>
+                <form id="habit-editor-form" class="habit-editor-form">
+                    <div class="form-field">
+                        <label for="habit-name">Name</label>
+                        <input id="habit-name" name="habit-name" type="text" maxlength="60" placeholder="e.g. Gym" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="habit-phase">Phase</label>
+                        <select id="habit-phase" name="habit-phase">
+                            <option value="1">Phase 1</option>
+                            <option value="2">Phase 2</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="habit-friction">Friction</label>
+                        <select id="habit-friction" name="habit-friction">
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <label class="check-field">
+                        <input id="habit-linchpin" name="habit-linchpin" type="checkbox">
+                        Linchpin
+                    </label>
+                    <label class="check-field">
+                        <input id="habit-pomodoro" name="habit-pomodoro" type="checkbox">
+                        Pomodoro
+                    </label>
+                    <button id="add-habit-btn" type="submit">Add Habit</button>
+                </form>
+                <div id="habit-list-manager" class="habit-list-manager"></div>
+            </div>
+        </details>
+
+    </div>
+
+    <div id="pomodoro-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2>Study Block Timer</h2>
+            <div id="pomodoro-timer">25:00</div>
+            <div class="modal-actions">
+                <button id="pomodoro-start">Start</button>
+                <button id="pomodoro-reset">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="replacement-habit-modal" class="modal">
+        <div class="modal-content">
+            <p>You slipped. Immediately complete a 2-minute replacement habit to disrupt the neural circuit.</p>
+            <p><strong>Suggestion: 10 Pushups</strong></p>
+            <button id="replacement-habit-done">Done</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
