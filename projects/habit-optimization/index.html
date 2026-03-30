@@ -11,6 +11,9 @@
         <header class="page-header">
             <h1>Habit Optimization Dashboard</h1>
             <p>Use your neurobiology windows to place difficult habits at the right time.</p>
+            <div class="page-header-actions">
+                <a class="subpage-link" href="tracking.html">Open Tracking Insights</a>
+            </div>
         </header>
 
         <section class="settings-and-phase" aria-label="Current phase">
@@ -25,8 +28,25 @@
                     </div>
                 </div>
                 <div class="phase-visualizer">
-                    <div id="phase-bar" class="phase-bar"></div>
-                    <div id="phase-text" class="phase-text">Calculating...</div>
+                    <div class="phase-clock" aria-live="polite">
+                        <div class="phase-clock-face">
+                            <div class="phase-segment phase-segment-1"></div>
+                            <div class="phase-segment phase-segment-2"></div>
+                            <div class="phase-segment phase-segment-3"></div>
+                            <div id="phase-hand" class="phase-hand"></div>
+                            <div class="phase-center-dot"></div>
+                        </div>
+                        <div class="phase-clock-meta">
+                            <div id="phase-text" class="phase-text">Calculating...</div>
+                            <div id="phase-hours-since" class="phase-hours-since">-</div>
+                            <div id="phase-window" class="phase-window">-</div>
+                            <div class="phase-legend">
+                                <span id="legend-phase-1" class="phase-legend-chip">Phase 1</span>
+                                <span id="legend-phase-2" class="phase-legend-chip">Phase 2</span>
+                                <span id="legend-phase-3" class="phase-legend-chip">Phase 3</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -42,7 +62,7 @@
             </div>
             <div class="overview-item">
                 <span class="overview-label">Current window</span>
-                <strong id="phase-window">-</strong>
+                <strong id="phase-window-summary">-</strong>
             </div>
             <div class="overview-item">
                 <span class="overview-label">Current streak</span>

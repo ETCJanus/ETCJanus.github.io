@@ -63,6 +63,28 @@ body {
     max-width: 68ch;
 }
 
+.page-header-actions {
+    margin-top: 0.8rem;
+}
+
+.subpage-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--brand-strong);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--brand) 32%, var(--line));
+    border-radius: 999px;
+    padding: 0.3rem 0.7rem;
+    background: color-mix(in srgb, var(--brand-soft) 55%, var(--surface));
+}
+
+.subpage-link:hover {
+    background: color-mix(in srgb, var(--brand-soft) 85%, var(--surface));
+}
+
 .panel {
     background: var(--surface);
     border: 1px solid var(--line);
@@ -143,32 +165,108 @@ body {
 
 .phase-visualizer {
     width: 100%;
-    height: 22px;
-    background: var(--surface-alt);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    overflow: hidden;
     position: relative;
 }
 
-.phase-bar {
-    width: 0%;
-    height: 100%;
-    background: linear-gradient(90deg, #2fa88f, var(--brand));
-    transition: width 0.5s ease-in-out;
+.phase-clock {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    align-items: center;
+    background: var(--surface-alt);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 0.65rem;
+}
+
+.phase-clock-face {
+    width: 118px;
+    height: 118px;
+    border-radius: 50%;
+    position: relative;
+    border: 1px solid color-mix(in srgb, var(--line) 80%, var(--brand));
+    background: conic-gradient(
+        from -90deg,
+        #2aa770 0deg 120deg,
+        #d0952a 120deg 240deg,
+        #6a8fcc 240deg 360deg
+    );
+    box-shadow: inset 0 0 0 8px color-mix(in srgb, var(--surface) 88%, transparent);
+}
+
+.phase-segment {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+}
+
+.phase-hand {
+    position: absolute;
+    width: 2px;
+    height: 42px;
+    left: calc(50% - 1px);
+    top: calc(50% - 42px);
+    transform-origin: center bottom;
+    transform: rotate(0deg);
+    background: var(--text);
+    border-radius: 999px;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+    transition: transform 0.45s ease;
+}
+
+.phase-center-dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 2px solid var(--text);
+    left: calc(50% - 6px);
+    top: calc(50% - 6px);
+}
+
+.phase-clock-meta {
+    display: grid;
+    gap: 0.35rem;
 }
 
 .phase-text {
-    position: absolute;
-    inset: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     color: var(--text);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
     font-weight: 700;
-    font-size: 0.76rem;
-    letter-spacing: 0.01em;
+    font-size: 1.02rem;
+    letter-spacing: -0.01em;
+}
+
+.phase-hours-since,
+.phase-window {
+    color: var(--text-soft);
+    font-size: 0.86rem;
+}
+
+.phase-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.2rem;
+}
+
+.phase-legend-chip {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--text-soft);
+    border-radius: 999px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.phase-legend-chip.active {
+    color: #fff;
+    border-color: transparent;
+    background: var(--brand);
 }
 
 .phase-tooltip-container {
@@ -246,6 +344,68 @@ body {
 
 .overview-item strong {
     font-size: 1.02rem;
+}
+
+.tracking-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.tracking-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.8rem;
+}
+
+.tracking-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 0.85rem;
+}
+
+.tracking-card h3 {
+    margin: 0 0 0.45rem;
+    font-size: 0.96rem;
+}
+
+.tracking-metric {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.tracking-sub {
+    margin: 0.25rem 0 0;
+    color: var(--text-soft);
+    font-size: 0.85rem;
+}
+
+.tracking-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.tracking-table th,
+.tracking-table td {
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    padding: 0.5rem 0.35rem;
+}
+
+.tracking-table th {
+    color: var(--text-soft);
+    font-weight: 700;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.tracking-empty {
+    color: var(--text-soft);
+    margin: 0;
 }
 
 .habit-editor {
@@ -695,7 +855,6 @@ body {
 
     .phase-text {
         color: var(--text);
-        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.28);
     }
 
     .habit-card.completed {
@@ -723,6 +882,16 @@ body {
 
     .daily-overview {
         grid-template-columns: 1fr;
+    }
+
+    .phase-clock {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+    }
+
+    .phase-clock-meta {
+        justify-items: center;
     }
 
     .habit-editor-form,

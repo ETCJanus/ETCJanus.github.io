@@ -327,6 +327,29 @@ canvas {
     box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
+.secret-entry-wrap {
+    margin-top: 18px;
+    text-align: right;
+}
+
+.secret-entry {
+    display: inline-block;
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    color: rgba(224, 224, 224, 0.15);
+    border: 1px solid rgba(224, 224, 224, 0.08);
+    border-radius: 999px;
+    padding: 5px 9px;
+    transition: color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.secret-entry:hover,
+.secret-entry:focus-visible {
+    color: rgba(224, 224, 224, 0.8);
+    border-color: rgba(45, 212, 191, 0.45);
+    transform: translateY(-1px);
+}
+
 .card-image {
     height: 220px;
     width: 100%;

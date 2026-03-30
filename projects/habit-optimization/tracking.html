@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit Tracking Insights</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container tracking-layout">
+        <header class="page-header">
+            <h1>Tracking Insights</h1>
+            <p>Review slips, streaks, and completion trends across your current challenge window.</p>
+            <div class="page-header-actions">
+                <a class="subpage-link" href="index.html">Back to Dashboard</a>
+            </div>
+        </header>
+
+        <section class="tracking-grid" aria-label="Tracking summary">
+            <article class="tracking-card">
+                <h3>Current Streak</h3>
+                <p id="tracking-current-streak" class="tracking-metric">0</p>
+                <p class="tracking-sub">Consecutive successful challenge days</p>
+            </article>
+            <article class="tracking-card">
+                <h3>Best Streak</h3>
+                <p id="tracking-best-streak" class="tracking-metric">0</p>
+                <p class="tracking-sub">Best run in this challenge window</p>
+            </article>
+            <article class="tracking-card">
+                <h3>Total Slips</h3>
+                <p id="tracking-total-slips" class="tracking-metric">0</p>
+                <p class="tracking-sub">All logged slip events</p>
+            </article>
+            <article class="tracking-card">
+                <h3>Challenge Success Rate</h3>
+                <p id="tracking-success-rate" class="tracking-metric">0%</p>
+                <p class="tracking-sub">Successful days / elapsed challenge days</p>
+            </article>
+        </section>
+
+        <section class="panel" style="padding: 0.9rem 1rem;">
+            <h2 style="margin: 0 0 0.8rem;">Slip Frequency</h2>
+            <table class="tracking-table" id="slip-table">
+                <thead>
+                    <tr>
+                        <th>Habit</th>
+                        <th>Slips</th>
+                    </tr>
+                </thead>
+                <tbody id="tracking-slip-body"></tbody>
+            </table>
+            <p id="tracking-slip-empty" class="tracking-empty" hidden>No slips logged yet.</p>
+        </section>
+
+        <section class="panel" style="padding: 0.9rem 1rem;">
+            <h2 style="margin: 0 0 0.8rem;">Habit Streaks and Completion</h2>
+            <table class="tracking-table" id="habit-table">
+                <thead>
+                    <tr>
+                        <th>Habit</th>
+                        <th>Current</th>
+                        <th>Best</th>
+                        <th>Completion</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tracking-habit-body"></tbody>
+            </table>
+            <p id="tracking-habit-empty" class="tracking-empty" hidden>No habit data yet. Complete habits on the dashboard first.</p>
+        </section>
+    </div>
+
+    <script src="tracking.js"></script>
+</body>
+</html>

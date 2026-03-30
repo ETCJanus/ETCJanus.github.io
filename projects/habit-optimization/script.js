@@ -5,9 +5,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const replacementHabitSuggestion = document.getElementById('replacement-habit-suggestion');
     const syncIdInput = document.getElementById('sync-id');
     const syncStatusEl = document.getElementById('sync-status');
-    const phaseBar = document.getElementById('phase-bar');
+    const phaseHand = document.getElementById('phase-hand');
     const phaseText = document.getElementById('phase-text');
+    const phaseHoursSince = document.getElementById('phase-hours-since');
+    const phaseWindowLabel = document.getElementById('phase-window');
     const phaseExplanation = document.getElementById('phase-explanation');
+    const legendPhase1 = document.getElementById('legend-phase-1');
+    const legendPhase2 = document.getElementById('legend-phase-2');
+    const legendPhase3 = document.getElementById('legend-phase-3');
     const phase1Section = document.getElementById('phase-1-section');
     const phase2Section = document.getElementById('phase-2-section');
     const phase3Section = document.getElementById('phase-3-section');
@@ -26,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const replacementDoneBtn = document.getElementById('replacement-habit-done');
     const completedCountEl = document.getElementById('completed-count');
     const challengeStatusEl = document.getElementById('challenge-status');
-    const phaseWindowEl = document.getElementById('phase-window');
+    const phaseWindowSummaryEl = document.getElementById('phase-window-summary');
     const streakCountEl = document.getElementById('streak-count');
     const bestStreakCountEl = document.getElementById('best-streak-count');
     const habitEditorForm = document.getElementById('habit-editor-form');
@@ -69,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let challengeStartDate = '';
     let challengeDataByDate = {};
     let dailyHabitChecks = {};
+    let slipEventsByDate = {};
     let pomodoroInterval;
     let pomodoroTime = 25 * 60;
 
@@ -94,7 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
         habitsToBreak,
         challengeStartDate,
         challengeDataByDate,
-        dailyHabitChecks
+        dailyHabitChecks,
+        slipEventsByDate
     });
 
     const applyData = (data) => {
@@ -107,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         challengeStartDate = data.challengeStartDate || challengeStartDate;
         challengeDataByDate = data.challengeDataByDate || {};
         dailyHabitChecks = data.dailyHabitChecks || {};
+        slipEventsByDate = data.slipEventsByDate || {};
     };
 
     const syncToCloud = async (payload) => {
@@ -240,6 +248,37 @@ document.addEventListener('DOMContentLoaded', () => {
         return Math.floor((end - start) / (1000 * 60 * 60 * 24));
     };
 
+    const formatClockTime = (date) => {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+    };
+
+    const getPhaseWindowTimeRange = (wakeDate, phaseNumber) => {
+        let startOffset = 0;
+        let endOffset = 8;
+
+        if (phaseNumber === 2) {
+            startOffset = 8;
+            endOffset = 16;
+        }
+
+        if (phaseNumber === 3) {
+            startOffset = 16;
+            endOffset = 24;
+        }
+
+        const start = addDays(wakeDate, 0);
+        start.setHours(wakeDate.getHours(), wakeDate.getMinutes(), 0, 0);
+        start.setTime(start.getTime() + startOffset * 60 * 60 * 1000);
+
+        const end = addDays(wakeDate, 0);
+        end.setHours(wakeDate.getHours(), wakeDate.getMinutes(), 0, 0);
+        end.setTime(end.getTime() + endOffset * 60 * 60 * 1000);
+
+        return `${formatClockTime(start)} to ${formatClockTime(end)}`;
+    };
+
     const getTodayIndexInChallenge = () => {
         if (!challengeStartDate) return -1;
         const startDate = dateKeyToDate(challengeStartDate);
@@ -335,7 +374,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const wakeUpDate = new Date();
         wakeUpDate.setHours(wakeHours, wakeMinutes, 0, 0);
 
-        const hoursSinceWake = (now - wakeUpDate) / (1000 * 60 * 60);
+        const hoursSinceWakeRaw = (now - wakeUpDate) / (1000 * 60 * 60);
+        const hoursSinceWake = ((hoursSinceWakeRaw % 24) + 24) % 24;
 
         let currentPhase = 0;
         let phaseName = '';
@@ -355,10 +395,19 @@ document.addEventListener('DOMContentLoaded', () => {
             explanation = '16-24 hours after waking. Wind down, reduce stimulation, and prioritize sleep routines.';
         }
 
-        const progress = (hoursSinceWake / 24) * 100;
-        phaseBar.style.width = `${Math.min(Math.max(progress, 0), 100)}%`;
+        const dialRotation = (hoursSinceWake / 24) * 360;
+        const phaseRange = getPhaseWindowTimeRange(wakeUpDate, currentPhase);
+
+        phaseHand.style.transform = `rotate(${dialRotation}deg)`;
         phaseText.textContent = phaseName;
+        phaseHoursSince.textContent = `${hoursSinceWake.toFixed(1)}h since wake (${wakeUpTime})`;
+        phaseWindowLabel.textContent = `Window: ${phaseRange}`;
         phaseExplanation.textContent = explanation;
+
+        [legendPhase1, legendPhase2, legendPhase3].forEach((chip) => chip?.classList.remove('active'));
+        if (currentPhase === 1) legendPhase1?.classList.add('active');
+        if (currentPhase === 2) legendPhase2?.classList.add('active');
+        if (currentPhase === 3) legendPhase3?.classList.add('active');
 
         renderHabits(currentPhase);
     };
@@ -502,9 +551,9 @@ document.addEventListener('DOMContentLoaded', () => {
         streakCountEl.textContent = `${streaks.current} ${streaks.current === 1 ? 'day' : 'days'}`;
         bestStreakCountEl.textContent = `${streaks.best} ${streaks.best === 1 ? 'day' : 'days'}`;
 
-        if (currentPhase === 1) phaseWindowEl.textContent = 'Action window';
-        if (currentPhase === 2) phaseWindowEl.textContent = 'Creative window';
-        if (currentPhase === 3) phaseWindowEl.textContent = 'Wind-down window';
+        if (currentPhase === 1) phaseWindowSummaryEl.textContent = 'Action window';
+        if (currentPhase === 2) phaseWindowSummaryEl.textContent = 'Creative window';
+        if (currentPhase === 3) phaseWindowSummaryEl.textContent = 'Wind-down window';
     };
 
     const updateChallengeProgress = () => {
@@ -677,6 +726,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!(target instanceof HTMLElement)) return;
 
         if (target.classList.contains('slipped-btn')) {
+            const habitId = target.dataset.id;
+            if (habitId) {
+                const todayKey = getDateKey();
+                if (!slipEventsByDate[todayKey]) {
+                    slipEventsByDate[todayKey] = {};
+                }
+
+                const currentCount = slipEventsByDate[todayKey][habitId] || 0;
+                slipEventsByDate[todayKey][habitId] = currentCount + 1;
+                saveData();
+            }
+
             updateReplacementHabitSuggestion();
             replacementModal.style.display = 'block';
         }
