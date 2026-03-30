@@ -43,17 +43,23 @@ body {
 .page-header {
     text-align: left;
     margin-bottom: 1.5rem;
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 0.9rem 1rem;
 }
 
 .page-header h1 {
     margin: 0;
     font-size: clamp(1.65rem, 2.5vw, 2.2rem);
     letter-spacing: -0.02em;
+    color: var(--text);
 }
 
 .page-header p {
     margin: 0.5rem 0 0;
-    color: var(--text-soft);
+    color: color-mix(in srgb, var(--text) 82%, var(--surface));
     max-width: 68ch;
 }
 
@@ -65,43 +71,71 @@ body {
 }
 
 .settings-and-phase {
-    display: grid;
-    grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.25fr);
-    gap: 1rem;
     margin-bottom: 1rem;
 }
 
 .settings {
-    padding: 1rem;
-    display: grid;
-    gap: 0.4rem;
+    padding: 0.95rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.38rem 0.7rem;
     align-content: start;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
 }
 
 .settings label {
-    font-size: 0.88rem;
+    font-size: 0.74rem;
     text-transform: uppercase;
     letter-spacing: 0.07em;
     font-weight: 700;
     color: var(--text-soft);
+    width: 100%;
 }
 
 .settings input {
-    width: fit-content;
+    width: min(260px, 100%);
     border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    padding: 0.45rem 0.6rem;
     font: inherit;
+    background: var(--surface-alt);
+}
+
+.settings input[type="time"] {
+    width: 120px;
+}
+
+.sync-status {
+    margin: 0.1rem 0 0;
+    font-size: 0.82rem;
+    color: var(--text-soft);
+    width: 100%;
+}
+
+.sync-status.error {
+    color: var(--danger);
 }
 
 .phase-indicator-container {
-    padding: 1rem;
+    padding: 0.7rem 0.9rem 0.8rem;
     text-align: left;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface) 68%, transparent);
+}
+
+.phase-strip-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
 }
 
 .phase-indicator-container h2 {
-    margin: 0 0 0.75rem;
-    font-size: 1rem;
+    margin: 0 0 0.45rem;
+    font-size: 0.82rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--text-soft);
@@ -109,7 +143,7 @@ body {
 
 .phase-visualizer {
     width: 100%;
-    height: 30px;
+    height: 22px;
     background: var(--surface-alt);
     border: 1px solid var(--line);
     border-radius: 999px;
@@ -133,16 +167,16 @@ body {
     color: var(--text);
     text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
     font-weight: 700;
-    font-size: 0.83rem;
+    font-size: 0.76rem;
     letter-spacing: 0.01em;
 }
 
 .phase-tooltip-container {
     position: relative;
     display: inline-flex;
-    margin-top: 0.6rem;
+    margin-top: 0;
     cursor: pointer;
-    font-size: 0.84rem;
+    font-size: 0.78rem;
     color: var(--brand-strong);
     font-weight: 600;
 }
@@ -179,6 +213,11 @@ body {
 .phase-tooltip-container:focus-within .tooltip-content {
     visibility: visible;
     opacity: 1;
+}
+
+.routine-settings {
+    margin-top: 1.2rem;
+    margin-bottom: 0.8rem;
 }
 
 .daily-overview {
@@ -357,52 +396,20 @@ body {
     color: #a53d30;
 }
 
-.pomodoro-panel {
-    margin-top: 1rem;
-    margin-bottom: 1.3rem;
-    padding: 0.95rem 1rem;
-}
-
-.pomodoro-panel h2 {
-    margin: 0;
-}
-
-.pomodoro-inline-timer {
-    font-size: clamp(2rem, 4vw, 2.7rem);
-    letter-spacing: 0.04em;
-    font-weight: 700;
-    margin: 0.35rem 0 0.55rem;
-}
-
-.pomodoro-inline-actions {
-    display: flex;
-    gap: 0.45rem;
-    flex-wrap: wrap;
-}
-
-.pomodoro-inline-actions button {
-    border: 1px solid var(--line);
-    background: var(--surface-alt);
-    color: var(--text);
-    border-radius: 8px;
-    padding: 0.42rem 0.72rem;
-    cursor: pointer;
-    font-weight: 700;
-}
-
-#pomodoro-inline-start {
-    background: var(--brand);
-    border-color: var(--brand);
-    color: #fff;
-}
-
-#pomodoro-inline-start:hover {
-    background: var(--brand-strong);
-}
-
 #habits-container,
 #break-habits-container {
     margin-bottom: 1.4rem;
+}
+
+#phase-1-section,
+#phase-2-section,
+#phase-3-section,
+#break-habits-container {
+    margin-bottom: 1.3rem;
+}
+
+.habit-group.active-phase h2 {
+    color: var(--brand-strong);
 }
 
 .habit-group {
@@ -706,8 +713,12 @@ body {
         padding: 1rem 0.85rem;
     }
 
-    .settings-and-phase {
-        grid-template-columns: 1fr;
+    .settings {
+        padding: 0.75rem;
+    }
+
+    .settings input {
+        width: 100%;
     }
 
     .daily-overview {

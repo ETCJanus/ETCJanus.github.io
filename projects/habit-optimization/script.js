@@ -1,11 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
     const wakeUpTimeInput = document.getElementById('wake-up-time');
+    const replacementHabitInput = document.getElementById('replacement-habit-input');
+    const replacementHabitSuggestion = document.getElementById('replacement-habit-suggestion');
+    const syncIdInput = document.getElementById('sync-id');
+    const syncStatusEl = document.getElementById('sync-status');
     const phaseBar = document.getElementById('phase-bar');
     const phaseText = document.getElementById('phase-text');
     const phaseExplanation = document.getElementById('phase-explanation');
-    const habitsContainer = document.getElementById('habits-container');
+    const phase1Section = document.getElementById('phase-1-section');
+    const phase2Section = document.getElementById('phase-2-section');
+    const phase3Section = document.getElementById('phase-3-section');
+    const phase1HabitsGrid = document.getElementById('phase-1-habits');
+    const phase2HabitsGrid = document.getElementById('phase-2-habits');
+    const phase3HabitsGrid = document.getElementById('phase-3-habits');
     const breakHabitsContainer = document.getElementById('break-habits-container');
+    const breakHabitsGrid = document.getElementById('break-habits-grid');
     const challengeGrid = document.getElementById('challenge-grid');
     const pomodoroModal = document.getElementById('pomodoro-modal');
     const pomodoroTimerEl = document.getElementById('pomodoro-timer');
@@ -26,61 +36,145 @@ document.addEventListener('DOMContentLoaded', () => {
     const habitLinchpinInput = document.getElementById('habit-linchpin');
     const habitPomodoroInput = document.getElementById('habit-pomodoro');
     const habitListManager = document.getElementById('habit-list-manager');
-    const pomodoroInlineTimerEl = document.getElementById('pomodoro-inline-timer');
-    const pomodoroInlineStartBtn = document.getElementById('pomodoro-inline-start');
-    const pomodoroInlinePauseBtn = document.getElementById('pomodoro-inline-pause');
-    const pomodoroInlineResetBtn = document.getElementById('pomodoro-inline-reset');
 
+    // --- Constants ---
+    const REQUIRED_HABITS_PER_DAY = 4;
+    const CLOUD_TABLE = 'habit_tracker_states';
+    const HABIT_PRESET_VERSION = 2;
 
-    // --- State & Config ---
-    let wakeUpTime = '07:00';
-    let habits = [
+    const DEFAULT_HABITS = [
         { id: 'cold-shower', name: 'Cold Shower', phase: 1, friction: 'high', completed: false },
-        { id: 'study', name: 'Study Work (Deep Focus)', phase: 1, friction: 'high', completed: false, pomodoro: true },
+        { id: 'study-work', name: 'Study Work', phase: 1, friction: 'high', completed: false, pomodoro: true },
         { id: 'running', name: 'Running', phase: 1, friction: 'low', completed: false, linchpin: true },
-        { id: 'reading', name: 'Reading', phase: 2, friction: 'low', completed: false },
-        { id: 'light-reading', name: 'Light Reading', phase: 2, friction: 'low', completed: false },
-        { id: 'meditation', name: 'Meditation/NSDR', phase: 2, friction: 'low', completed: false },
+        { id: 'reading-light-reading', name: 'Reading / Light Reading', phase: 2, friction: 'low', completed: false },
+        { id: 'meditation-nsdr', name: 'Meditation / NSDR', phase: 2, friction: 'low', completed: false },
+        { id: 'video-games', name: 'Video Games (Moderate Usage)', phase: 2, friction: 'medium', completed: false },
+        { id: 'dim-lights-screens-off', name: 'Dim Lights & Screens Off', phase: 3, friction: 'medium', completed: false },
+        { id: 'cool-down-bedroom', name: 'Cool Down Bedroom', phase: 3, friction: 'low', completed: false },
+        { id: 'sleep-on-time', name: 'Sleep on Time (In bed by target time)', phase: 3, friction: 'high', completed: false }
     ];
-    let habitsToBreak = [
+
+    const DEFAULT_BREAK_HABITS = [
         { id: 'smoking', name: 'Smoking/Weed', slipped: false }
     ];
+
+    // --- State ---
+    let wakeUpTime = '07:00';
+    let replacementHabit = '10 Pushups';
+    let syncId = 'default-user';
+    let habits = [...DEFAULT_HABITS];
+    let habitsToBreak = [...DEFAULT_BREAK_HABITS];
+    let habitPresetVersion = HABIT_PRESET_VERSION;
     let challengeStartDate = '';
     let challengeDataByDate = {};
     let dailyHabitChecks = {};
-
     let pomodoroInterval;
     let pomodoroTime = 25 * 60;
 
-    const REQUIRED_HABITS_PER_DAY = 4;
+    // --- Supabase ---
+    const hasSupabaseSDK = Boolean(window.supabase && typeof window.supabase.createClient === 'function');
+    const supabaseUrl = (window.HABIT_SUPABASE_URL || '').trim();
+    const supabaseAnonKey = (window.HABIT_SUPABASE_ANON_KEY || '').trim();
+    const cloudSyncReady = hasSupabaseSDK && Boolean(supabaseUrl && supabaseAnonKey);
+    const supabaseClient = cloudSyncReady ? window.supabase.createClient(supabaseUrl, supabaseAnonKey) : null;
 
-    // --- Local Storage ---
-    const saveData = () => {
-        const data = {
-            wakeUpTime,
-            habits,
-            habitsToBreak,
-            challengeStartDate,
-            challengeDataByDate,
-            dailyHabitChecks
-        };
-        localStorage.setItem('habitTrackerData', JSON.stringify(data));
+    const setSyncStatus = (text, isError = false) => {
+        if (!syncStatusEl) return;
+        syncStatusEl.textContent = text;
+        syncStatusEl.classList.toggle('error', isError);
     };
 
-    const loadData = () => {
-        const rawData = localStorage.getItem('habitTrackerData');
-        if (!rawData) return;
+    const getSerializableData = () => ({
+        wakeUpTime,
+        replacementHabit,
+        syncId,
+        habitPresetVersion,
+        habits,
+        habitsToBreak,
+        challengeStartDate,
+        challengeDataByDate,
+        dailyHabitChecks
+    });
 
-        const data = JSON.parse(rawData);
-        if (data) {
-            wakeUpTime = data.wakeUpTime || '07:00';
-            habits = data.habits || habits;
-            habitsToBreak = data.habitsToBreak || habitsToBreak;
-            challengeStartDate = data.challengeStartDate || challengeStartDate;
-            challengeDataByDate = data.challengeDataByDate || {};
-            dailyHabitChecks = data.dailyHabitChecks || {};
-            wakeUpTimeInput.value = wakeUpTime;
+    const applyData = (data) => {
+        wakeUpTime = data.wakeUpTime || '07:00';
+        replacementHabit = data.replacementHabit || '10 Pushups';
+        syncId = data.syncId || syncId;
+        habitPresetVersion = data.habitPresetVersion || 1;
+        habits = Array.isArray(data.habits) && data.habits.length ? data.habits : [...DEFAULT_HABITS];
+        habitsToBreak = Array.isArray(data.habitsToBreak) && data.habitsToBreak.length ? data.habitsToBreak : [...DEFAULT_BREAK_HABITS];
+        challengeStartDate = data.challengeStartDate || challengeStartDate;
+        challengeDataByDate = data.challengeDataByDate || {};
+        dailyHabitChecks = data.dailyHabitChecks || {};
+    };
+
+    const syncToCloud = async (payload) => {
+        if (!cloudSyncReady || !syncId || !supabaseClient) return;
+
+        const { error } = await supabaseClient
+            .from(CLOUD_TABLE)
+            .upsert({
+                sync_id: syncId,
+                payload,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'sync_id' });
+
+        if (error) {
+            setSyncStatus(`Cloud sync error: ${error.message}`, true);
+            return;
         }
+
+        setSyncStatus('Cloud synced');
+    };
+
+    const loadFromCloud = async () => {
+        if (!cloudSyncReady || !syncId || !supabaseClient) return null;
+
+        const { data, error } = await supabaseClient
+            .from(CLOUD_TABLE)
+            .select('payload')
+            .eq('sync_id', syncId)
+            .maybeSingle();
+
+        if (error) {
+            setSyncStatus(`Cloud load error: ${error.message}`, true);
+            return null;
+        }
+
+        if (!data?.payload) {
+            setSyncStatus('No cloud data yet for this Sync ID');
+            return null;
+        }
+
+        setSyncStatus('Cloud data loaded');
+        return data.payload;
+    };
+
+    const saveData = () => {
+        const data = getSerializableData();
+        localStorage.setItem('habitTrackerData', JSON.stringify(data));
+        void syncToCloud(data);
+    };
+
+    const loadData = async () => {
+        const rawData = localStorage.getItem('habitTrackerData');
+        if (rawData) {
+            applyData(JSON.parse(rawData));
+        }
+
+        if (cloudSyncReady) {
+            setSyncStatus('Cloud sync ready');
+            const cloudPayload = await loadFromCloud();
+            if (cloudPayload) {
+                applyData(cloudPayload);
+            }
+        } else {
+            setSyncStatus('Cloud sync inactive: add Supabase keys in supabase-config.js');
+        }
+
+        wakeUpTimeInput.value = wakeUpTime;
+        replacementHabitInput.value = replacementHabit;
+        syncIdInput.value = syncId;
     };
 
     // --- Date Helpers ---
@@ -110,11 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getTodayIndexInChallenge = () => {
         if (!challengeStartDate) return -1;
-
         const startDate = dateKeyToDate(challengeStartDate);
-        const today = new Date();
-        const dayDiff = diffInDays(startDate, today);
-
+        const dayDiff = diffInDays(startDate, new Date());
         return dayDiff >= 0 && dayDiff < 21 ? dayDiff : -1;
     };
 
@@ -122,15 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!challengeStartDate) {
             challengeStartDate = getDateKey();
         }
-    };
-
-    const syncTodayHabitCompletion = () => {
-        const todayKey = getDateKey();
-        const todayChecks = dailyHabitChecks[todayKey] || {};
-
-        habits.forEach((habit) => {
-            habit.completed = Boolean(todayChecks[habit.id]);
-        });
     };
 
     const ensureHabitIds = () => {
@@ -144,10 +226,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    const applyHabitPresetMigration = () => {
+        if (habitPresetVersion >= HABIT_PRESET_VERSION) return;
+
+        habits = [...DEFAULT_HABITS];
+
+        Object.keys(dailyHabitChecks).forEach((dateKey) => {
+            const checks = dailyHabitChecks[dateKey] || {};
+            const nextChecks = {};
+
+            habits.forEach((habit) => {
+                if (checks[habit.id]) {
+                    nextChecks[habit.id] = true;
+                }
+            });
+
+            dailyHabitChecks[dateKey] = nextChecks;
+        });
+
+        habitPresetVersion = HABIT_PRESET_VERSION;
+    };
+
+    const syncTodayHabitCompletion = () => {
+        const todayKey = getDateKey();
+        const todayChecks = dailyHabitChecks[todayKey] || {};
+
+        habits.forEach((habit) => {
+            habit.completed = Boolean(todayChecks[habit.id]);
+        });
+    };
+
     const computeStreaks = () => {
-        if (!challengeStartDate) {
-            return { current: 0, best: 0 };
-        }
+        if (!challengeStartDate) return { current: 0, best: 0 };
 
         const startDate = dateKeyToDate(challengeStartDate);
         const today = new Date();
@@ -183,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const updatePhase = () => {
         const now = new Date();
         const [wakeHours, wakeMinutes] = wakeUpTime.split(':').map(Number);
-        
+
         const wakeUpDate = new Date();
         wakeUpDate.setHours(wakeHours, wakeMinutes, 0, 0);
 
@@ -196,20 +306,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hoursSinceWake >= 0 && hoursSinceWake <= 8) {
             currentPhase = 1;
             phaseName = 'Phase 1: Action';
-            explanation = 'Peak norepinephrine and dopamine. Ideal for tackling high-friction habits that require motivation and focus.';
-        } else if (hoursSinceWake > 8 && hoursSinceWake <= 14) {
+            explanation = '0-8 hours after waking. Best window for high-friction actions and effortful habits.';
+        } else if (hoursSinceWake > 8 && hoursSinceWake < 16) {
             currentPhase = 2;
             phaseName = 'Phase 2: Creative';
-            explanation = 'Higher serotonin levels. Good for learning, creativity, and lower-friction habits.';
+            explanation = '9-14 hours after waking. Better for learning, creativity, and moderate friction habits.';
         } else {
             currentPhase = 3;
             phaseName = 'Phase 3: Wind Down';
-            explanation = 'Time for rest and recovery. No demanding habits. Prepare for sleep.';
+            explanation = '16-24 hours after waking. Wind down, reduce stimulation, and prioritize sleep routines.';
         }
-        
-        const totalDayHours = 24;
-        const progress = (hoursSinceWake / totalDayHours) * 100;
 
+        const progress = (hoursSinceWake / 24) * 100;
         phaseBar.style.width = `${Math.min(Math.max(progress, 0), 100)}%`;
         phaseText.textContent = phaseName;
         phaseExplanation.textContent = explanation;
@@ -217,65 +325,65 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHabits(currentPhase);
     };
 
-    // --- Render Functions ---
-    const renderHabits = (currentPhase) => {
-        habitsContainer.innerHTML = '';
-        breakHabitsContainer.innerHTML = '';
+    const setActivePhaseSection = (currentPhase) => {
+        [phase1Section, phase2Section, phase3Section].forEach((section) => {
+            section.classList.remove('active-phase');
+        });
 
-        const phase1Habits = habits.filter(h => h.phase === 1);
-        const phase2Habits = habits.filter(h => h.phase === 2);
-
-        habitsContainer.appendChild(createHabitGroup('Phase 1 Habits', phase1Habits, currentPhase === 1));
-        habitsContainer.appendChild(createHabitGroup('Phase 2 Habits', phase2Habits, currentPhase === 2));
-        
-        renderBreakHabits();
-        updateDailyOverview(currentPhase);
-        renderHabitManager();
+        if (currentPhase === 1) phase1Section.classList.add('active-phase');
+        if (currentPhase === 2) phase2Section.classList.add('active-phase');
+        if (currentPhase === 3) phase3Section.classList.add('active-phase');
     };
 
-    const createHabitGroup = (title, habitList, isCurrentPhase) => {
-        const group = document.createElement('div');
-        group.className = 'habit-group';
-        group.innerHTML = `<h2>${title}${isCurrentPhase ? ' <span class="phase-pill">Current</span>' : ''}</h2>`;
-        
-        const grid = document.createElement('div');
-        grid.className = 'habits-grid';
+    // --- Render Functions ---
+    const createHabitCard = (habit) => {
+        const card = document.createElement('div');
+        card.className = 'habit-card';
+        if (habit.completed) card.classList.add('completed');
+        if (habit.linchpin) card.classList.add('linchpin');
 
-        if (habitList.length === 0) {
-            grid.innerHTML = `<p>No habits for this phase.</p>`;
-        } else {
-            habitList.forEach(habit => {
-                const card = document.createElement('div');
-                card.className = 'habit-card';
-                if (habit.completed) card.classList.add('completed');
-                if (habit.linchpin) card.classList.add('linchpin');
+        card.innerHTML = `
+            <div class="habit-info">
+                <h3>${habit.name}</h3>
+                <span class="friction-tag ${habit.friction}">${habit.friction} friction</span>
+            </div>
+            <div class="habit-actions">
+                <button class="toggle-habit" data-id="${habit.id}">${habit.completed ? 'Undo' : 'Complete'}</button>
+                ${habit.pomodoro ? `<button class="start-pomodoro" data-id="${habit.id}">Timer</button>` : ''}
+            </div>
+        `;
 
-                card.innerHTML = `
-                    <div class="habit-info">
-                        <h3>${habit.name}</h3>
-                        <span class="friction-tag ${habit.friction}">${habit.friction} friction</span>
-                    </div>
-                    <div class="habit-actions">
-                        <button class="toggle-habit" data-id="${habit.id}">${habit.completed ? 'Undo' : 'Complete'}</button>
-                        ${habit.pomodoro ? `<button class="start-pomodoro" data-id="${habit.id}">Timer</button>` : ''}
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
+        return card;
+    };
+
+    const renderPhaseGrid = (gridEl, list) => {
+        gridEl.innerHTML = '';
+        if (!list.length) {
+            gridEl.innerHTML = '<p>No habits in this phase yet.</p>';
+            return;
         }
-        group.appendChild(grid);
-        return group;
+
+        list.forEach((habit) => gridEl.appendChild(createHabitCard(habit)));
+    };
+
+    const renderHabits = (currentPhase) => {
+        const phase1Habits = habits.filter((h) => h.phase === 1);
+        const phase2Habits = habits.filter((h) => h.phase === 2);
+        const phase3Habits = habits.filter((h) => h.phase === 3);
+
+        renderPhaseGrid(phase1HabitsGrid, phase1Habits);
+        renderPhaseGrid(phase2HabitsGrid, phase2Habits);
+        renderPhaseGrid(phase3HabitsGrid, phase3Habits);
+        renderBreakHabits();
+        renderHabitManager();
+        setActivePhaseSection(currentPhase);
+        updateDailyOverview(currentPhase);
     };
 
     const renderBreakHabits = () => {
-        const group = document.createElement('div');
-        group.className = 'habit-group break-group';
-        group.innerHTML = `<h2>Habits to Break</h2>`;
-        
-        const grid = document.createElement('div');
-        grid.className = 'habits-grid';
+        breakHabitsGrid.innerHTML = '';
 
-        habitsToBreak.forEach(habit => {
+        habitsToBreak.forEach((habit) => {
             const card = document.createElement('div');
             card.className = 'habit-card';
             card.innerHTML = `
@@ -286,10 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="slipped-btn" data-id="${habit.id}">I Slipped</button>
                 </div>
             `;
-            grid.appendChild(card);
+            breakHabitsGrid.appendChild(card);
         });
-        group.appendChild(grid);
-        breakHabitsContainer.appendChild(group);
     };
 
     const renderChallengeGrid = () => {
@@ -314,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         habitListManager.innerHTML = '';
 
-        if (habits.length === 0) {
+        if (!habits.length) {
             habitListManager.innerHTML = '<p>No habits yet. Add your first habit above.</p>';
             return;
         }
@@ -329,6 +435,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <select class="manage-phase">
                     <option value="1" ${habit.phase === 1 ? 'selected' : ''}>Phase 1</option>
                     <option value="2" ${habit.phase === 2 ? 'selected' : ''}>Phase 2</option>
+                    <option value="3" ${habit.phase === 3 ? 'selected' : ''}>Phase 3</option>
                 </select>
                 <select class="manage-friction">
                     <option value="high" ${habit.friction === 'high' ? 'selected' : ''}>High</option>
@@ -346,9 +453,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateDailyOverview = (currentPhase) => {
-        if (!completedCountEl || !challengeStatusEl || !phaseWindowEl) return;
-
-        const completedHabits = habits.filter(h => h.completed).length;
+        const completedHabits = habits.filter((h) => h.completed).length;
         const totalHabits = habits.length;
         const todayKey = getDateKey();
         const todayStatus = challengeDataByDate[todayKey];
@@ -356,22 +461,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
         completedCountEl.textContent = `${completedHabits} / ${totalHabits}`;
         challengeStatusEl.textContent = todayStatus?.successful ? 'Successful day' : 'Not complete';
+        streakCountEl.textContent = `${streaks.current} ${streaks.current === 1 ? 'day' : 'days'}`;
+        bestStreakCountEl.textContent = `${streaks.best} ${streaks.best === 1 ? 'day' : 'days'}`;
 
-        if (streakCountEl) {
-            streakCountEl.textContent = `${streaks.current} ${streaks.current === 1 ? 'day' : 'days'}`;
+        if (currentPhase === 1) phaseWindowEl.textContent = 'Action window';
+        if (currentPhase === 2) phaseWindowEl.textContent = 'Creative window';
+        if (currentPhase === 3) phaseWindowEl.textContent = 'Wind-down window';
+    };
+
+    const updateChallengeProgress = () => {
+        const todayIndex = getTodayIndexInChallenge();
+        const completedHabits = habits.filter((h) => h.completed).length;
+
+        if (todayIndex === -1) {
+            renderChallengeGrid();
+            return;
         }
 
-        if (bestStreakCountEl) {
-            bestStreakCountEl.textContent = `${streaks.best} ${streaks.best === 1 ? 'day' : 'days'}`;
-        }
+        const challengeStart = dateKeyToDate(challengeStartDate);
+        const todayDate = addDays(challengeStart, todayIndex);
+        const todayKey = getDateKey(todayDate);
 
-        if (currentPhase === 1) {
-            phaseWindowEl.textContent = 'Action window';
-        } else if (currentPhase === 2) {
-            phaseWindowEl.textContent = 'Creative window';
-        } else {
-            phaseWindowEl.textContent = 'Wind-down window';
-        }
+        challengeDataByDate[todayKey] = {
+            successful: completedHabits >= REQUIRED_HABITS_PER_DAY,
+            habitsDone: completedHabits
+        };
+
+        renderChallengeGrid();
+    };
+
+    const updateReplacementHabitSuggestion = () => {
+        if (!replacementHabitSuggestion) return;
+        replacementHabitSuggestion.textContent = replacementHabit || '10 Pushups';
     };
 
     // --- Event Handlers ---
@@ -379,6 +500,31 @@ document.addEventListener('DOMContentLoaded', () => {
         wakeUpTime = e.target.value;
         saveData();
         updatePhase();
+    });
+
+    replacementHabitInput.addEventListener('change', (e) => {
+        replacementHabit = e.target.value.trim() || '10 Pushups';
+        replacementHabitInput.value = replacementHabit;
+        updateReplacementHabitSuggestion();
+        saveData();
+    });
+
+    syncIdInput.addEventListener('change', async (e) => {
+        syncId = e.target.value.trim() || 'default-user';
+        syncIdInput.value = syncId;
+
+        const cloudPayload = await loadFromCloud();
+        if (cloudPayload) {
+            applyData(cloudPayload);
+            ensureChallengeWindow();
+            ensureHabitIds();
+            syncTodayHabitCompletion();
+        }
+
+        updateReplacementHabitSuggestion();
+        updateChallengeProgress();
+        updatePhase();
+        saveData();
     });
 
     habitEditorForm?.addEventListener('submit', (e) => {
@@ -457,68 +603,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    habitsContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('toggle-habit')) {
-            const habitId = e.target.dataset.id;
-            const habit = habits.find(h => h.id === habitId);
-            if (habit) {
-                const todayKey = getDateKey();
-                if (!dailyHabitChecks[todayKey]) {
-                    dailyHabitChecks[todayKey] = {};
-                }
+    const handleHabitGridClick = (e) => {
+        const target = e.target;
+        if (!(target instanceof HTMLElement)) return;
 
-                habit.completed = !habit.completed;
+        if (target.classList.contains('toggle-habit')) {
+            const habitId = target.dataset.id;
+            const habit = habits.find((h) => h.id === habitId);
+            if (!habit) return;
 
-                if (habit.completed) {
-                    dailyHabitChecks[todayKey][habit.id] = true;
-                } else {
-                    delete dailyHabitChecks[todayKey][habit.id];
-                }
-
-                updateChallengeProgress();
-                saveData();
-                updatePhase();
+            const todayKey = getDateKey();
+            if (!dailyHabitChecks[todayKey]) {
+                dailyHabitChecks[todayKey] = {};
             }
-        }
-        if (e.target.classList.contains('start-pomodoro')) {
-            pomodoroModal.style.display = 'block';
-        }
-    });
 
-    breakHabitsContainer.addEventListener('click', (e) => {
-        if (e.target.classList.contains('slipped-btn')) {
-            replacementModal.style.display = 'block';
-        }
-    });
+            habit.completed = !habit.completed;
 
-    const updateChallengeProgress = () => {
-        const todayIndex = getTodayIndexInChallenge();
-        const completedHabits = habits.filter(h => h.completed).length;
+            if (habit.completed) {
+                dailyHabitChecks[todayKey][habit.id] = true;
+            } else {
+                delete dailyHabitChecks[todayKey][habit.id];
+            }
 
-        if (todayIndex === -1) {
-            renderChallengeGrid();
+            updateChallengeProgress();
+            saveData();
+            updatePhase();
             return;
         }
 
-        const challengeStart = dateKeyToDate(challengeStartDate);
-        const todayDate = addDays(challengeStart, todayIndex);
-        const todayKey = getDateKey(todayDate);
-
-        challengeDataByDate[todayKey] = {
-            successful: completedHabits >= REQUIRED_HABITS_PER_DAY,
-            habitsDone: completedHabits
-        };
-        renderChallengeGrid();
+        if (target.classList.contains('start-pomodoro')) {
+            pomodoroModal.style.display = 'block';
+        }
     };
+
+    phase1Section.addEventListener('click', handleHabitGridClick);
+    phase2Section.addEventListener('click', handleHabitGridClick);
+    phase3Section.addEventListener('click', handleHabitGridClick);
+
+    breakHabitsContainer.addEventListener('click', (e) => {
+        const target = e.target;
+        if (!(target instanceof HTMLElement)) return;
+
+        if (target.classList.contains('slipped-btn')) {
+            updateReplacementHabitSuggestion();
+            replacementModal.style.display = 'block';
+        }
+    });
 
     // --- Pomodoro Logic ---
     const updatePomodoroDisplay = () => {
         const minutes = Math.floor(pomodoroTime / 60).toString().padStart(2, '0');
         const seconds = (pomodoroTime % 60).toString().padStart(2, '0');
-        const value = `${minutes}:${seconds}`;
-
-        if (pomodoroTimerEl) pomodoroTimerEl.textContent = value;
-        if (pomodoroInlineTimerEl) pomodoroInlineTimerEl.textContent = value;
+        pomodoroTimerEl.textContent = `${minutes}:${seconds}`;
     };
 
     const startPomodoro = () => {
@@ -538,10 +674,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     };
 
-    const pausePomodoro = () => {
-        clearInterval(pomodoroInterval);
-    };
-
     const resetPomodoro = () => {
         clearInterval(pomodoroInterval);
         pomodoroTime = 25 * 60;
@@ -550,30 +682,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     startPomodoroBtn.addEventListener('click', startPomodoro);
     resetPomodoroBtn.addEventListener('click', resetPomodoro);
-    pomodoroInlineStartBtn?.addEventListener('click', startPomodoro);
-    pomodoroInlinePauseBtn?.addEventListener('click', pausePomodoro);
-    pomodoroInlineResetBtn?.addEventListener('click', resetPomodoro);
-    closeModalBtn.addEventListener('click', () => pomodoroModal.style.display = 'none');
-    replacementDoneBtn.addEventListener('click', () => replacementModal.style.display = 'none');
-    window.addEventListener('click', (e) => {
-        if (e.target == pomodoroModal) pomodoroModal.style.display = 'none';
-        if (e.target == replacementModal) replacementModal.style.display = 'none';
+    closeModalBtn.addEventListener('click', () => {
+        pomodoroModal.style.display = 'none';
     });
 
+    replacementDoneBtn.addEventListener('click', () => {
+        replacementModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === pomodoroModal) pomodoroModal.style.display = 'none';
+        if (e.target === replacementModal) replacementModal.style.display = 'none';
+    });
 
     // --- Initialization ---
-    const init = () => {
-        loadData();
+    const init = async () => {
+        await loadData();
+        applyHabitPresetMigration();
         ensureChallengeWindow();
         ensureHabitIds();
         syncTodayHabitCompletion();
+        updateReplacementHabitSuggestion();
         updateChallengeProgress();
         updatePhase();
         renderChallengeGrid();
         updatePomodoroDisplay();
         saveData();
-        setInterval(updatePhase, 60000); // Update every minute
+        setInterval(updatePhase, 60000);
     };
 
-    init();
+    void init();
 });

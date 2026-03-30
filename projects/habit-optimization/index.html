@@ -13,25 +13,23 @@
             <p>Use your neurobiology windows to place difficult habits at the right time.</p>
         </header>
 
-        <div class="settings-and-phase">
-            <div class="settings panel">
-                <label for="wake-up-time">Wake-up time</label>
-                <input type="time" id="wake-up-time" value="07:00" aria-label="Wake up time">
-            </div>
-            <div class="phase-indicator-container panel">
-                <h2>Current Phase</h2>
+        <section class="settings-and-phase" aria-label="Current phase">
+            <div class="phase-indicator-container">
+                <div class="phase-strip-head">
+                    <h2>Current Phase</h2>
+                    <div class="phase-tooltip-container">
+                        <span class="tooltip-trigger">Why this phase?</span>
+                        <div class="tooltip-content">
+                            <p id="phase-explanation">Explanation of the current phase's neurobiology.</p>
+                        </div>
+                    </div>
+                </div>
                 <div class="phase-visualizer">
                     <div id="phase-bar" class="phase-bar"></div>
                     <div id="phase-text" class="phase-text">Calculating...</div>
                 </div>
-                <div class="phase-tooltip-container">
-                    <span class="tooltip-trigger">(Why this phase?)</span>
-                    <div class="tooltip-content">
-                        <p id="phase-explanation">Explanation of the current phase's neurobiology.</p>
-                    </div>
-                </div>
             </div>
-        </div>
+        </section>
 
         <section class="daily-overview panel" aria-label="Daily overview">
             <div class="overview-item">
@@ -57,12 +55,22 @@
         </section>
 
         <main>
-            <div id="habits-container">
-                <!-- Habits will be dynamically inserted here -->
-            </div>
-            <div id="break-habits-container">
-                <!-- "Habits to Break" will be inserted here -->
-            </div>
+            <section id="phase-1-section" class="habit-group">
+                <h2>Phase 1 (0-8 hrs)</h2>
+                <div id="phase-1-habits" class="habits-grid"></div>
+            </section>
+            <section id="phase-2-section" class="habit-group">
+                <h2>Phase 2 (9-14 hrs)</h2>
+                <div id="phase-2-habits" class="habits-grid"></div>
+            </section>
+            <section id="phase-3-section" class="habit-group">
+                <h2>Phase 3 (16-24 hrs)</h2>
+                <div id="phase-3-habits" class="habits-grid"></div>
+            </section>
+            <section id="break-habits-container" class="habit-group break-group">
+                <h2>Habits to Break</h2>
+                <div id="break-habits-grid" class="habits-grid"></div>
+            </section>
         </main>
 
         <section class="challenge-tracker">
@@ -73,14 +81,14 @@
             </div>
         </section>
 
-        <section class="pomodoro-panel panel" aria-label="Pomodoro timer">
-            <h2>Pomodoro Timer</h2>
-            <div id="pomodoro-inline-timer" class="pomodoro-inline-timer">25:00</div>
-            <div class="pomodoro-inline-actions">
-                <button id="pomodoro-inline-start" type="button">Start</button>
-                <button id="pomodoro-inline-pause" type="button">Pause</button>
-                <button id="pomodoro-inline-reset" type="button">Reset</button>
-            </div>
+        <section class="settings routine-settings" aria-label="Routine settings">
+            <label for="wake-up-time">Wake-up time</label>
+            <input type="time" id="wake-up-time" value="07:00" aria-label="Wake up time">
+            <label for="replacement-habit-input">Replacement Habit (for slips)</label>
+            <input type="text" id="replacement-habit-input" value="10 Pushups" aria-label="Replacement habit">
+            <label for="sync-id">Sync ID</label>
+            <input type="text" id="sync-id" value="default-user" aria-label="Sync ID">
+            <p id="sync-status" class="sync-status">Cloud sync inactive</p>
         </section>
 
         <details class="habit-editor panel" aria-label="Habit editor">
@@ -102,6 +110,7 @@
                         <select id="habit-phase" name="habit-phase">
                             <option value="1">Phase 1</option>
                             <option value="2">Phase 2</option>
+                            <option value="3">Phase 3 (Wind Down)</option>
                         </select>
                     </div>
                     <div class="form-field">
@@ -143,11 +152,13 @@
     <div id="replacement-habit-modal" class="modal">
         <div class="modal-content">
             <p>You slipped. Immediately complete a 2-minute replacement habit to disrupt the neural circuit.</p>
-            <p><strong>Suggestion: 10 Pushups</strong></p>
+            <p><strong>Suggestion: <span id="replacement-habit-suggestion">10 Pushups</span></strong></p>
             <button id="replacement-habit-done">Done</button>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
