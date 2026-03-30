@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const REQUIRED_HABITS_PER_DAY = 4;
     const CLOUD_TABLE = 'habit_tracker_states';
     const HABIT_PRESET_VERSION = 2;
+    const CLOUD_POLL_INTERVAL_MS = 15000;
 
     const DEFAULT_HABITS = [
         { id: 'cold-shower', name: 'Cold Shower', phase: 1, friction: 'high', completed: false },
@@ -127,27 +128,67 @@ document.addEventListener('DOMContentLoaded', () => {
         setSyncStatus('Cloud synced');
     };
 
-    const loadFromCloud = async () => {
+    const loadFromCloud = async (silent = false) => {
         if (!cloudSyncReady || !syncId || !supabaseClient) return null;
 
         const { data, error } = await supabaseClient
             .from(CLOUD_TABLE)
-            .select('payload')
+            .select('payload,updated_at')
             .eq('sync_id', syncId)
             .maybeSingle();
 
         if (error) {
-            setSyncStatus(`Cloud load error: ${error.message}`, true);
+            if (!silent) {
+                setSyncStatus(`Cloud load error: ${error.message}`, true);
+            }
             return null;
         }
 
         if (!data?.payload) {
-            setSyncStatus('No cloud data yet for this Sync ID');
+            if (!silent) {
+                setSyncStatus('No cloud data yet for this Sync ID');
+            }
             return null;
         }
 
-        setSyncStatus('Cloud data loaded');
-        return data.payload;
+        return data;
+    };
+
+    const hydrateFromCloud = async (silent = false) => {
+        const cloudData = await loadFromCloud(silent);
+        if (!cloudData?.payload) {
+            return false;
+        }
+
+        const localPayload = getSerializableData();
+        const localSnapshot = JSON.stringify(localPayload);
+        const cloudSnapshot = JSON.stringify(cloudData.payload);
+
+        if (localSnapshot === cloudSnapshot) {
+            if (!silent) {
+                setSyncStatus('Already up to date');
+            }
+            return false;
+        }
+
+        applyData(cloudData.payload);
+        ensureChallengeWindow();
+        ensureHabitIds();
+        syncTodayHabitCompletion();
+
+        wakeUpTimeInput.value = wakeUpTime;
+        replacementHabitInput.value = replacementHabit;
+        syncIdInput.value = syncId;
+
+        updateReplacementHabitSuggestion();
+        updateChallengeProgress();
+        updatePhase();
+
+        if (!silent) {
+            setSyncStatus('Cloud data loaded');
+        }
+
+        return true;
     };
 
     const saveData = () => {
@@ -164,10 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (cloudSyncReady) {
             setSyncStatus('Cloud sync ready');
-            const cloudPayload = await loadFromCloud();
-            if (cloudPayload) {
-                applyData(cloudPayload);
-            }
+            await hydrateFromCloud(false);
         } else {
             setSyncStatus('Cloud sync inactive: add Supabase keys in supabase-config.js');
         }
@@ -513,13 +551,7 @@ document.addEventListener('DOMContentLoaded', () => {
         syncId = e.target.value.trim() || 'default-user';
         syncIdInput.value = syncId;
 
-        const cloudPayload = await loadFromCloud();
-        if (cloudPayload) {
-            applyData(cloudPayload);
-            ensureChallengeWindow();
-            ensureHabitIds();
-            syncTodayHabitCompletion();
-        }
+        await hydrateFromCloud(false);
 
         updateReplacementHabitSuggestion();
         updateChallengeProgress();
@@ -695,6 +727,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === replacementModal) replacementModal.style.display = 'none';
     });
 
+    window.addEventListener('focus', () => {
+        void hydrateFromCloud(true);
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            void hydrateFromCloud(true);
+        }
+    });
+
     // --- Initialization ---
     const init = async () => {
         await loadData();
@@ -709,6 +751,9 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePomodoroDisplay();
         saveData();
         setInterval(updatePhase, 60000);
+        setInterval(() => {
+            void hydrateFromCloud(true);
+        }, CLOUD_POLL_INTERVAL_MS);
     };
 
     void init();
