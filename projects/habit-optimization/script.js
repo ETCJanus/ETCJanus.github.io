@@ -3,6 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const wakeUpTimeInput = document.getElementById('wake-up-time');
     const replacementHabitInput = document.getElementById('replacement-habit-input');
     const replacementHabitSuggestion = document.getElementById('replacement-habit-suggestion');
+    const replacementTriggerNote = document.getElementById('replacement-trigger-note');
+    const slipTriggerInput = document.getElementById('slip-trigger');
     const syncIdInput = document.getElementById('sync-id');
     const syncStatusEl = document.getElementById('sync-status');
     const phaseHand = document.getElementById('phase-hand');
@@ -24,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const challengeGrid = document.getElementById('challenge-grid');
     const pomodoroModal = document.getElementById('pomodoro-modal');
     const pomodoroTimerEl = document.getElementById('pomodoro-timer');
+    const pomodoroDurationInput = document.getElementById('pomodoro-duration');
     const startPomodoroBtn = document.getElementById('pomodoro-start');
     const resetPomodoroBtn = document.getElementById('pomodoro-reset');
     const closeModalBtn = document.querySelector('.close-button');
@@ -34,6 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const phaseWindowSummaryEl = document.getElementById('phase-window-summary');
     const streakCountEl = document.getElementById('streak-count');
     const bestStreakCountEl = document.getElementById('best-streak-count');
+    const momentumRingProgressEl = document.getElementById('momentum-ring-progress');
+    const todayProgressCaptionEl = document.getElementById('today-progress-caption');
+    const todayProgressTextEl = document.getElementById('today-progress-text');
+    const rhythmSparklinePolylineEl = document.getElementById('rhythm-sparkline-polyline');
+    const rhythmSparklineLabelsEl = document.getElementById('rhythm-sparkline-labels');
     const habitEditorForm = document.getElementById('habit-editor-form');
     const habitNameInput = document.getElementById('habit-name');
     const habitPhaseInput = document.getElementById('habit-phase');
@@ -41,6 +49,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const habitLinchpinInput = document.getElementById('habit-linchpin');
     const habitPomodoroInput = document.getElementById('habit-pomodoro');
     const habitListManager = document.getElementById('habit-list-manager');
+    const hideCompletedMobileInput = document.getElementById('hide-completed-mobile');
+    const resetTodayBtn = document.getElementById('reset-today-btn');
+    const dailyCommitmentsForm = document.getElementById('daily-commitments-form');
+    const commitmentMustInput = document.getElementById('commitment-must');
+    const commitmentMaintenanceInput = document.getElementById('commitment-maintenance');
+    const commitmentAdminInput = document.getElementById('commitment-admin');
+    const dailyCommitmentsList = document.getElementById('daily-commitments-list');
+    const recoveryPanel = document.getElementById('recovery-panel');
+    const recoveryContextEl = document.getElementById('recovery-context');
+    const recoveryStepsEl = document.getElementById('recovery-steps');
+    const recoveryCompleteBtn = document.getElementById('recovery-complete-btn');
+    const weeklyResetForm = document.getElementById('weekly-reset-form');
+    const weeklyWinsInput = document.getElementById('weekly-wins');
+    const weeklySlipsInput = document.getElementById('weekly-slips');
+    const weeklySimplifyInput = document.getElementById('weekly-simplify');
+    const weeklyPriority1Input = document.getElementById('weekly-priority-1');
+    const weeklyPriority2Input = document.getElementById('weekly-priority-2');
+    const weeklyPriority3Input = document.getElementById('weekly-priority-3');
+    const weeklySuccessfulDaysEl = document.getElementById('weekly-successful-days');
+    const weeklySlipEventsEl = document.getElementById('weekly-slip-events');
+    const weeklyCompletionRateEl = document.getElementById('weekly-completion-rate');
 
     // --- Constants ---
     const REQUIRED_HABITS_PER_DAY = 4;
@@ -75,8 +104,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let challengeDataByDate = {};
     let dailyHabitChecks = {};
     let slipEventsByDate = {};
+    let dailyCommitmentsByDate = {};
+    let weeklyResetByWeek = {};
+    let recoveryPlanByDate = {};
+    let hideCompletedMobile = false;
+    let pomodoroDurationMinutes = 25;
+    let pomodoroEndAt = null;
+    let activeDateKey = '';
+    let pendingSlipHabitId = null;
     let pomodoroInterval;
-    let pomodoroTime = 25 * 60;
+    let pomodoroTime = pomodoroDurationMinutes * 60;
 
     // --- Supabase ---
     const hasSupabaseSDK = Boolean(window.supabase && typeof window.supabase.createClient === 'function');
@@ -101,7 +138,14 @@ document.addEventListener('DOMContentLoaded', () => {
         challengeStartDate,
         challengeDataByDate,
         dailyHabitChecks,
-        slipEventsByDate
+        slipEventsByDate,
+        dailyCommitmentsByDate,
+        weeklyResetByWeek,
+        recoveryPlanByDate,
+        hideCompletedMobile,
+        pomodoroDurationMinutes,
+        pomodoroEndAt,
+        pomodoroTime
     });
 
     const applyData = (data) => {
@@ -115,6 +159,92 @@ document.addEventListener('DOMContentLoaded', () => {
         challengeDataByDate = data.challengeDataByDate || {};
         dailyHabitChecks = data.dailyHabitChecks || {};
         slipEventsByDate = data.slipEventsByDate || {};
+        dailyCommitmentsByDate = data.dailyCommitmentsByDate || {};
+        weeklyResetByWeek = data.weeklyResetByWeek || {};
+        recoveryPlanByDate = data.recoveryPlanByDate || {};
+        hideCompletedMobile = Boolean(data.hideCompletedMobile);
+        pomodoroDurationMinutes = Math.min(120, Math.max(5, Number(data.pomodoroDurationMinutes) || 25));
+        pomodoroEndAt = Number(data.pomodoroEndAt) || null;
+        pomodoroTime = Number(data.pomodoroTime) || pomodoroDurationMinutes * 60;
+    };
+
+    const normalizeSlipEntry = (entry) => {
+        if (typeof entry === 'number') {
+            return { count: entry, triggers: {} };
+        }
+
+        if (entry && typeof entry === 'object') {
+            return {
+                count: Number(entry.count) || 0,
+                triggers: entry.triggers && typeof entry.triggers === 'object' ? { ...entry.triggers } : {}
+            };
+        }
+
+        return { count: 0, triggers: {} };
+    };
+
+    const ensureSlipModel = () => {
+        Object.keys(slipEventsByDate).forEach((dateKey) => {
+            const dayMap = slipEventsByDate[dateKey] || {};
+            const normalizedDayMap = {};
+
+            Object.entries(dayMap).forEach(([habitId, entry]) => {
+                normalizedDayMap[habitId] = normalizeSlipEntry(entry);
+            });
+
+            slipEventsByDate[dateKey] = normalizedDayMap;
+        });
+    };
+
+    const getWeekKey = (date = new Date()) => {
+        const reference = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const day = reference.getDay();
+        const mondayOffset = day === 0 ? -6 : 1 - day;
+        reference.setDate(reference.getDate() + mondayOffset);
+        return getDateKey(reference);
+    };
+
+    const ensureDailyCommitmentsRecord = (dateKey) => {
+        if (!dailyCommitmentsByDate[dateKey]) {
+            dailyCommitmentsByDate[dateKey] = {
+                mustDo: '',
+                maintenance: '',
+                admin: '',
+                checks: {
+                    mustDo: false,
+                    maintenance: false,
+                    admin: false
+                }
+            };
+        }
+        return dailyCommitmentsByDate[dateKey];
+    };
+
+    const ensureRecoveryRecord = (dateKey) => {
+        if (!recoveryPlanByDate[dateKey]) {
+            recoveryPlanByDate[dateKey] = {
+                steps: {
+                    minimum: false,
+                    environment: false,
+                    rebound: false
+                },
+                completedAt: ''
+            };
+        }
+        return recoveryPlanByDate[dateKey];
+    };
+
+    const ensureWeeklyResetRecord = (weekKey) => {
+        if (!weeklyResetByWeek[weekKey]) {
+            weeklyResetByWeek[weekKey] = {
+                wins: '',
+                slips: '',
+                simplify: '',
+                priorities: ['', '', ''],
+                updatedAt: ''
+            };
+        }
+        return weeklyResetByWeek[weekKey];
     };
 
     const syncToCloud = async (payload) => {
@@ -187,6 +317,8 @@ document.addEventListener('DOMContentLoaded', () => {
         wakeUpTimeInput.value = wakeUpTime;
         replacementHabitInput.value = replacementHabit;
         syncIdInput.value = syncId;
+        if (hideCompletedMobileInput) hideCompletedMobileInput.checked = hideCompletedMobile;
+        if (pomodoroDurationInput) pomodoroDurationInput.value = String(pomodoroDurationMinutes);
 
         updateReplacementHabitSuggestion();
         updateChallengeProgress();
@@ -221,6 +353,8 @@ document.addEventListener('DOMContentLoaded', () => {
         wakeUpTimeInput.value = wakeUpTime;
         replacementHabitInput.value = replacementHabit;
         syncIdInput.value = syncId;
+        if (hideCompletedMobileInput) hideCompletedMobileInput.checked = hideCompletedMobile;
+        if (pomodoroDurationInput) pomodoroDurationInput.value = String(pomodoroDurationMinutes);
     };
 
     // --- Date Helpers ---
@@ -366,8 +500,311 @@ document.addEventListener('DOMContentLoaded', () => {
         return { current, best };
     };
 
+    const computeDayStatus = (dateKey) => {
+        const dayChecks = dailyHabitChecks[dateKey] || {};
+        const habitsDone = Object.values(dayChecks).filter(Boolean).length;
+        const hasLogs = Object.keys(dayChecks).length > 0;
+        const todayKey = getDateKey();
+
+        if (!hasLogs) {
+            return {
+                status: dateKey === todayKey ? 'pending' : 'missed',
+                successful: false,
+                habitsDone: 0,
+                hasLogs: false
+            };
+        }
+
+        const successful = habitsDone >= REQUIRED_HABITS_PER_DAY;
+        return {
+            status: successful ? 'successful' : 'incomplete',
+            successful,
+            habitsDone,
+            hasLogs: true
+        };
+    };
+
+    const reconcileChallengeData = () => {
+        if (!challengeStartDate) return;
+
+        const startDate = dateKeyToDate(challengeStartDate);
+        const today = new Date();
+        const elapsedDays = Math.max(0, diffInDays(startDate, today));
+        const maxIndex = Math.min(20, elapsedDays);
+
+        for (let i = 0; i <= maxIndex; i++) {
+            const dateKey = getDateKey(addDays(startDate, i));
+            const daySnapshot = computeDayStatus(dateKey);
+
+            challengeDataByDate[dateKey] = {
+                successful: daySnapshot.successful,
+                habitsDone: daySnapshot.habitsDone,
+                status: daySnapshot.status
+            };
+        }
+    };
+
+    const ensureDailyStateCurrent = () => {
+        const todayKey = getDateKey();
+        if (activeDateKey === todayKey) return;
+
+        activeDateKey = todayKey;
+        syncTodayHabitCompletion();
+        reconcileChallengeData();
+    };
+
     // --- Phase Logic ---
+    const triggerSuggestionByKey = {
+        stress: 'Take 6 slow breaths, then do your replacement habit.',
+        boredom: 'Do a 2-minute walk, then start the replacement habit.',
+        social: 'Step away for one minute and execute your replacement habit.',
+        'late-night': 'Drink water, dim lights, then do your replacement habit.',
+        other: 'Interrupt the loop immediately with your replacement habit.'
+    };
+
+    const updateReplacementHabitSuggestion = () => {
+        if (!replacementHabitSuggestion) return;
+
+        const triggerKey = slipTriggerInput?.value || 'other';
+        const triggerPrompt = triggerSuggestionByKey[triggerKey] || triggerSuggestionByKey.other;
+        replacementHabitSuggestion.textContent = replacementHabit || '10 Pushups';
+
+        if (replacementTriggerNote) {
+            replacementTriggerNote.textContent = triggerPrompt;
+        }
+    };
+
+    const recordSlipEvent = (habitId, triggerKey) => {
+        if (!habitId) return;
+
+        const todayKey = getDateKey();
+        if (!slipEventsByDate[todayKey]) {
+            slipEventsByDate[todayKey] = {};
+        }
+
+        const normalized = normalizeSlipEntry(slipEventsByDate[todayKey][habitId]);
+        normalized.count += 1;
+        normalized.triggers[triggerKey] = (normalized.triggers[triggerKey] || 0) + 1;
+        slipEventsByDate[todayKey][habitId] = normalized;
+    };
+
+    const syncPomodoroFromState = () => {
+        if (!pomodoroEndAt) {
+            pomodoroTime = Math.max(0, Number(pomodoroTime) || pomodoroDurationMinutes * 60);
+            return;
+        }
+
+        const remaining = Math.max(0, Math.ceil((pomodoroEndAt - Date.now()) / 1000));
+        pomodoroTime = remaining;
+
+        if (remaining === 0) {
+            pomodoroEndAt = null;
+        }
+    };
+
+    const shouldHideCompletedInGrid = () => (
+        hideCompletedMobile
+        && window.matchMedia('(max-width: 760px)').matches
+    );
+
+    const renderDailyCommitments = () => {
+        const todayKey = getDateKey();
+        const record = ensureDailyCommitmentsRecord(todayKey);
+
+        if (commitmentMustInput) commitmentMustInput.value = record.mustDo || '';
+        if (commitmentMaintenanceInput) commitmentMaintenanceInput.value = record.maintenance || '';
+        if (commitmentAdminInput) commitmentAdminInput.value = record.admin || '';
+
+        if (!dailyCommitmentsList) return;
+
+        const items = [
+            { key: 'mustDo', label: 'Must-do', value: record.mustDo },
+            { key: 'maintenance', label: 'Maintenance', value: record.maintenance },
+            { key: 'admin', label: 'Life admin', value: record.admin }
+        ].filter((item) => item.value && item.value.trim());
+
+        if (!items.length) {
+            dailyCommitmentsList.innerHTML = '<p class="system-empty">No commitments saved yet. Set your daily 3 above.</p>';
+            return;
+        }
+
+        dailyCommitmentsList.innerHTML = items.map((item) => `
+            <label class="commitment-item">
+                <input type="checkbox" class="commitment-check" data-key="${item.key}" ${record.checks?.[item.key] ? 'checked' : ''}>
+                <span class="commitment-pill">${item.label}</span>
+                <span>${item.value}</span>
+            </label>
+        `).join('');
+    };
+
+    const renderRecoveryCard = () => {
+        if (!recoveryPanel || !recoveryStepsEl) return;
+
+        const todayKey = getDateKey();
+        const yesterdayKey = getDateKey(addDays(new Date(), -1));
+        const todayStatus = computeDayStatus(todayKey);
+        const yesterdayStatus = computeDayStatus(yesterdayKey);
+        const needsRecovery = ['missed', 'incomplete'].includes(yesterdayStatus.status)
+            || (todayStatus.status === 'incomplete' && todayStatus.habitsDone < REQUIRED_HABITS_PER_DAY);
+
+        recoveryPanel.hidden = !needsRecovery;
+        if (!needsRecovery) return;
+
+        const record = ensureRecoveryRecord(todayKey);
+        const completedCount = Object.values(record.steps || {}).filter(Boolean).length;
+
+        if (recoveryContextEl) {
+            recoveryContextEl.textContent = `Yesterday was ${yesterdayStatus.status}. Run a small reset today and protect the streak.`;
+        }
+
+        recoveryStepsEl.innerHTML = `
+            <label class="recovery-item">
+                <input type="checkbox" class="recovery-check" data-step="minimum" ${record.steps.minimum ? 'checked' : ''}>
+                <span>Do one minimum version habit (2-5 minutes)</span>
+            </label>
+            <label class="recovery-item">
+                <input type="checkbox" class="recovery-check" data-step="environment" ${record.steps.environment ? 'checked' : ''}>
+                <span>Reset your environment for the next action block</span>
+            </label>
+            <label class="recovery-item">
+                <input type="checkbox" class="recovery-check" data-step="rebound" ${record.steps.rebound ? 'checked' : ''}>
+                <span>Complete one rebound commitment from your Daily 3</span>
+            </label>
+        `;
+
+        if (recoveryCompleteBtn) {
+            recoveryCompleteBtn.textContent = completedCount === 3
+                ? 'Recovery complete'
+                : 'Mark recovery complete';
+        }
+    };
+
+    const computeWeeklySummary = () => {
+        let successfulDays = 0;
+        let slipEvents = 0;
+        let completedChecks = 0;
+
+        for (let i = 0; i < 7; i++) {
+            const date = addDays(new Date(), -i);
+            const dateKey = getDateKey(date);
+            const dayStatus = computeDayStatus(dateKey);
+            if (dayStatus.successful) successfulDays++;
+
+            const daySlips = slipEventsByDate[dateKey] || {};
+            Object.values(daySlips).forEach((entry) => {
+                if (typeof entry === 'number') {
+                    slipEvents += Number(entry) || 0;
+                } else {
+                    slipEvents += Number(entry?.count) || 0;
+                }
+            });
+
+            const checks = dailyHabitChecks[dateKey] || {};
+            completedChecks += Object.values(checks).filter(Boolean).length;
+        }
+
+        const possibleChecks = Math.max(1, habits.length * 7);
+        const completionRate = Math.round((completedChecks / possibleChecks) * 100);
+
+        return { successfulDays, slipEvents, completionRate };
+    };
+
+    const renderWeeklyReset = () => {
+        const weekKey = getWeekKey();
+        const record = ensureWeeklyResetRecord(weekKey);
+        const summary = computeWeeklySummary();
+
+        if (weeklySuccessfulDaysEl) weeklySuccessfulDaysEl.textContent = String(summary.successfulDays);
+        if (weeklySlipEventsEl) weeklySlipEventsEl.textContent = String(summary.slipEvents);
+        if (weeklyCompletionRateEl) weeklyCompletionRateEl.textContent = `${summary.completionRate}%`;
+
+        if (weeklyWinsInput) weeklyWinsInput.value = record.wins || '';
+        if (weeklySlipsInput) weeklySlipsInput.value = record.slips || '';
+        if (weeklySimplifyInput) weeklySimplifyInput.value = record.simplify || '';
+        if (weeklyPriority1Input) weeklyPriority1Input.value = record.priorities?.[0] || '';
+        if (weeklyPriority2Input) weeklyPriority2Input.value = record.priorities?.[1] || '';
+        if (weeklyPriority3Input) weeklyPriority3Input.value = record.priorities?.[2] || '';
+    };
+
+    const updateBehaviorSystems = () => {
+        renderDailyCommitments();
+        renderRecoveryCard();
+        renderWeeklyReset();
+    };
+
+    const renderDailyMomentum = () => {
+        const totalHabits = habits.length;
+        const completedHabits = habits.filter((habit) => habit.completed).length;
+        const ratio = totalHabits ? completedHabits / totalHabits : 0;
+        const percent = Math.round(ratio * 100);
+        const circumference = 2 * Math.PI * 49;
+        const offset = circumference * (1 - ratio);
+
+        if (momentumRingProgressEl) {
+            momentumRingProgressEl.style.strokeDasharray = `${circumference.toFixed(2)}`;
+            momentumRingProgressEl.style.strokeDashoffset = `${offset.toFixed(2)}`;
+        }
+
+        if (todayProgressCaptionEl) {
+            todayProgressCaptionEl.textContent = `${percent}%`;
+        }
+
+        if (todayProgressTextEl) {
+            if (percent >= 80) {
+                todayProgressTextEl.textContent = 'Strong day. Keep this cadence into the next phase.';
+            } else if (percent >= 40) {
+                todayProgressTextEl.textContent = 'Momentum is building. One more focused block can flip the day.';
+            } else {
+                todayProgressTextEl.textContent = 'Start with a low-friction win to create momentum quickly.';
+            }
+        }
+    };
+
+    const renderWeeklyRhythm = () => {
+        const today = new Date();
+        const points = [];
+        const labels = [];
+
+        for (let i = 6; i >= 0; i--) {
+            const dayDate = addDays(today, -i);
+            const dayKey = getDateKey(dayDate);
+            const dayChecks = dailyHabitChecks[dayKey] || {};
+            const completed = Object.values(dayChecks).filter(Boolean).length;
+            const ratio = habits.length ? Math.min(1, completed / habits.length) : 0;
+            points.push(ratio);
+            labels.push(dayDate.toLocaleDateString(undefined, { weekday: 'short' }).slice(0, 1));
+        }
+
+        const width = 240;
+        const height = 90;
+        const stepX = width / 6;
+
+        const polylinePoints = points
+            .map((value, index) => {
+                const x = index * stepX;
+                const y = height - (value * (height - 8)) - 4;
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+            })
+            .join(' ');
+
+        if (rhythmSparklinePolylineEl) {
+            rhythmSparklinePolylineEl.setAttribute('points', polylinePoints);
+        }
+
+        if (rhythmSparklineLabelsEl) {
+            rhythmSparklineLabelsEl.innerHTML = labels.map((label) => `<span>${label}</span>`).join('');
+        }
+    };
+
+    const updateDashboardInsights = () => {
+        renderDailyMomentum();
+        renderWeeklyRhythm();
+        updateBehaviorSystems();
+    };
+
     const updatePhase = () => {
+        ensureDailyStateCurrent();
+
         const now = new Date();
         const [wakeHours, wakeMinutes] = wakeUpTime.split(':').map(Number);
 
@@ -381,14 +818,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let phaseName = '';
         let explanation = '';
 
-        if (hoursSinceWake >= 0 && hoursSinceWake <= 8) {
+        if (hoursSinceWake >= 0 && hoursSinceWake < 8) {
             currentPhase = 1;
             phaseName = 'Phase 1: Action';
             explanation = '0-8 hours after waking. Best window for high-friction actions and effortful habits.';
-        } else if (hoursSinceWake > 8 && hoursSinceWake < 16) {
+        } else if (hoursSinceWake >= 8 && hoursSinceWake < 16) {
             currentPhase = 2;
             phaseName = 'Phase 2: Creative';
-            explanation = '9-14 hours after waking. Better for learning, creativity, and moderate friction habits.';
+            explanation = '8-16 hours after waking. Better for learning, creativity, and moderate friction habits.';
         } else {
             currentPhase = 3;
             phaseName = 'Phase 3: Wind Down';
@@ -410,6 +847,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentPhase === 3) legendPhase3?.classList.add('active');
 
         renderHabits(currentPhase);
+        updateDashboardInsights();
     };
 
     const setActivePhaseSection = (currentPhase) => {
@@ -445,12 +883,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const renderPhaseGrid = (gridEl, list) => {
         gridEl.innerHTML = '';
-        if (!list.length) {
-            gridEl.innerHTML = '<p>No habits in this phase yet.</p>';
+        const visibleHabits = shouldHideCompletedInGrid()
+            ? list.filter((habit) => !habit.completed)
+            : list;
+
+        if (!visibleHabits.length) {
+            gridEl.innerHTML = shouldHideCompletedInGrid()
+                ? '<p>All habits completed in this phase.</p>'
+                : '<p>No habits in this phase yet.</p>';
             return;
         }
 
-        list.forEach((habit) => gridEl.appendChild(createHabitCard(habit)));
+        visibleHabits.forEach((habit) => gridEl.appendChild(createHabitCard(habit)));
     };
 
     const renderHabits = (currentPhase) => {
@@ -492,11 +936,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         Array.from({ length: 21 }).forEach((_, index) => {
             const dateKey = getDateKey(addDays(challengeStart, index));
-            const day = challengeDataByDate[dateKey] || { successful: false, habitsDone: 0 };
+            const day = challengeDataByDate[dateKey] || { successful: false, habitsDone: 0, status: 'pending' };
             const cell = document.createElement('div');
             cell.className = 'day-cell';
-            if (day.successful) cell.classList.add('successful');
+            if (index > todayIndex && todayIndex !== -1) {
+                cell.classList.add('future');
+            } else {
+                cell.classList.add(day.status || (day.successful ? 'successful' : 'incomplete'));
+            }
             if (index === todayIndex) cell.classList.add('current-day');
+            const title = day.status ? `${day.status} (${day.habitsDone || 0}/${REQUIRED_HABITS_PER_DAY})` : 'No data';
+            cell.title = `Day ${index + 1}: ${title}`;
             cell.innerHTML = `<span class="day-number">${index + 1}</span>`;
             challengeGrid.appendChild(cell);
         });
@@ -543,11 +993,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const completedHabits = habits.filter((h) => h.completed).length;
         const totalHabits = habits.length;
         const todayKey = getDateKey();
-        const todayStatus = challengeDataByDate[todayKey];
+        const todayStatus = computeDayStatus(todayKey);
         const streaks = computeStreaks();
 
         completedCountEl.textContent = `${completedHabits} / ${totalHabits}`;
-        challengeStatusEl.textContent = todayStatus?.successful ? 'Successful day' : 'Not complete';
+        if (todayStatus.status === 'successful') {
+            challengeStatusEl.textContent = 'Successful day';
+        } else if (todayStatus.status === 'incomplete') {
+            challengeStatusEl.textContent = `Logged ${todayStatus.habitsDone}/${REQUIRED_HABITS_PER_DAY}`;
+        } else if (todayStatus.status === 'pending') {
+            challengeStatusEl.textContent = 'No logs yet';
+        } else {
+            challengeStatusEl.textContent = 'Missed logging';
+        }
         streakCountEl.textContent = `${streaks.current} ${streaks.current === 1 ? 'day' : 'days'}`;
         bestStreakCountEl.textContent = `${streaks.best} ${streaks.best === 1 ? 'day' : 'days'}`;
 
@@ -557,6 +1015,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateChallengeProgress = () => {
+        reconcileChallengeData();
         const todayIndex = getTodayIndexInChallenge();
         const completedHabits = habits.filter((h) => h.completed).length;
 
@@ -569,17 +1028,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const todayDate = addDays(challengeStart, todayIndex);
         const todayKey = getDateKey(todayDate);
 
+        const dayStatus = completedHabits >= REQUIRED_HABITS_PER_DAY ? 'successful' : (completedHabits > 0 ? 'incomplete' : 'pending');
+
         challengeDataByDate[todayKey] = {
             successful: completedHabits >= REQUIRED_HABITS_PER_DAY,
-            habitsDone: completedHabits
+            habitsDone: completedHabits,
+            status: dayStatus
         };
 
         renderChallengeGrid();
-    };
-
-    const updateReplacementHabitSuggestion = () => {
-        if (!replacementHabitSuggestion) return;
-        replacementHabitSuggestion.textContent = replacementHabit || '10 Pushups';
     };
 
     // --- Event Handlers ---
@@ -594,6 +1051,95 @@ document.addEventListener('DOMContentLoaded', () => {
         replacementHabitInput.value = replacementHabit;
         updateReplacementHabitSuggestion();
         saveData();
+    });
+
+    slipTriggerInput?.addEventListener('change', () => {
+        updateReplacementHabitSuggestion();
+    });
+
+    hideCompletedMobileInput?.addEventListener('change', (e) => {
+        hideCompletedMobile = Boolean(e.target.checked);
+        saveData();
+        updatePhase();
+    });
+
+    resetTodayBtn?.addEventListener('click', () => {
+        const todayKey = getDateKey();
+        dailyHabitChecks[todayKey] = {};
+        habits.forEach((habit) => {
+            habit.completed = false;
+        });
+        updateChallengeProgress();
+        saveData();
+        updatePhase();
+    });
+
+    dailyCommitmentsForm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const todayKey = getDateKey();
+        const record = ensureDailyCommitmentsRecord(todayKey);
+
+        record.mustDo = (commitmentMustInput?.value || '').trim();
+        record.maintenance = (commitmentMaintenanceInput?.value || '').trim();
+        record.admin = (commitmentAdminInput?.value || '').trim();
+        record.checks = record.checks || { mustDo: false, maintenance: false, admin: false };
+
+        saveData();
+        updateBehaviorSystems();
+    });
+
+    dailyCommitmentsList?.addEventListener('change', (e) => {
+        const target = e.target;
+        if (!(target instanceof HTMLInputElement)) return;
+        if (!target.classList.contains('commitment-check')) return;
+
+        const key = target.dataset.key;
+        if (!key) return;
+
+        const record = ensureDailyCommitmentsRecord(getDateKey());
+        record.checks = record.checks || { mustDo: false, maintenance: false, admin: false };
+        record.checks[key] = target.checked;
+        saveData();
+    });
+
+    recoveryStepsEl?.addEventListener('change', (e) => {
+        const target = e.target;
+        if (!(target instanceof HTMLInputElement)) return;
+        if (!target.classList.contains('recovery-check')) return;
+
+        const step = target.dataset.step;
+        if (!step) return;
+
+        const record = ensureRecoveryRecord(getDateKey());
+        record.steps[step] = target.checked;
+        saveData();
+        renderRecoveryCard();
+    });
+
+    recoveryCompleteBtn?.addEventListener('click', () => {
+        const record = ensureRecoveryRecord(getDateKey());
+        record.completedAt = new Date().toISOString();
+        saveData();
+        renderRecoveryCard();
+    });
+
+    weeklyResetForm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const weekKey = getWeekKey();
+        const record = ensureWeeklyResetRecord(weekKey);
+
+        record.wins = (weeklyWinsInput?.value || '').trim();
+        record.slips = (weeklySlipsInput?.value || '').trim();
+        record.simplify = (weeklySimplifyInput?.value || '').trim();
+        record.priorities = [
+            (weeklyPriority1Input?.value || '').trim(),
+            (weeklyPriority2Input?.value || '').trim(),
+            (weeklyPriority3Input?.value || '').trim()
+        ];
+        record.updatedAt = new Date().toISOString();
+
+        saveData();
+        renderWeeklyReset();
     });
 
     syncIdInput.addEventListener('change', async (e) => {
@@ -727,17 +1273,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (target.classList.contains('slipped-btn')) {
             const habitId = target.dataset.id;
-            if (habitId) {
-                const todayKey = getDateKey();
-                if (!slipEventsByDate[todayKey]) {
-                    slipEventsByDate[todayKey] = {};
-                }
-
-                const currentCount = slipEventsByDate[todayKey][habitId] || 0;
-                slipEventsByDate[todayKey][habitId] = currentCount + 1;
-                saveData();
-            }
-
+            pendingSlipHabitId = habitId || null;
             updateReplacementHabitSuggestion();
             replacementModal.style.display = 'block';
         }
@@ -750,28 +1286,49 @@ document.addEventListener('DOMContentLoaded', () => {
         pomodoroTimerEl.textContent = `${minutes}:${seconds}`;
     };
 
+    const stopPomodoroTicker = () => {
+        clearInterval(pomodoroInterval);
+        pomodoroInterval = null;
+    };
+
+    const tickPomodoro = () => {
+        syncPomodoroFromState();
+        updatePomodoroDisplay();
+
+        if (pomodoroTime <= 0) {
+            stopPomodoroTicker();
+            pomodoroEndAt = null;
+            saveData();
+            alert('Pomodoro session finished!');
+        }
+    };
+
     const startPomodoro = () => {
         if (pomodoroTime <= 0) {
-            pomodoroTime = 25 * 60;
+            pomodoroTime = pomodoroDurationMinutes * 60;
         }
 
-        clearInterval(pomodoroInterval);
-        pomodoroInterval = setInterval(() => {
-            pomodoroTime--;
-            updatePomodoroDisplay();
-
-            if (pomodoroTime <= 0) {
-                clearInterval(pomodoroInterval);
-                alert('Pomodoro session finished!');
-            }
-        }, 1000);
+        pomodoroEndAt = Date.now() + pomodoroTime * 1000;
+        stopPomodoroTicker();
+        pomodoroInterval = setInterval(tickPomodoro, 1000);
+        tickPomodoro();
+        saveData();
     };
 
     const resetPomodoro = () => {
-        clearInterval(pomodoroInterval);
-        pomodoroTime = 25 * 60;
+        stopPomodoroTicker();
+        pomodoroEndAt = null;
+        pomodoroTime = pomodoroDurationMinutes * 60;
         updatePomodoroDisplay();
+        saveData();
     };
+
+    pomodoroDurationInput?.addEventListener('change', (e) => {
+        const parsed = Math.min(120, Math.max(5, Number(e.target.value) || 25));
+        pomodoroDurationMinutes = parsed;
+        pomodoroDurationInput.value = String(parsed);
+        resetPomodoro();
+    });
 
     startPomodoroBtn.addEventListener('click', startPomodoro);
     resetPomodoroBtn.addEventListener('click', resetPomodoro);
@@ -780,6 +1337,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     replacementDoneBtn.addEventListener('click', () => {
+        const triggerKey = slipTriggerInput?.value || 'other';
+        recordSlipEvent(pendingSlipHabitId, triggerKey);
+        pendingSlipHabitId = null;
+        saveData();
         replacementModal.style.display = 'none';
     });
 
@@ -789,29 +1350,47 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('focus', () => {
+        tickPomodoro();
         void hydrateFromCloud(true);
     });
 
     document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
+            tickPomodoro();
             void hydrateFromCloud(true);
         }
+    });
+
+    window.addEventListener('resize', () => {
+        updatePhase();
     });
 
     // --- Initialization ---
     const init = async () => {
         await loadData();
         applyHabitPresetMigration();
+        ensureSlipModel();
         ensureChallengeWindow();
         ensureHabitIds();
         syncTodayHabitCompletion();
+        syncPomodoroFromState();
+        activeDateKey = getDateKey();
         updateReplacementHabitSuggestion();
         updateChallengeProgress();
         updatePhase();
         renderChallengeGrid();
         updatePomodoroDisplay();
+
+        if (pomodoroEndAt) {
+            stopPomodoroTicker();
+            pomodoroInterval = setInterval(tickPomodoro, 1000);
+        }
+
         saveData();
-        setInterval(updatePhase, 60000);
+        setInterval(() => {
+            tickPomodoro();
+            updatePhase();
+        }, 60000);
         setInterval(() => {
             void hydrateFromCloud(true);
         }, CLOUD_POLL_INTERVAL_MS);

@@ -80,7 +80,7 @@
                 <div id="phase-1-habits" class="habits-grid"></div>
             </section>
             <section id="phase-2-section" class="habit-group">
-                <h2>Phase 2 (9-14 hrs)</h2>
+                <h2>Phase 2 (8-16 hrs)</h2>
                 <div id="phase-2-habits" class="habits-grid"></div>
             </section>
             <section id="phase-3-section" class="habit-group">
@@ -101,11 +101,110 @@
             </div>
         </section>
 
+        <details class="panel secondary-tools" aria-label="Planning and reset tools">
+            <summary class="secondary-tools-summary">
+                <span>Planning and Reset Tools</span>
+                <small>Daily commitments, recovery, and weekly review</small>
+            </summary>
+
+            <div class="secondary-tools-content">
+                <section class="insight-strip" aria-label="Momentum insights">
+                    <article class="panel insight-panel">
+                        <h3>Today Momentum</h3>
+                        <div class="momentum-ring" aria-hidden="true">
+                            <svg viewBox="0 0 120 120" class="momentum-ring-svg">
+                                <circle cx="60" cy="60" r="49" class="momentum-track"></circle>
+                                <circle id="momentum-ring-progress" cx="60" cy="60" r="49" class="momentum-progress"></circle>
+                            </svg>
+                            <div id="today-progress-caption" class="momentum-caption">0%</div>
+                        </div>
+                        <p id="today-progress-text" class="insight-note">Complete habits to build momentum.</p>
+                    </article>
+                    <article class="panel insight-panel">
+                        <h3>7-Day Rhythm</h3>
+                        <svg id="rhythm-sparkline" class="rhythm-sparkline" viewBox="0 0 240 90" preserveAspectRatio="none" role="img" aria-label="Last seven day completion trend">
+                            <polyline id="rhythm-sparkline-polyline" points="" class="rhythm-line"></polyline>
+                        </svg>
+                        <div id="rhythm-sparkline-labels" class="rhythm-labels"></div>
+                    </article>
+                </section>
+
+                <section class="system-grid" aria-label="Behavior systems">
+                    <article class="panel system-panel" aria-label="Daily commitments">
+                        <div class="system-head">
+                            <h2>Daily 3 Commitments</h2>
+                            <p>Pick one must-do, one maintenance action, and one life-admin task.</p>
+                        </div>
+                        <form id="daily-commitments-form" class="system-form">
+                            <label for="commitment-must">Must-do</label>
+                            <input id="commitment-must" type="text" maxlength="80" placeholder="Highest impact action for today">
+                            <label for="commitment-maintenance">Maintenance</label>
+                            <input id="commitment-maintenance" type="text" maxlength="80" placeholder="Baseline habit you should not skip">
+                            <label for="commitment-admin">Life admin</label>
+                            <input id="commitment-admin" type="text" maxlength="80" placeholder="Practical life task (finance, room, calendar)">
+                            <button type="submit" class="secondary-btn">Save commitments</button>
+                        </form>
+                        <div id="daily-commitments-list" class="commitments-list"></div>
+                    </article>
+
+                    <article id="recovery-panel" class="panel system-panel" aria-label="Recovery plan" hidden>
+                        <div class="system-head">
+                            <h2>Recovery Plan</h2>
+                            <p id="recovery-context">Reset after a missed or incomplete day to avoid a spiral.</p>
+                        </div>
+                        <div id="recovery-steps" class="recovery-steps"></div>
+                        <button id="recovery-complete-btn" type="button" class="secondary-btn">Mark recovery complete</button>
+                    </article>
+                </section>
+
+                <section class="panel weekly-reset" aria-label="Weekly reset">
+                    <div class="system-head">
+                        <h2>Weekly Reset</h2>
+                        <p>Review your week, simplify your system, and set your next priorities.</p>
+                    </div>
+                    <div class="weekly-summary-grid">
+                        <div class="weekly-summary-item">
+                            <span>Successful days</span>
+                            <strong id="weekly-successful-days">0</strong>
+                        </div>
+                        <div class="weekly-summary-item">
+                            <span>Slip events</span>
+                            <strong id="weekly-slip-events">0</strong>
+                        </div>
+                        <div class="weekly-summary-item">
+                            <span>Habit completion</span>
+                            <strong id="weekly-completion-rate">0%</strong>
+                        </div>
+                    </div>
+                    <form id="weekly-reset-form" class="weekly-reset-form">
+                        <label for="weekly-wins">Wins this week</label>
+                        <textarea id="weekly-wins" rows="2" placeholder="What worked well?"></textarea>
+                        <label for="weekly-slips">What slipped and why</label>
+                        <textarea id="weekly-slips" rows="2" placeholder="Main friction points"></textarea>
+                        <label for="weekly-simplify">What to simplify next week</label>
+                        <textarea id="weekly-simplify" rows="2" placeholder="What can be made easier?"></textarea>
+                        <label for="weekly-priority-1">Priority 1</label>
+                        <input id="weekly-priority-1" type="text" maxlength="90" placeholder="Top focus for next week">
+                        <label for="weekly-priority-2">Priority 2</label>
+                        <input id="weekly-priority-2" type="text" maxlength="90" placeholder="Second focus">
+                        <label for="weekly-priority-3">Priority 3</label>
+                        <input id="weekly-priority-3" type="text" maxlength="90" placeholder="Third focus">
+                        <button type="submit" class="secondary-btn">Save weekly reset</button>
+                    </form>
+                </section>
+            </div>
+        </details>
+
         <section class="settings routine-settings" aria-label="Routine settings">
             <label for="wake-up-time">Wake-up time</label>
             <input type="time" id="wake-up-time" value="07:00" aria-label="Wake up time">
             <label for="replacement-habit-input">Replacement Habit (for slips)</label>
             <input type="text" id="replacement-habit-input" value="10 Pushups" aria-label="Replacement habit">
+            <label class="check-field compact-check" for="hide-completed-mobile">
+                <input type="checkbox" id="hide-completed-mobile" aria-label="Hide completed habits on mobile">
+                Hide completed habits on mobile
+            </label>
+            <button id="reset-today-btn" type="button" class="secondary-btn">Reset today progress</button>
             <label for="sync-id">Sync ID</label>
             <input type="text" id="sync-id" value="default-user" aria-label="Sync ID">
             <p id="sync-status" class="sync-status">Cloud sync inactive</p>
@@ -161,6 +260,8 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h2>Study Block Timer</h2>
+            <label class="modal-field" for="pomodoro-duration">Focus minutes</label>
+            <input id="pomodoro-duration" type="number" min="5" max="120" step="5" value="25">
             <div id="pomodoro-timer">25:00</div>
             <div class="modal-actions">
                 <button id="pomodoro-start">Start</button>
@@ -172,7 +273,16 @@
     <div id="replacement-habit-modal" class="modal">
         <div class="modal-content">
             <p>You slipped. Immediately complete a 2-minute replacement habit to disrupt the neural circuit.</p>
+            <label class="modal-field" for="slip-trigger">What triggered it?</label>
+            <select id="slip-trigger">
+                <option value="stress">Stress</option>
+                <option value="boredom">Boredom</option>
+                <option value="social">Social context</option>
+                <option value="late-night">Late night</option>
+                <option value="other">Other</option>
+            </select>
             <p><strong>Suggestion: <span id="replacement-habit-suggestion">10 Pushups</span></strong></p>
+            <p id="replacement-trigger-note" class="trigger-note">Use your replacement habit immediately.</p>
             <button id="replacement-habit-done">Done</button>
         </div>
     </div>

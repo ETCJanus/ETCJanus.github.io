@@ -37,6 +37,55 @@
                 <p id="tracking-success-rate" class="tracking-metric">0%</p>
                 <p class="tracking-sub">Successful days / elapsed challenge days</p>
             </article>
+            <article class="tracking-card">
+                <h3>Top Slip Trigger</h3>
+                <p id="tracking-top-trigger" class="tracking-metric">-</p>
+                <p class="tracking-sub">Most common trigger across all slips</p>
+            </article>
+            <article class="tracking-card">
+                <h3>Top Impact Habit</h3>
+                <p id="tracking-top-impact" class="tracking-metric">-</p>
+                <p class="tracking-sub">Highest leverage habit by completion x friction x linchpin</p>
+            </article>
+        </section>
+
+        <section class="tracking-charts" aria-label="Tracking charts">
+            <article class="panel chart-panel">
+                <div class="chart-head">
+                    <h2>Challenge Progress Curve</h2>
+                    <p>Daily habit completions across the 21-day window.</p>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="tracking-progress-chart"></canvas>
+                </div>
+            </article>
+            <article class="panel chart-panel">
+                <div class="chart-head">
+                    <h2>Slip Triggers</h2>
+                    <p>Distribution of logged triggers for slip events.</p>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="tracking-trigger-chart"></canvas>
+                </div>
+            </article>
+            <article class="panel chart-panel">
+                <div class="chart-head">
+                    <h2>Habit Impact Landscape</h2>
+                    <p>Impact score by habit to reveal highest leverage routines.</p>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="tracking-impact-chart"></canvas>
+                </div>
+            </article>
+            <article class="panel chart-panel">
+                <div class="chart-head">
+                    <h2>Slip Volume by Habit</h2>
+                    <p>Which habits to break are creating the most drag.</p>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="tracking-slip-habit-chart"></canvas>
+                </div>
+            </article>
         </section>
 
         <section class="panel" style="padding: 0.9rem 1rem;">
@@ -62,6 +111,7 @@
                         <th>Current</th>
                         <th>Best</th>
                         <th>Completion</th>
+                        <th>Impact</th>
                         <th>Status</th>
                     </tr>
                 </thead>
@@ -71,6 +121,7 @@
         </section>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="tracking.js"></script>
 </body>
 </html>
