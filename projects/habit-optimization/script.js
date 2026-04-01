@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const focusHabitForm = document.getElementById('focus-habit-form');
     const focusHabitNameInput = document.getElementById('focus-habit-name');
     const focusHabitTypeInput = document.getElementById('focus-habit-type');
+    const focusTimeOfDayInput = document.getElementById('focus-time-of-day');
     const focusHabitTargetInput = document.getElementById('focus-habit-target');
     const focusDurationTargetWrap = document.getElementById('focus-duration-target-wrap');
     const focusTargetHoursInput = document.getElementById('focus-target-hours');
@@ -74,6 +75,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const cravingStartBtn = document.getElementById('craving-start');
     const cravingStatusEl = document.getElementById('craving-status');
     const cravingSuccessEl = document.getElementById('craving-success');
+
+    const TIME_OF_DAY_SEQUENCE = ['morning', 'afternoon', 'evening', 'night', 'anytime'];
+    const TIME_OF_DAY_LABELS = {
+        morning: 'Morning',
+        afternoon: 'Afternoon',
+        evening: 'Evening',
+        night: 'Night',
+        anytime: 'Anytime'
+    };
 
     if (!isConfigured) {
         setupMessage.hidden = false;
@@ -166,6 +176,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return cleaned.slice(0, 20);
     };
 
+    const sanitizeTimeOfDay = (value) => {
+        const normalized = (value || '').toString().trim().toLowerCase();
+        if (TIME_OF_DAY_SEQUENCE.includes(normalized)) return normalized;
+        return 'anytime';
+    };
+
+    const getCurrentTimeOfDay = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'morning';
+        if (hour < 17) return 'afternoon';
+        if (hour < 21) return 'evening';
+        return 'night';
+    };
+
     const formatUsage = (value, unit) => {
         const amount = Number(value) || 0;
         const rounded = Number.isInteger(amount) ? String(amount) : String(Math.round(amount * 100) / 100);
@@ -178,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         category: row.category || 'focus',
         habitType: row.habit_type === 'duration' ? 'duration' : 'count',
         targetAmount: Math.max(1, Number(row.target_amount) || 1),
+        timeOfDay: sanitizeTimeOfDay(row.time_of_day),
         unit: row.unit || (row.habit_type === 'duration' ? 'minutes' : 'times'),
         trackingMethod: row.tracking_method || null,
         initialLimit: row.initial_limit == null ? null : Number(row.initial_limit),
@@ -202,8 +227,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const isHabitCompleted = (habit, dateKey) => getAmountForDate(habit.id, dateKey) >= habit.targetAmount;
 
-    const getFocusHabits = () => state.habits.filter((h) => !h.archived && h.category === 'focus');
-    const getViceHabits = () => state.habits.filter((h) => !h.archived && h.category === 'vice');
+    const sortedHabits = (habits) => habits.slice().sort((a, b) => {
+        const orderDiff = (a.sortOrder || 0) - (b.sortOrder || 0);
+        if (orderDiff !== 0) return orderDiff;
+        return (a.name || '').localeCompare(b.name || '');
+    });
+
+    const getFocusHabits = () => sortedHabits(state.habits.filter((h) => !h.archived && h.category === 'focus'));
+    const getViceHabits = () => sortedHabits(state.habits.filter((h) => !h.archived && h.category === 'vice'));
 
     const getCompletionRatioForDate = (dateKey) => {
         const habits = getFocusHabits();
@@ -337,7 +368,30 @@ document.addEventListener('DOMContentLoaded', () => {
         focusHabitListEl.innerHTML = '';
         focusHabitEmptyEl.hidden = habits.length > 0;
 
-        habits.forEach((habit) => {
+        if (!habits.length) return;
+
+        const currentBucket = getCurrentTimeOfDay();
+        const displayOrder = [currentBucket, ...TIME_OF_DAY_SEQUENCE.filter((key) => key !== currentBucket)];
+
+        displayOrder.forEach((bucket) => {
+            const bucketHabits = habits.filter((habit) => sanitizeTimeOfDay(habit.timeOfDay) === bucket);
+            if (!bucketHabits.length) return;
+
+            const group = document.createElement('section');
+            group.className = 'habit-time-group';
+
+            const titleRow = document.createElement('div');
+            titleRow.className = 'habit-time-header';
+            titleRow.innerHTML = `
+                <h3>${TIME_OF_DAY_LABELS[bucket]}</h3>
+                <span class="section-meta">${bucket === currentBucket ? 'Now' : `${bucketHabits.length} habit${bucketHabits.length === 1 ? '' : 's'}`}</span>
+            `;
+            group.appendChild(titleRow);
+
+            const groupList = document.createElement('div');
+            groupList.className = 'habit-time-list';
+
+            bucketHabits.forEach((habit) => {
             const amount = getAmountForDate(habit.id, todayKey);
             const card = document.createElement('article');
             card.className = 'habit-item';
@@ -374,7 +428,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             }
-            focusHabitListEl.appendChild(card);
+                groupList.appendChild(card);
+            });
+
+            group.appendChild(groupList);
+            focusHabitListEl.appendChild(group);
         });
     };
 
@@ -455,16 +513,25 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('div');
             row.className = 'manager-item';
             row.innerHTML = `
+                <span class="drag-handle" title="Drag to reorder" draggable="true" aria-label="Drag to reorder">::</span>
                 <input type="text" data-field="name" data-id="${habit.id}" value="${habit.name}">
                 <select data-field="type" data-id="${habit.id}">
                     <option value="count" ${habit.habitType === 'count' ? 'selected' : ''}>Count</option>
                     <option value="duration" ${habit.habitType === 'duration' ? 'selected' : ''}>Duration</option>
+                </select>
+                <select data-field="time" data-id="${habit.id}">
+                    <option value="anytime" ${habit.timeOfDay === 'anytime' ? 'selected' : ''}>Anytime</option>
+                    <option value="morning" ${habit.timeOfDay === 'morning' ? 'selected' : ''}>Morning</option>
+                    <option value="afternoon" ${habit.timeOfDay === 'afternoon' ? 'selected' : ''}>Afternoon</option>
+                    <option value="evening" ${habit.timeOfDay === 'evening' ? 'selected' : ''}>Evening</option>
+                    <option value="night" ${habit.timeOfDay === 'night' ? 'selected' : ''}>Night</option>
                 </select>
                 <input type="number" data-field="target" data-id="${habit.id}" min="1" max="1440" value="${habit.targetAmount}">
                 <span class="manager-unit-pill">${habit.unit}</span>
                 <button type="button" class="ghost-btn compact-action" data-action="focus-save" data-id="${habit.id}">Save</button>
                 <button type="button" class="ghost-btn compact-action" data-action="focus-archive" data-id="${habit.id}">Archive</button>
             `;
+            row.dataset.id = habit.id;
             focusManagerListEl.appendChild(row);
         });
     };
@@ -478,17 +545,112 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('div');
             row.className = 'manager-item';
             row.innerHTML = `
+                <span class="drag-handle" title="Drag to reorder" draggable="true" aria-label="Drag to reorder">::</span>
                 <input type="text" data-field="name" data-id="${vice.id}" value="${vice.name}">
                 <select data-field="method" data-id="${vice.id}">
                     <option value="streak" ${mode === 'streak' ? 'selected' : ''}>Streak</option>
                     <option value="budget" ${mode === 'budget' ? 'selected' : ''}>Budget</option>
                 </select>
+                <span class="manager-unit-pill">vice</span>
                 <input type="number" data-field="target" data-id="${vice.id}" min="0" max="100000" value="${limit}">
                 <span class="manager-unit-pill">${unitLabel}</span>
                 <button type="button" class="ghost-btn compact-action" data-action="vice-save" data-id="${vice.id}">Save</button>
                 <button type="button" class="ghost-btn compact-action" data-action="vice-archive" data-id="${vice.id}">Archive</button>
             `;
+            row.dataset.id = vice.id;
             viceManagerListEl.appendChild(row);
+        });
+    };
+
+    const persistCategoryOrder = async (category, orderedIds) => {
+        const activeIds = sortedHabits(state.habits.filter((habit) => !habit.archived && habit.category === category)).map((habit) => habit.id);
+        const knownSet = new Set(activeIds);
+        const uniqueOrdered = [];
+        const seen = new Set();
+
+        orderedIds.forEach((id) => {
+            if (!id || seen.has(id) || !knownSet.has(id)) return;
+            seen.add(id);
+            uniqueOrdered.push(id);
+        });
+
+        activeIds.forEach((id) => {
+            if (seen.has(id)) return;
+            uniqueOrdered.push(id);
+            seen.add(id);
+        });
+
+        for (let i = 0; i < uniqueOrdered.length; i += 1) {
+            await updateHabit(uniqueOrdered[i], { sort_order: i });
+        }
+
+        await loadHabits();
+        refreshAll();
+    };
+
+    const setupDragSort = (listEl, category) => {
+        let draggingId = null;
+        let saving = false;
+
+        listEl.addEventListener('dragstart', (event) => {
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+            if (!target.classList.contains('drag-handle')) {
+                event.preventDefault();
+                return;
+            }
+
+            const row = target.closest('.manager-item');
+            if (!(row instanceof HTMLElement)) return;
+
+            draggingId = row.dataset.id || null;
+            row.classList.add('dragging');
+            event.dataTransfer?.setData('text/plain', draggingId || '');
+            if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+        });
+
+        listEl.addEventListener('dragend', () => {
+            draggingId = null;
+            listEl.querySelectorAll('.manager-item.dragging').forEach((item) => item.classList.remove('dragging'));
+        });
+
+        listEl.addEventListener('dragover', (event) => {
+            event.preventDefault();
+        });
+
+        listEl.addEventListener('drop', async (event) => {
+            event.preventDefault();
+            if (saving) return;
+            if (!draggingId) return;
+
+            const target = event.target;
+            if (!(target instanceof HTMLElement)) return;
+            const targetRow = target.closest('.manager-item');
+            const ids = Array.from(listEl.querySelectorAll('.manager-item'))
+                .map((item) => item.dataset.id)
+                .filter(Boolean);
+
+            if (!ids.includes(draggingId)) return;
+
+            const withoutDragged = ids.filter((id) => id !== draggingId);
+            const targetId = targetRow instanceof HTMLElement ? targetRow.dataset.id : null;
+
+            if (targetId && withoutDragged.includes(targetId)) {
+                const insertAt = withoutDragged.indexOf(targetId);
+                withoutDragged.splice(insertAt, 0, draggingId);
+            } else {
+                withoutDragged.push(draggingId);
+            }
+
+            saving = true;
+            try {
+                await persistCategoryOrder(category, withoutDragged);
+            } catch (error) {
+                timerStatusEl.textContent = `Reorder failed: ${error.message}`;
+            } finally {
+                saving = false;
+                draggingId = null;
+            }
         });
     };
 
@@ -527,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadHabits = async () => {
         const { data, error } = await supabaseClient
             .from(tableHabits)
-            .select('id,passcode_key,name,category,habit_type,target_amount,unit,tracking_method,initial_limit,current_limit,goal_limit,taper_rate,taper_step_amount,taper_interval_days,taper_started_at,taper_last_applied_at,sort_order,archived,created_at,updated_at')
+            .select('id,passcode_key,name,category,habit_type,target_amount,time_of_day,unit,tracking_method,initial_limit,current_limit,goal_limit,taper_rate,taper_step_amount,taper_interval_days,taper_started_at,taper_last_applied_at,sort_order,archived,created_at,updated_at')
             .eq('passcode_key', wallPassword)
             .order('sort_order', { ascending: true })
             .order('created_at', { ascending: true });
@@ -626,6 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 category: habit.category,
                 habit_type: habit.habitType === 'duration' ? 'duration' : 'boolean',
                 target_amount: habit.targetAmount,
+                time_of_day: sanitizeTimeOfDay(habit.timeOfDay),
                 unit: habit.unit,
                 tracking_method: habit.trackingMethod,
                 initial_limit: habit.initialLimit,
@@ -800,6 +963,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 category: 'focus',
                 habitType: type,
                 targetAmount: target,
+                timeOfDay: sanitizeTimeOfDay(focusTimeOfDayInput.value),
                 unit: type === 'duration' ? 'minutes' : 'times',
                 trackingMethod: null,
                 initialLimit: null,
@@ -813,6 +977,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             focusHabitForm.reset();
             focusHabitTypeInput.value = 'count';
+            focusTimeOfDayInput.value = 'anytime';
             focusHabitTargetInput.value = '1';
             focusDurationTargetWrap.hidden = true;
             await refreshFromCloud();
@@ -939,9 +1104,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const nameInput = row.querySelector('input[data-field="name"]');
         const typeInput = row.querySelector('select[data-field="type"]');
+        const timeInput = row.querySelector('select[data-field="time"]');
         const targetInput = row.querySelector('input[data-field="target"]');
         if (!(nameInput instanceof HTMLInputElement)) return;
         if (!(typeInput instanceof HTMLSelectElement)) return;
+        if (!(timeInput instanceof HTMLSelectElement)) return;
         if (!(targetInput instanceof HTMLInputElement)) return;
 
         try {
@@ -950,6 +1117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await updateHabit(habitId, {
                     name: nameInput.value.trim() || 'Untitled habit',
                     habit_type: type === 'duration' ? 'duration' : 'boolean',
+                    time_of_day: sanitizeTimeOfDay(timeInput.value),
                     target_amount: normalizeNumber(targetInput.value, 1, 1440, 1),
                     unit: type === 'duration' ? 'minutes' : 'times'
                 });
@@ -1135,6 +1303,8 @@ document.addEventListener('DOMContentLoaded', () => {
     viceBudgetFields.hidden = true;
     setEditMode(false);
     setActiveTab('focus');
+    setupDragSort(focusManagerListEl, 'focus');
+    setupDragSort(viceManagerListEl, 'vice');
 
     if (getCookie(COOKIE_NAME) === '1') {
         void unlock();

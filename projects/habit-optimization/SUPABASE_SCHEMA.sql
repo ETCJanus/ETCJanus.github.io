@@ -10,6 +10,7 @@ create table if not exists public.habits (
     category text not null default 'focus' check (category in ('focus', 'vice')),
     habit_type text not null check (habit_type in ('boolean', 'duration')),
     tracking_method text null check (tracking_method in ('streak', 'budget')),
+    time_of_day text not null default 'anytime' check (time_of_day in ('anytime', 'morning', 'afternoon', 'evening', 'night')),
     target_amount numeric not null check (target_amount > 0),
     unit text not null,
     initial_limit numeric null,
@@ -32,6 +33,7 @@ create table if not exists public.habits (
 -- Migration-safe column adds for existing tables.
 alter table public.habits add column if not exists category text;
 alter table public.habits add column if not exists tracking_method text;
+alter table public.habits add column if not exists time_of_day text;
 alter table public.habits add column if not exists initial_limit numeric;
 alter table public.habits add column if not exists current_limit numeric;
 alter table public.habits add column if not exists goal_limit numeric;
@@ -45,8 +47,15 @@ update public.habits
 set category = coalesce(category, 'focus')
 where category is null;
 
+update public.habits
+set time_of_day = coalesce(time_of_day, 'anytime')
+where time_of_day is null;
+
 alter table public.habits
     alter column category set default 'focus';
+
+alter table public.habits
+    alter column time_of_day set default 'anytime';
 
 alter table public.habits
     drop constraint if exists habits_category_check;
@@ -59,6 +68,12 @@ alter table public.habits
 
 alter table public.habits
     add constraint habits_tracking_method_check check (tracking_method is null or tracking_method in ('streak', 'budget'));
+
+alter table public.habits
+    drop constraint if exists habits_time_of_day_check;
+
+alter table public.habits
+    add constraint habits_time_of_day_check check (time_of_day in ('anytime', 'morning', 'afternoon', 'evening', 'night'));
 
 alter table public.habits
     drop constraint if exists vice_method_requires_category;

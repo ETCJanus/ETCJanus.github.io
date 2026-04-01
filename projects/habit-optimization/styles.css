@@ -282,6 +282,31 @@ body.edit-mode .edit-only {
     gap: 0.5rem;
 }
 
+.habit-time-group {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.habit-time-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.habit-time-header h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-soft);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.habit-time-list {
+    display: grid;
+    gap: 0.5rem;
+}
+
 .habit-item,
 .vice-card {
     border: 1px solid var(--line);
@@ -508,13 +533,32 @@ body.edit-mode .edit-only {
 
 .manager-item {
     display: grid;
-    grid-template-columns: minmax(170px, 1fr) 110px 100px auto auto;
+    grid-template-columns: 34px minmax(170px, 1fr) 110px 110px 100px auto auto auto;
     gap: 0.34rem;
     align-items: center;
     border: 1px solid var(--line);
     border-radius: 12px;
     padding: 0.42rem;
     background: rgba(255, 255, 255, 0.03);
+}
+
+.manager-item.dragging {
+    opacity: 0.55;
+}
+
+.drag-handle {
+    display: inline-grid;
+    place-items: center;
+    height: 34px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    color: var(--text-soft);
+    cursor: grab;
+    user-select: none;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
 }
 
 .manager-item input,
