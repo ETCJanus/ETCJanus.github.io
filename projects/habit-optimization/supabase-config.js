@@ -1,3 +1,17 @@
-// Fill these values after creating your Supabase project.
+// Fill these values from your Supabase project settings.
 window.HABIT_SUPABASE_URL = "https://yitwgfeyyngnoduufhfp.supabase.co";
 window.HABIT_SUPABASE_ANON_KEY = "sb_publishable_LVLbo3UZiJx2FUUjg48mWw_tfB7VjO9";
+
+// Simple wall passcode (not secure auth). Keep the same value on all your devices.
+window.HABIT_WALL_PASSWORD = "Kato";
+
+// How long to remember successful unlock in a cookie.
+window.HABIT_WALL_COOKIE_DAYS = 30;
+
+// Shared state table for this lightweight mode.
+window.HABIT_PUBLIC_STATE_TABLE = "focus_dashboard_public";
+
+// Optional table overrides.
+window.HABIT_TABLE_HABITS = "habits";
+window.HABIT_TABLE_LOGS = "habit_logs";
+window.HABIT_TABLE_SESSIONS = "focus_sessions";

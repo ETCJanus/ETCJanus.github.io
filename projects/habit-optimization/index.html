@@ -3,288 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habit Optimization Dashboard</title>
+    <title>Focus Dashboard | Ewoud Janus</title>
+    <meta name="description" content="Owner-only Focus Dashboard with habit checklist, Pomodoro timer, and consistency heatmap synced through Supabase.">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header class="page-header">
-            <h1>Habit Optimization Dashboard</h1>
-            <p>Use your neurobiology windows to place difficult habits at the right time.</p>
-            <div class="page-header-actions">
-                <a class="subpage-link" href="tracking.html">Open Tracking Insights</a>
+    <div class="container dashboard-shell">
+        <header class="page-header panel">
+            <div>
+                <p class="eyebrow">Private Productivity System</p>
+                <h1>Focus Dashboard</h1>
+                <p class="header-text">Daily habits, focus timer, and consistency at a glance. Built to sync securely between your desktop and phone.</p>
+            </div>
+            <div class="header-actions">
+                <a class="subpage-link" href="../../projects.html">Back to Projects</a>
+                <button id="sign-out-btn" class="ghost-btn" type="button" hidden>Lock</button>
             </div>
         </header>
 
-        <section class="settings-and-phase" aria-label="Current phase">
-            <div class="phase-indicator-container">
-                <div class="phase-strip-head">
-                    <h2>Current Phase</h2>
-                    <div class="phase-tooltip-container">
-                        <span class="tooltip-trigger">Why this phase?</span>
-                        <div class="tooltip-content">
-                            <p id="phase-explanation">Explanation of the current phase's neurobiology.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="phase-visualizer">
-                    <div class="phase-clock" aria-live="polite">
-                        <div class="phase-clock-face">
-                            <div class="phase-segment phase-segment-1"></div>
-                            <div class="phase-segment phase-segment-2"></div>
-                            <div class="phase-segment phase-segment-3"></div>
-                            <div id="phase-hand" class="phase-hand"></div>
-                            <div class="phase-center-dot"></div>
-                        </div>
-                        <div class="phase-clock-meta">
-                            <div id="phase-text" class="phase-text">Calculating...</div>
-                            <div id="phase-hours-since" class="phase-hours-since">-</div>
-                            <div id="phase-window" class="phase-window">-</div>
-                            <div class="phase-legend">
-                                <span id="legend-phase-1" class="phase-legend-chip">Phase 1</span>
-                                <span id="legend-phase-2" class="phase-legend-chip">Phase 2</span>
-                                <span id="legend-phase-3" class="phase-legend-chip">Phase 3</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <section id="setup-message" class="panel setup-message" hidden>
+            <h2>Supabase setup needed</h2>
+            <p>Add your URL and anon key in <strong>supabase-config.js</strong>. Then refresh this page.</p>
         </section>
 
-        <section class="daily-overview panel" aria-label="Daily overview">
-            <div class="overview-item">
-                <span class="overview-label">Completed today</span>
-                <strong id="completed-count">0 / 0</strong>
-            </div>
-            <div class="overview-item">
-                <span class="overview-label">Challenge day status</span>
-                <strong id="challenge-status">Not complete</strong>
-            </div>
-            <div class="overview-item">
-                <span class="overview-label">Current window</span>
-                <strong id="phase-window-summary">-</strong>
-            </div>
-            <div class="overview-item">
-                <span class="overview-label">Current streak</span>
-                <strong id="streak-count">0 days</strong>
-            </div>
-            <div class="overview-item">
-                <span class="overview-label">Best streak</span>
-                <strong id="best-streak-count">0 days</strong>
-            </div>
+        <section id="auth-panel" class="panel auth-panel" aria-label="Authentication">
+            <h2>Owner Access</h2>
+            <p>Simple passcode wall for accidental visitors. This is not secure authentication.</p>
+            <form id="auth-form" class="auth-form">
+                <label for="auth-password">Password</label>
+                <input id="auth-password" type="password" autocomplete="current-password" placeholder="Enter passcode" required>
+                <button type="submit" id="auth-submit-btn">Unlock</button>
+            </form>
+            <p id="auth-status" class="status-line">Not signed in</p>
         </section>
 
-        <main>
-            <section id="phase-1-section" class="habit-group">
-                <h2>Phase 1 (0-8 hrs)</h2>
-                <div id="phase-1-habits" class="habits-grid"></div>
+        <main id="dashboard" class="dashboard" hidden>
+            <section class="grid-main" aria-label="Main dashboard">
+                <article class="panel checklist-panel">
+                    <div class="section-head">
+                        <h2>Today</h2>
+                        <span id="today-date" class="section-meta">-</span>
+                    </div>
+                    <div class="progress-wrap" aria-label="Daily progress">
+                        <div class="progress-text-row">
+                            <span id="daily-progress-text">0 of 0 completed</span>
+                            <strong id="daily-progress-percent">0%</strong>
+                        </div>
+                        <div class="progress-track">
+                            <div id="daily-progress-bar" class="progress-bar"></div>
+                        </div>
+                    </div>
+                    <div id="habit-list" class="habit-list"></div>
+                    <p id="habit-empty" class="empty-state" hidden>No active habits yet. Add your first one below.</p>
+                </article>
+
+                <article class="panel timer-panel">
+                    <div class="section-head">
+                        <h2>Focus Timer</h2>
+                        <span id="timer-mode" class="section-meta">Focus</span>
+                    </div>
+                    <div id="timer-display" class="timer-display">25:00</div>
+                    <div class="timer-presets">
+                        <label for="focus-minutes">Focus</label>
+                        <input id="focus-minutes" type="number" min="5" max="120" step="5" value="25">
+                        <label for="break-minutes">Break</label>
+                        <input id="break-minutes" type="number" min="1" max="60" step="1" value="5">
+                    </div>
+                    <div class="timer-link-habit">
+                        <label for="timer-habit-select">Log focus time to</label>
+                        <select id="timer-habit-select">
+                            <option value="">No duration habit selected</option>
+                        </select>
+                    </div>
+                    <div class="timer-actions">
+                        <button id="timer-start-pause" type="button">Start</button>
+                        <button id="timer-reset" type="button" class="ghost-btn">Reset</button>
+                        <button id="timer-skip" type="button" class="ghost-btn">Skip mode</button>
+                    </div>
+                    <p id="timer-status" class="status-line">Ready to focus.</p>
+                </article>
+
+                <article class="panel streak-panel">
+                    <div class="section-head">
+                        <h2>Consistency</h2>
+                        <span class="section-meta">Last 90 days</span>
+                    </div>
+                    <div class="streak-row">
+                        <div class="kpi-card">
+                            <span>Current streak</span>
+                            <strong id="current-streak">0</strong>
+                        </div>
+                        <div class="kpi-card">
+                            <span>Best streak</span>
+                            <strong id="best-streak">0</strong>
+                        </div>
+                    </div>
+                    <div class="heatmap-wrap">
+                        <div id="heatmap" class="heatmap"></div>
+                        <div class="heat-legend">
+                            <span>Less</span>
+                            <span class="heat-dot level-0"></span>
+                            <span class="heat-dot level-1"></span>
+                            <span class="heat-dot level-2"></span>
+                            <span class="heat-dot level-3"></span>
+                            <span>More</span>
+                        </div>
+                    </div>
+                </article>
             </section>
-            <section id="phase-2-section" class="habit-group">
-                <h2>Phase 2 (8-16 hrs)</h2>
-                <div id="phase-2-habits" class="habits-grid"></div>
-            </section>
-            <section id="phase-3-section" class="habit-group">
-                <h2>Phase 3 (16-24 hrs)</h2>
-                <div id="phase-3-habits" class="habits-grid"></div>
-            </section>
-            <section id="break-habits-container" class="habit-group break-group">
-                <h2>Habits to Break</h2>
-                <div id="break-habits-grid" class="habits-grid"></div>
+
+            <section class="panel manager-panel" aria-label="Habit manager">
+                <div class="section-head">
+                    <h2>Habit Management</h2>
+                    <span class="section-meta">Add, edit, archive</span>
+                </div>
+
+                <form id="habit-form" class="habit-form">
+                    <div class="form-field-block">
+                        <label for="habit-name">Habit name</label>
+                        <input id="habit-name" type="text" maxlength="80" placeholder="e.g. Morning walk" required>
+                    </div>
+                    <div class="form-field-block small">
+                        <label for="habit-type">Type</label>
+                        <select id="habit-type" required>
+                            <option value="boolean">Count</option>
+                            <option value="duration">Duration</option>
+                        </select>
+                    </div>
+                    <div class="form-field-block small">
+                        <label for="habit-target">Count target / day</label>
+                        <input id="habit-target" type="number" min="1" max="20" value="1">
+                    </div>
+                    <div id="duration-target-wrap" class="form-field-block duration-target" hidden>
+                        <label>Duration target</label>
+                        <div class="duration-target-grid">
+                            <input id="habit-target-hours" type="number" min="0" max="24" value="1" aria-label="Target hours">
+                            <span>h</span>
+                            <input id="habit-target-minutes" type="number" min="0" max="59" step="5" value="0" aria-label="Target minutes">
+                            <span>m</span>
+                        </div>
+                    </div>
+                    <button type="submit">Add habit</button>
+                </form>
+
+                <div id="habit-manager-list" class="habit-manager-list"></div>
             </section>
         </main>
-
-        <section class="challenge-tracker">
-            <h2>21-Day Stimulus Period</h2>
-            <p class="challenge-caption">Complete 4+ habits each day to mark a successful day.</p>
-            <div id="challenge-grid" class="challenge-grid">
-                <!-- 21-day grid will be generated here -->
-            </div>
-        </section>
-
-        <details class="panel secondary-tools" aria-label="Planning and reset tools">
-            <summary class="secondary-tools-summary">
-                <span>Planning and Reset Tools</span>
-                <small>Daily commitments, recovery, and weekly review</small>
-            </summary>
-
-            <div class="secondary-tools-content">
-                <section class="insight-strip" aria-label="Momentum insights">
-                    <article class="panel insight-panel">
-                        <h3>Today Momentum</h3>
-                        <div class="momentum-ring" aria-hidden="true">
-                            <svg viewBox="0 0 120 120" class="momentum-ring-svg">
-                                <circle cx="60" cy="60" r="49" class="momentum-track"></circle>
-                                <circle id="momentum-ring-progress" cx="60" cy="60" r="49" class="momentum-progress"></circle>
-                            </svg>
-                            <div id="today-progress-caption" class="momentum-caption">0%</div>
-                        </div>
-                        <p id="today-progress-text" class="insight-note">Complete habits to build momentum.</p>
-                    </article>
-                    <article class="panel insight-panel">
-                        <h3>7-Day Rhythm</h3>
-                        <svg id="rhythm-sparkline" class="rhythm-sparkline" viewBox="0 0 240 90" preserveAspectRatio="none" role="img" aria-label="Last seven day completion trend">
-                            <polyline id="rhythm-sparkline-polyline" points="" class="rhythm-line"></polyline>
-                        </svg>
-                        <div id="rhythm-sparkline-labels" class="rhythm-labels"></div>
-                    </article>
-                </section>
-
-                <section class="system-grid" aria-label="Behavior systems">
-                    <article class="panel system-panel" aria-label="Daily commitments">
-                        <div class="system-head">
-                            <h2>Daily 3 Commitments</h2>
-                            <p>Pick one must-do, one maintenance action, and one life-admin task.</p>
-                        </div>
-                        <form id="daily-commitments-form" class="system-form">
-                            <label for="commitment-must">Must-do</label>
-                            <input id="commitment-must" type="text" maxlength="80" placeholder="Highest impact action for today">
-                            <label for="commitment-maintenance">Maintenance</label>
-                            <input id="commitment-maintenance" type="text" maxlength="80" placeholder="Baseline habit you should not skip">
-                            <label for="commitment-admin">Life admin</label>
-                            <input id="commitment-admin" type="text" maxlength="80" placeholder="Practical life task (finance, room, calendar)">
-                            <button type="submit" class="secondary-btn">Save commitments</button>
-                        </form>
-                        <div id="daily-commitments-list" class="commitments-list"></div>
-                    </article>
-
-                    <article id="recovery-panel" class="panel system-panel" aria-label="Recovery plan" hidden>
-                        <div class="system-head">
-                            <h2>Recovery Plan</h2>
-                            <p id="recovery-context">Reset after a missed or incomplete day to avoid a spiral.</p>
-                        </div>
-                        <div id="recovery-steps" class="recovery-steps"></div>
-                        <button id="recovery-complete-btn" type="button" class="secondary-btn">Mark recovery complete</button>
-                    </article>
-                </section>
-
-                <section class="panel weekly-reset" aria-label="Weekly reset">
-                    <div class="system-head">
-                        <h2>Weekly Reset</h2>
-                        <p>Review your week, simplify your system, and set your next priorities.</p>
-                    </div>
-                    <div class="weekly-summary-grid">
-                        <div class="weekly-summary-item">
-                            <span>Successful days</span>
-                            <strong id="weekly-successful-days">0</strong>
-                        </div>
-                        <div class="weekly-summary-item">
-                            <span>Slip events</span>
-                            <strong id="weekly-slip-events">0</strong>
-                        </div>
-                        <div class="weekly-summary-item">
-                            <span>Habit completion</span>
-                            <strong id="weekly-completion-rate">0%</strong>
-                        </div>
-                    </div>
-                    <form id="weekly-reset-form" class="weekly-reset-form">
-                        <label for="weekly-wins">Wins this week</label>
-                        <textarea id="weekly-wins" rows="2" placeholder="What worked well?"></textarea>
-                        <label for="weekly-slips">What slipped and why</label>
-                        <textarea id="weekly-slips" rows="2" placeholder="Main friction points"></textarea>
-                        <label for="weekly-simplify">What to simplify next week</label>
-                        <textarea id="weekly-simplify" rows="2" placeholder="What can be made easier?"></textarea>
-                        <label for="weekly-priority-1">Priority 1</label>
-                        <input id="weekly-priority-1" type="text" maxlength="90" placeholder="Top focus for next week">
-                        <label for="weekly-priority-2">Priority 2</label>
-                        <input id="weekly-priority-2" type="text" maxlength="90" placeholder="Second focus">
-                        <label for="weekly-priority-3">Priority 3</label>
-                        <input id="weekly-priority-3" type="text" maxlength="90" placeholder="Third focus">
-                        <button type="submit" class="secondary-btn">Save weekly reset</button>
-                    </form>
-                </section>
-            </div>
-        </details>
-
-        <section class="settings routine-settings" aria-label="Routine settings">
-            <label for="wake-up-time">Wake-up time</label>
-            <input type="time" id="wake-up-time" value="07:00" aria-label="Wake up time">
-            <label for="replacement-habit-input">Replacement Habit (for slips)</label>
-            <input type="text" id="replacement-habit-input" value="10 Pushups" aria-label="Replacement habit">
-            <label class="check-field compact-check" for="hide-completed-mobile">
-                <input type="checkbox" id="hide-completed-mobile" aria-label="Hide completed habits on mobile">
-                Hide completed habits on mobile
-            </label>
-            <button id="reset-today-btn" type="button" class="secondary-btn">Reset today progress</button>
-            <label for="sync-id">Sync ID</label>
-            <input type="text" id="sync-id" value="default-user" aria-label="Sync ID">
-            <p id="sync-status" class="sync-status">Cloud sync inactive</p>
-        </section>
-
-        <details class="habit-editor panel" aria-label="Habit editor">
-            <summary class="habit-editor-summary">
-                <span>Habit Editor</span>
-                <small>Click to expand</small>
-            </summary>
-            <div class="habit-editor-content">
-                <div class="habit-editor-head">
-                    <p>Add and manage habits without touching code.</p>
-                </div>
-                <form id="habit-editor-form" class="habit-editor-form">
-                    <div class="form-field">
-                        <label for="habit-name">Name</label>
-                        <input id="habit-name" name="habit-name" type="text" maxlength="60" placeholder="e.g. Gym" required>
-                    </div>
-                    <div class="form-field">
-                        <label for="habit-phase">Phase</label>
-                        <select id="habit-phase" name="habit-phase">
-                            <option value="1">Phase 1</option>
-                            <option value="2">Phase 2</option>
-                            <option value="3">Phase 3 (Wind Down)</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label for="habit-friction">Friction</label>
-                        <select id="habit-friction" name="habit-friction">
-                            <option value="high">High</option>
-                            <option value="medium">Medium</option>
-                            <option value="low">Low</option>
-                        </select>
-                    </div>
-                    <label class="check-field">
-                        <input id="habit-linchpin" name="habit-linchpin" type="checkbox">
-                        Linchpin
-                    </label>
-                    <label class="check-field">
-                        <input id="habit-pomodoro" name="habit-pomodoro" type="checkbox">
-                        Pomodoro
-                    </label>
-                    <button id="add-habit-btn" type="submit">Add Habit</button>
-                </form>
-                <div id="habit-list-manager" class="habit-list-manager"></div>
-            </div>
-        </details>
-
-    </div>
-
-    <div id="pomodoro-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Study Block Timer</h2>
-            <label class="modal-field" for="pomodoro-duration">Focus minutes</label>
-            <input id="pomodoro-duration" type="number" min="5" max="120" step="5" value="25">
-            <div id="pomodoro-timer">25:00</div>
-            <div class="modal-actions">
-                <button id="pomodoro-start">Start</button>
-                <button id="pomodoro-reset">Reset</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="replacement-habit-modal" class="modal">
-        <div class="modal-content">
-            <p>You slipped. Immediately complete a 2-minute replacement habit to disrupt the neural circuit.</p>
-            <label class="modal-field" for="slip-trigger">What triggered it?</label>
-            <select id="slip-trigger">
-                <option value="stress">Stress</option>
-                <option value="boredom">Boredom</option>
-                <option value="social">Social context</option>
-                <option value="late-night">Late night</option>
-                <option value="other">Other</option>
-            </select>
-            <p><strong>Suggestion: <span id="replacement-habit-suggestion">10 Pushups</span></strong></p>
-            <p id="replacement-trigger-note" class="trigger-note">Use your replacement habit immediately.</p>
-            <button id="replacement-habit-done">Done</button>
-        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
