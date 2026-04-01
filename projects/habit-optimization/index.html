@@ -199,21 +199,25 @@
                             <label for="vice-method">Tracking method</label>
                             <select id="vice-method" required>
                                 <option value="streak">Streak (abstinence)</option>
-                                <option value="budget">Budget (minutes/day)</option>
+                                <option value="budget">Budget (usage/day)</option>
                             </select>
                         </div>
                         <div id="vice-budget-fields" class="vice-budget-fields">
                             <div class="form-field-block small">
-                                <label for="vice-initial-limit">Initial limit (min)</label>
-                                <input id="vice-initial-limit" type="number" min="1" max="1440" value="120">
+                                <label for="vice-budget-unit">Budget unit</label>
+                                <input id="vice-budget-unit" type="text" maxlength="20" value="min" placeholder="e.g. joints">
                             </div>
                             <div class="form-field-block small">
-                                <label for="vice-goal-limit">Goal limit (min)</label>
-                                <input id="vice-goal-limit" type="number" min="0" max="1440" value="0">
+                                <label for="vice-initial-limit">Initial limit/day</label>
+                                <input id="vice-initial-limit" type="number" min="1" max="100000" step="0.1" value="120">
                             </div>
                             <div class="form-field-block small">
-                                <label for="vice-taper-step">Reduce by (min)</label>
-                                <input id="vice-taper-step" type="number" min="1" max="240" value="15">
+                                <label for="vice-goal-limit">Goal limit/day</label>
+                                <input id="vice-goal-limit" type="number" min="0" max="100000" step="0.1" value="0">
+                            </div>
+                            <div class="form-field-block small">
+                                <label for="vice-taper-step">Reduce by</label>
+                                <input id="vice-taper-step" type="number" min="0.1" max="100000" step="0.1" value="15">
                             </div>
                             <div class="form-field-block small">
                                 <label for="vice-taper-interval">Every (days)</label>

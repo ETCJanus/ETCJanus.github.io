@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const viceGoalLimitInput = document.getElementById('vice-goal-limit');
     const viceTaperStepInput = document.getElementById('vice-taper-step');
     const viceTaperIntervalInput = document.getElementById('vice-taper-interval');
+    const viceBudgetUnitInput = document.getElementById('vice-budget-unit');
     const viceManagerListEl = document.getElementById('vice-manager-list');
 
     const cravingViceSelect = document.getElementById('craving-vice-select');
@@ -157,6 +158,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hours > 0 && mins > 0) return `${hours}h ${mins}m`;
         if (hours > 0) return `${hours}h`;
         return `${mins}m`;
+    };
+
+    const sanitizeUnit = (value, fallback = 'min') => {
+        const cleaned = (value || '').toString().trim().toLowerCase().replace(/[^a-z0-9_ -]/g, '');
+        if (!cleaned) return fallback;
+        return cleaned.slice(0, 20);
+    };
+
+    const formatUsage = (value, unit) => {
+        const amount = Number(value) || 0;
+        const rounded = Number.isInteger(amount) ? String(amount) : String(Math.round(amount * 100) / 100);
+        return `${rounded} ${unit}`;
     };
 
     const parseHabit = (row) => ({
@@ -410,22 +423,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 const percentRaw = limit > 0 ? Math.round((spent / limit) * 100) : 0;
                 const percent = Math.max(0, Math.min(100, percentRaw));
                 const over = spent > limit;
+                const unit = sanitizeUnit(vice.unit, 'min');
                 const reducedBy = Math.max(0, Number(vice.initialLimit || 0) - Number(limit || 0));
                 const taperText = reducedBy > 0
-                    ? `(Down ${reducedBy} mins so far)`
+                    ? `(Down ${formatUsage(reducedBy, unit)} so far)`
                     : '(No taper reduction yet)';
 
                 card.innerHTML = `
                     <div class="vice-row">
                         <div class="vice-main">
                             <span class="vice-name">${vice.name}</span>
-                            <span class="vice-budget-caption">Today's budget: ${Math.round(limit)} mins ${taperText}</span>
+                            <span class="vice-budget-caption">Today's budget: ${formatUsage(limit, unit)} ${taperText}</span>
                         </div>
-                        <span class="vice-meta">${Math.round(spent)} / ${Math.round(limit)} mins</span>
+                        <span class="vice-meta">${formatUsage(spent, unit)} / ${formatUsage(limit, unit)}</span>
                     </div>
                     <div class="vice-budget-track"><div class="vice-budget-bar ${over ? 'warn' : ''}" style="width:${percent}%"></div></div>
                     <div class="vice-budget-controls">
-                        <input type="number" min="1" max="1440" value="15" data-action="vice-budget-input" data-vice-id="${vice.id}">
+                        <input type="number" min="0.1" max="100000" step="0.1" value="${unit === 'min' || unit === 'minutes' ? '15' : '1'}" data-action="vice-budget-input" data-vice-id="${vice.id}">
                         <button type="button" data-action="vice-budget-add" data-vice-id="${vice.id}">Log usage</button>
                     </div>
                 `;
@@ -460,6 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
         getViceHabits().forEach((vice) => {
             const mode = vice.trackingMethod || 'streak';
             const limit = mode === 'budget' ? Math.round(Number(vice.currentLimit ?? vice.initialLimit ?? 0)) : '-';
+            const unitLabel = mode === 'budget' ? sanitizeUnit(vice.unit, 'min') : 'streak';
             const row = document.createElement('div');
             row.className = 'manager-item';
             row.innerHTML = `
@@ -468,8 +483,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <option value="streak" ${mode === 'streak' ? 'selected' : ''}>Streak</option>
                     <option value="budget" ${mode === 'budget' ? 'selected' : ''}>Budget</option>
                 </select>
-                <input type="number" data-field="target" data-id="${vice.id}" min="0" max="1440" value="${limit}">
-                <span class="manager-unit-pill">VICE</span>
+                <input type="number" data-field="target" data-id="${vice.id}" min="0" max="100000" value="${limit}">
+                <span class="manager-unit-pill">${unitLabel}</span>
                 <button type="button" class="ghost-btn compact-action" data-action="vice-save" data-id="${vice.id}">Save</button>
                 <button type="button" class="ghost-btn compact-action" data-action="vice-archive" data-id="${vice.id}">Archive</button>
             `;
@@ -812,10 +827,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!name) return;
 
         const method = viceMethodInput.value === 'budget' ? 'budget' : 'streak';
+        const budgetUnit = sanitizeUnit(viceBudgetUnitInput?.value, 'min');
 
-        const initialLimit = method === 'budget' ? normalizeNumber(viceInitialLimitInput.value, 1, 1440, 120) : null;
-        const goalLimit = method === 'budget' ? normalizeNumber(viceGoalLimitInput.value, 0, 1440, 0) : null;
-        const taperStep = method === 'budget' ? normalizeNumber(viceTaperStepInput.value, 1, 240, 15) : null;
+        const initialLimit = method === 'budget' ? normalizeNumber(viceInitialLimitInput.value, 1, 100000, 120) : null;
+        const goalLimit = method === 'budget' ? normalizeNumber(viceGoalLimitInput.value, 0, 100000, 0) : null;
+        const taperStep = method === 'budget' ? normalizeNumber(viceTaperStepInput.value, 0.1, 100000, 15) : null;
         const taperInterval = method === 'budget' ? normalizeNumber(viceTaperIntervalInput.value, 1, 30, 7) : null;
 
         try {
@@ -824,12 +840,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 category: 'vice',
                 habitType: method === 'budget' ? 'duration' : 'count',
                 targetAmount: method === 'budget' ? initialLimit : 1,
-                unit: method === 'budget' ? 'minutes' : 'times',
+                unit: method === 'budget' ? budgetUnit : 'times',
                 trackingMethod: method,
                 initialLimit,
                 currentLimit: initialLimit,
                 goalLimit,
-                taperRate: method === 'budget' ? `reduce by ${taperStep} mins every ${taperInterval} days` : null,
+                taperRate: method === 'budget' ? `reduce by ${taperStep} ${budgetUnit} every ${taperInterval} days` : null,
                 taperStepAmount: taperStep,
                 taperIntervalDays: taperInterval,
                 taperStartedAt: method === 'budget' ? new Date().toISOString() : null,
@@ -843,6 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
             viceGoalLimitInput.value = '0';
             viceTaperStepInput.value = '15';
             viceTaperIntervalInput.value = '7';
+            if (viceBudgetUnitInput instanceof HTMLInputElement) viceBudgetUnitInput.value = 'min';
             await refreshFromCloud();
         } catch (error) {
             cravingStatusEl.textContent = `Could not add vice: ${error.message}`;
@@ -899,7 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const controls = btn.closest('.vice-budget-controls');
                 const input = controls?.querySelector('input[data-action="vice-budget-input"]');
                 if (input instanceof HTMLInputElement) {
-                    const delta = normalizeNumber(input.value, 1, 1440, 1);
+                    const delta = normalizeNumber(input.value, 0.1, 100000, 1);
                     await addAmountToHabit(viceId, delta, { source: 'vice_budget_manual' });
                 }
             }
@@ -966,20 +983,22 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             if (action === 'vice-save') {
                 const method = methodInput.value === 'budget' ? 'budget' : 'streak';
-                const limit = normalizeNumber(targetInput.value, 0, 1440, 0);
+                const limit = normalizeNumber(targetInput.value, 0, 100000, 0);
+                const vice = getHabit(viceId);
+                const currentUnit = sanitizeUnit(vice?.unit, 'min');
 
                 await updateHabit(viceId, {
                     name: nameInput.value.trim() || 'Untitled vice',
                     tracking_method: method,
                     habit_type: method === 'budget' ? 'duration' : 'boolean',
                     target_amount: method === 'budget' ? Math.max(1, limit) : 1,
-                    unit: method === 'budget' ? 'minutes' : 'times',
+                    unit: method === 'budget' ? currentUnit : 'times',
                     initial_limit: method === 'budget' ? Math.max(1, limit) : null,
                     current_limit: method === 'budget' ? Math.max(1, limit) : null,
                     goal_limit: method === 'budget' ? 0 : null,
                     taper_step_amount: method === 'budget' ? 15 : null,
                     taper_interval_days: method === 'budget' ? 7 : null,
-                    taper_rate: method === 'budget' ? 'reduce by 15 mins every 7 days' : null,
+                    taper_rate: method === 'budget' ? `reduce by 15 ${currentUnit} every 7 days` : null,
                     taper_started_at: method === 'budget' ? new Date().toISOString() : null,
                     taper_last_applied_at: method === 'budget' ? new Date().toISOString() : null
                 });
