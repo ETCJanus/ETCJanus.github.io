@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habit OS Notes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/app.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="js/app-core.js"></script>
+    <script src="js/page-shell.js"></script>
+    <script src="js/notes.js" defer></script>
+</head>
+<body>
+    <div id="auth-screen" class="auth-screen">
+        <article class="auth-panel">
+            <h1 class="auth-title">Owner Access</h1>
+            <p class="auth-text">Enter your dashboard passcode to open Notes.</p>
+            <form id="auth-form" class="inline-form">
+                <input id="auth-password" type="password" placeholder="Password" required>
+                <button class="primary-btn" type="submit">Unlock</button>
+            </form>
+            <p id="auth-status" class="status-line">Not signed in.</p>
+        </article>
+    </div>
+
+    <div id="shell-body" class="shell dashboard-shell" hidden>
+        <aside class="sidebar">
+            <div class="brand-block">
+                <p class="brand-tag">Personal Productivity - Notes</p>
+                <div class="sidebar-inline-head">
+                    <h1 class="brand-title">Habit OS</h1>
+                    <div class="topbar-actions">
+                        <button id="notes-refresh-btn" class="ghost-btn" type="button">Refresh</button>
+                        <button id="sign-out-btn" class="ghost-btn" type="button">Lock</button>
+                    </div>
+                </div>
+            </div>
+            <nav class="nav-group" aria-label="Primary navigation">
+                <a class="nav-link" href="index.html" title="Dashboard"><span class="nav-dot">D</span><span>Dashboard</span></a>
+                <a class="nav-link" href="insights.html" title="Insights"><span class="nav-dot">I</span><span>Insights</span></a>
+                <a class="nav-link active" href="notes.html" title="Notes"><span class="nav-dot">N</span><span>Notes</span></a>
+                <a class="nav-link" href="settings.html" title="Settings"><span class="nav-dot">S</span><span>Settings</span></a>
+            </nav>
+            <div class="sidebar-footer"><p style="margin:0;">Long-form notes</p></div>
+        </aside>
+
+        <main class="main dashboard-main">
+            <section class="notes-grid">
+                <article class="card" style="grid-template-rows:auto auto minmax(0,1fr) auto;">
+                    <header class="card-head">
+                        <h3 class="card-title">Composer</h3>
+                        <span class="pill">Source: other</span>
+                    </header>
+                    <form id="notes-form" class="notes-form">
+                        <textarea id="notes-editor" maxlength="1000" placeholder="Write your note, insight, or plan..."></textarea>
+                        <div class="notes-actions">
+                            <button class="primary-btn" type="submit">Save to Cloud</button>
+                            <button id="notes-clear-btn" class="ghost-btn" type="button">Clear Draft</button>
+                        </div>
+                    </form>
+                    <p id="notes-status" class="status-line">Waiting for unlock.</p>
+                </article>
+
+                <article class="card" style="grid-template-rows:auto minmax(0,1fr);">
+                    <header class="card-head">
+                        <h3 class="card-title">Recent Notes</h3>
+                        <span class="pill">Supabase</span>
+                    </header>
+                    <div id="notes-list" class="compact-list"></div>
+                    <p id="notes-empty" class="empty-state" hidden>No notes saved yet.</p>
+                </article>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
