@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insights | Focus Dashboard</title>
+    <meta name="description" content="Insights dashboard for sleep, focus habits, and vice tracking.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container dashboard-shell">
+        <header class="page-header panel">
+            <div>
+                <p class="eyebrow">Private Productivity System</p>
+                <h1>Insights Dashboard</h1>
+                <p class="header-text">A clear view of sleep trends, focus consistency, and vice progress.</p>
+            </div>
+            <div class="header-actions">
+                <a class="subpage-link" href="index.html">Back to Tracker</a>
+                <a class="subpage-link" href="../../projects.html">Back to Projects</a>
+            </div>
+        </header>
+
+        <section id="insights-setup-message" class="panel setup-message" hidden>
+            <h2>Supabase setup needed</h2>
+            <p>Add your URL and anon key in <strong>supabase-config.js</strong>. Then refresh this page.</p>
+        </section>
+
+        <section id="insights-auth-panel" class="panel auth-panel" aria-label="Authentication">
+            <h2>Owner Access</h2>
+            <p>Simple passcode wall for accidental visitors. This is not secure authentication.</p>
+            <form id="insights-auth-form" class="auth-form">
+                <label for="insights-auth-password">Password</label>
+                <input id="insights-auth-password" type="password" autocomplete="current-password" placeholder="Enter passcode" required>
+                <button type="submit" id="insights-auth-submit-btn">Unlock</button>
+            </form>
+            <p id="insights-auth-status" class="status-line">Not signed in</p>
+        </section>
+
+        <main id="insights-dashboard" class="dashboard" hidden>
+            <section class="insights-grid">
+                <article class="panel insights-card">
+                    <div class="section-head">
+                        <h2>Sleep Trend</h2>
+                        <span class="section-meta">Last 30 days</span>
+                    </div>
+                    <div id="sleep-chart" class="sleep-chart" aria-label="Sleep chart"></div>
+                    <div class="insights-stats">
+                        <div class="kpi-card">
+                            <span>Average sleep</span>
+                            <strong id="sleep-average">-</strong>
+                        </div>
+                        <div class="kpi-card">
+                            <span>Entries logged</span>
+                            <strong id="sleep-entries">0</strong>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="panel insights-card">
+                    <div class="section-head">
+                        <h2>Focus Habits</h2>
+                        <span class="section-meta">Completion health</span>
+                    </div>
+                    <div id="focus-health-list" class="insight-list"></div>
+                    <p id="focus-health-empty" class="empty-state" hidden>No focus habits available yet.</p>
+                </article>
+
+                <article class="panel insights-card">
+                    <div class="section-head">
+                        <h2>Vice Progress</h2>
+                        <span class="section-meta">Streaks and budget use</span>
+                    </div>
+                    <div id="vice-health-list" class="insight-list"></div>
+                    <p id="vice-health-empty" class="empty-state" hidden>No vice habits available yet.</p>
+                </article>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="insights.js"></script>
+</body>
+</html>

@@ -17,6 +17,7 @@
             </div>
             <div class="header-actions">
                 <a class="subpage-link" href="../../projects.html">Back to Projects</a>
+                <a class="subpage-link" href="insights.html">Insights</a>
                 <button id="edit-mode-toggle" class="ghost-btn" type="button" hidden>Edit Mode: Off</button>
                 <button id="sign-out-btn" class="ghost-btn" type="button" hidden>Lock</button>
             </div>
@@ -47,6 +48,42 @@
             </section>
 
             <section id="focus-view" class="view-panel active" aria-label="Focus dashboard view">
+                <article class="panel sleep-panel" aria-label="Sleep entry">
+                    <div class="section-head">
+                        <h2>Sleep</h2>
+                        <span id="sleep-active-date" class="section-meta">Today</span>
+                    </div>
+
+                    <div id="sleep-compact" class="sleep-compact" hidden>
+                        <p id="sleep-compact-text" class="panel-note">Sleep logged.</p>
+                        <div class="sleep-actions-row">
+                            <button id="sleep-edit-today" type="button" class="ghost-btn compact-action">Edit</button>
+                            <button id="sleep-edit-other" type="button" class="ghost-btn compact-action">Other day</button>
+                        </div>
+                    </div>
+
+                    <form id="sleep-form" class="sleep-form" hidden>
+                        <div class="form-field-block small">
+                            <label for="sleep-date">Date</label>
+                            <input id="sleep-date" type="date" required>
+                        </div>
+                        <div class="form-field-block small">
+                            <label for="sleep-time">Slept at</label>
+                            <input id="sleep-time" type="time" required>
+                        </div>
+                        <div class="form-field-block small">
+                            <label for="wake-time">Woke at</label>
+                            <input id="wake-time" type="time" required>
+                        </div>
+                        <div class="sleep-actions-row">
+                            <button type="submit">Save sleep</button>
+                            <button id="sleep-cancel" type="button" class="ghost-btn compact-action">Cancel</button>
+                        </div>
+                    </form>
+
+                    <p id="sleep-status" class="status-line">Daily entry not filled yet.</p>
+                </article>
+
                 <div class="grid-main">
                     <article class="panel checklist-panel">
                         <div class="section-head">

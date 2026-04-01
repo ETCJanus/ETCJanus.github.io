@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const tableHabits = (window.HABIT_TABLE_HABITS || 'habits').trim();
     const tableLogs = (window.HABIT_TABLE_LOGS || 'habit_logs').trim();
+    const tableSleepLogs = (window.HABIT_TABLE_SLEEP_LOGS || 'sleep_logs').trim();
 
     const hasSupabase = Boolean(window.supabase && typeof window.supabase.createClient === 'function');
     const isConfigured = Boolean(hasSupabase && supabaseUrl && supabaseAnonKey && wallPassword);
@@ -32,6 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const dailyProgressTextEl = document.getElementById('daily-progress-text');
     const dailyProgressPercentEl = document.getElementById('daily-progress-percent');
     const dailyProgressBarEl = document.getElementById('daily-progress-bar');
+
+    const sleepActiveDateEl = document.getElementById('sleep-active-date');
+    const sleepCompactEl = document.getElementById('sleep-compact');
+    const sleepCompactTextEl = document.getElementById('sleep-compact-text');
+    const sleepEditTodayBtn = document.getElementById('sleep-edit-today');
+    const sleepEditOtherBtn = document.getElementById('sleep-edit-other');
+    const sleepForm = document.getElementById('sleep-form');
+    const sleepDateInput = document.getElementById('sleep-date');
+    const sleepTimeInput = document.getElementById('sleep-time');
+    const wakeTimeInput = document.getElementById('wake-time');
+    const sleepCancelBtn = document.getElementById('sleep-cancel');
+    const sleepStatusEl = document.getElementById('sleep-status');
 
     const timerModeEl = document.getElementById('timer-mode');
     const timerDisplayEl = document.getElementById('timer-display');
@@ -100,6 +113,12 @@ document.addEventListener('DOMContentLoaded', () => {
         editMode: false,
         habits: [],
         progressByDate: {},
+        sleepByDate: {},
+        sleep: {
+            selectedDate: '',
+            editing: false,
+            lastRenderedDate: ''
+        },
         streakResetByHabit: {},
         timer: {
             mode: 'focus',
@@ -194,6 +213,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const amount = Number(value) || 0;
         const rounded = Number.isInteger(amount) ? String(amount) : String(Math.round(amount * 100) / 100);
         return `${rounded} ${unit}`;
+    };
+
+    const parseTimeToMinutes = (value) => {
+        if (!value || !value.includes(':')) return null;
+        const [hourPart, minutePart] = value.split(':');
+        const hour = Number(hourPart);
+        const minute = Number(minutePart);
+        if (!Number.isFinite(hour) || !Number.isFinite(minute)) return null;
+        if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
+        return hour * 60 + minute;
+    };
+
+    const getSleepDurationMinutes = (sleptAt, wokeAt) => {
+        const start = parseTimeToMinutes(sleptAt);
+        const end = parseTimeToMinutes(wokeAt);
+        if (start == null || end == null) return null;
+        let duration = end - start;
+        if (duration <= 0) duration += 24 * 60;
+        return duration;
+    };
+
+    const formatSleepDuration = (mins) => {
+        const value = Math.max(0, Number(mins) || 0);
+        const h = Math.floor(value / 60);
+        const m = value % 60;
+        if (m === 0) return `${h}h`;
+        return `${h}h ${m}m`;
+    };
+
+    const formatTimeForDisplay = (value) => {
+        if (!value || !value.includes(':')) return '-';
+        const [hRaw, mRaw] = value.split(':');
+        const h = Number(hRaw);
+        const m = Number(mRaw);
+        if (!Number.isFinite(h) || !Number.isFinite(m)) return value;
+        return new Date(2000, 0, 1, h, m).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
     const parseHabit = (row) => ({
@@ -379,6 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const group = document.createElement('section');
             group.className = 'habit-time-group';
+            if (bucket === currentBucket) group.classList.add('current');
 
             const titleRow = document.createElement('div');
             titleRow.className = 'habit-time-header';
@@ -674,6 +730,42 @@ document.addEventListener('DOMContentLoaded', () => {
         dailyProgressBarEl.style.width = `${percent}%`;
     };
 
+    const renderSleepCard = () => {
+        const todayKey = getTodayKey();
+        const selectedDate = state.sleep.selectedDate || todayKey;
+        const isToday = selectedDate === todayKey;
+        const entry = state.sleepByDate[selectedDate] || null;
+
+        sleepActiveDateEl.textContent = isToday ? 'Today' : selectedDate;
+        sleepDateInput.value = selectedDate;
+
+        if (!state.sleep.editing && entry && isToday) {
+            const durationText = formatSleepDuration(entry.durationMinutes);
+            sleepCompactTextEl.textContent = `${formatTimeForDisplay(entry.sleptAt)} -> ${formatTimeForDisplay(entry.wokeAt)} (${durationText})`;
+            sleepCompactEl.hidden = false;
+            sleepForm.hidden = true;
+            sleepStatusEl.textContent = 'Sleep logged for today.';
+            return;
+        }
+
+        sleepCompactEl.hidden = true;
+        sleepForm.hidden = false;
+
+        if (entry) {
+            sleepTimeInput.value = entry.sleptAt;
+            wakeTimeInput.value = entry.wokeAt;
+            sleepStatusEl.textContent = isToday ? 'Update today\'s sleep if needed.' : `Editing ${selectedDate}.`;
+        } else {
+            if (state.sleep.lastRenderedDate !== selectedDate) {
+                sleepTimeInput.value = '';
+                wakeTimeInput.value = '';
+            }
+            sleepStatusEl.textContent = isToday ? 'Daily entry not filled yet.' : `No sleep entry for ${selectedDate} yet.`;
+        }
+
+        state.sleep.lastRenderedDate = selectedDate;
+    };
+
     const refreshAll = () => {
         renderOverview();
         renderTimerHabitOptions();
@@ -684,6 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHeatmap();
         renderFocusStreak();
         renderCravingViceOptions();
+        renderSleepCard();
     };
 
     const loadHabits = async () => {
@@ -730,6 +823,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 state.streakResetByHabit[row.habit_id] = row.log_date;
             }
         });
+    };
+
+    const loadSleepLogs = async () => {
+        const since = getDateFromOffset(-120);
+        const { data, error } = await supabaseClient
+            .from(tableSleepLogs)
+            .select('log_date,slept_at,woke_at,duration_minutes,updated_at')
+            .eq('passcode_key', wallPassword)
+            .gte('log_date', since)
+            .order('log_date', { ascending: false });
+        if (error) throw error;
+
+        state.sleepByDate = {};
+        (data || []).forEach((row) => {
+            const durationMinutes = Number(row.duration_minutes) || getSleepDurationMinutes(row.slept_at, row.woke_at) || 0;
+            state.sleepByDate[row.log_date] = {
+                logDate: row.log_date,
+                sleptAt: row.slept_at,
+                wokeAt: row.woke_at,
+                durationMinutes,
+                updatedAt: row.updated_at || null
+            };
+        });
+    };
+
+    const upsertSleepLog = async (logDate, sleptAt, wokeAt) => {
+        const duration = getSleepDurationMinutes(sleptAt, wokeAt);
+        if (duration == null) throw new Error('Invalid sleep or wake time');
+
+        const { error } = await supabaseClient
+            .from(tableSleepLogs)
+            .upsert({
+                passcode_key: wallPassword,
+                log_date: logDate,
+                slept_at: sleptAt,
+                woke_at: wokeAt,
+                duration_minutes: duration,
+                updated_at: new Date().toISOString()
+            }, { onConflict: 'passcode_key,log_date' });
+        if (error) throw error;
+
+        state.sleepByDate[logDate] = {
+            logDate,
+            sleptAt,
+            wokeAt,
+            durationMinutes: duration,
+            updatedAt: new Date().toISOString()
+        };
     };
 
     const upsertProgressAmount = async (habitId, dateKey, currentAmount, amountDelta = 0, metadata = null) => {
@@ -859,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadHabits();
         await applyBudgetTapering();
         await loadHabits();
-        await Promise.all([loadProgressLogs(), loadStreakResetEvents()]);
+        await Promise.all([loadProgressLogs(), loadStreakResetEvents(), loadSleepLogs()]);
         refreshAll();
     };
 
@@ -868,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pollId = setInterval(async () => {
             if (!state.unlocked) return;
             try {
-                await Promise.all([loadProgressLogs(), loadStreakResetEvents(), loadHabits()]);
+                await Promise.all([loadProgressLogs(), loadStreakResetEvents(), loadHabits(), loadSleepLogs()]);
                 refreshAll();
             } catch (error) {
                 timerStatusEl.textContent = `Sync failed: ${error.message}`;
@@ -928,6 +1069,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tabFocusBtn.addEventListener('click', () => setActiveTab('focus'));
     tabViceBtn.addEventListener('click', () => setActiveTab('vice'));
+
+    sleepDateInput.addEventListener('change', () => {
+        state.sleep.selectedDate = sleepDateInput.value || getTodayKey();
+        state.sleep.editing = true;
+        renderSleepCard();
+    });
+
+    sleepEditTodayBtn.addEventListener('click', () => {
+        state.sleep.selectedDate = getTodayKey();
+        state.sleep.editing = true;
+        renderSleepCard();
+    });
+
+    sleepEditOtherBtn.addEventListener('click', () => {
+        state.sleep.selectedDate = getTodayKey();
+        state.sleep.editing = true;
+        sleepForm.hidden = false;
+        renderSleepCard();
+        sleepDateInput.focus();
+    });
+
+    sleepCancelBtn.addEventListener('click', () => {
+        state.sleep.selectedDate = getTodayKey();
+        state.sleep.editing = false;
+        renderSleepCard();
+    });
+
+    sleepForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const selectedDate = sleepDateInput.value || getTodayKey();
+        const sleptAt = sleepTimeInput.value;
+        const wokeAt = wakeTimeInput.value;
+
+        if (!sleptAt || !wokeAt) {
+            sleepStatusEl.textContent = 'Please fill both sleep and wake times.';
+            return;
+        }
+
+        try {
+            await upsertSleepLog(selectedDate, sleptAt, wokeAt);
+            state.sleep.selectedDate = getTodayKey();
+            state.sleep.editing = false;
+            renderSleepCard();
+        } catch (error) {
+            sleepStatusEl.textContent = `Could not save sleep: ${error.message}`;
+        }
+    });
 
     focusHabitTypeInput.addEventListener('change', () => {
         if (focusHabitTypeInput.value === 'count') {
@@ -1301,6 +1489,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderCravingTimer();
     focusDurationTargetWrap.hidden = true;
     viceBudgetFields.hidden = true;
+    state.sleep.selectedDate = getTodayKey();
     setEditMode(false);
     setActiveTab('focus');
     setupDragSort(focusManagerListEl, 'focus');

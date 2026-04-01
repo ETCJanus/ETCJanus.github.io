@@ -189,6 +189,14 @@ select:focus {
     display: grid;
 }
 
+.focus-priority,
+.habit-time-group.current {
+    border: 1px solid rgba(45, 212, 191, 0.36);
+    background: rgba(45, 212, 191, 0.08);
+    border-radius: 12px;
+    padding: 0.45rem;
+}
+
 .edit-only {
     display: none;
 }
@@ -212,10 +220,34 @@ body.edit-mode .edit-only {
 .checklist-panel,
 .timer-panel,
 .streak-panel,
+.sleep-panel,
 .manager-panel,
 .vice-list-panel,
 .craving-panel {
     padding: 1rem;
+}
+
+.sleep-panel {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.sleep-form {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(120px, 1fr)) auto;
+    gap: 0.45rem;
+    align-items: end;
+}
+
+.sleep-compact {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.sleep-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
 }
 
 .checklist-panel {
@@ -300,6 +332,10 @@ body.edit-mode .edit-only {
     color: var(--text-soft);
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+.habit-time-group.current .habit-time-header h3 {
+    color: var(--brand);
 }
 
 .habit-time-list {
@@ -613,10 +649,86 @@ body.edit-mode .edit-only {
     color: var(--text-soft);
 }
 
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.insights-card {
+    padding: 1rem;
+    display: grid;
+    gap: 0.8rem;
+}
+
+.insights-card:first-child {
+    grid-column: 1 / -1;
+}
+
+.insights-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.insight-list {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.insight-item {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 0.6rem;
+    display: grid;
+    gap: 0.4rem;
+}
+
+.insight-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+}
+
+.sleep-chart {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 0.45rem;
+    min-height: 210px;
+    display: grid;
+    place-items: center;
+}
+
+.sleep-chart svg {
+    width: 100%;
+    height: 190px;
+}
+
+.chart-axis {
+    stroke: rgba(255, 255, 255, 0.2);
+    stroke-width: 1;
+}
+
+.chart-line {
+    fill: none;
+    stroke: var(--brand);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
 @media (max-width: 960px) {
     .grid-main,
-    .vice-grid {
+    .vice-grid,
+    .insights-grid {
         grid-template-columns: 1fr;
+    }
+
+    .insights-card:first-child {
+        grid-column: auto;
     }
 
     .checklist-panel {
@@ -624,6 +736,7 @@ body.edit-mode .edit-only {
     }
 
     .habit-form,
+    .sleep-form,
     .manager-item,
     .timer-presets,
     .habit-duration-controls,

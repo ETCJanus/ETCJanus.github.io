@@ -149,11 +149,48 @@ alter table public.habit_logs
         )
     );
 
+create table if not exists public.sleep_logs (
+    id uuid primary key default gen_random_uuid(),
+    passcode_key text not null,
+    log_date date not null,
+    slept_at time not null,
+    woke_at time not null,
+    duration_minutes integer not null check (duration_minutes > 0 and duration_minutes <= 1440),
+    created_at timestamptz not null default timezone('utc', now()),
+    updated_at timestamptz not null default timezone('utc', now()),
+    constraint sleep_logs_owner_date_unique unique (passcode_key, log_date)
+);
+
+alter table public.sleep_logs add column if not exists slept_at time;
+alter table public.sleep_logs add column if not exists woke_at time;
+alter table public.sleep_logs add column if not exists duration_minutes integer;
+
+update public.sleep_logs
+set duration_minutes = coalesce(
+    duration_minutes,
+    case
+        when woke_at > slept_at then extract(epoch from (woke_at - slept_at)) / 60
+        else extract(epoch from ((woke_at + interval '24 hours') - slept_at)) / 60
+    end
+)::integer
+where duration_minutes is null and slept_at is not null and woke_at is not null;
+
+alter table public.sleep_logs
+    alter column duration_minutes set default 480;
+
+alter table public.sleep_logs
+    drop constraint if exists sleep_logs_duration_minutes_check;
+
+alter table public.sleep_logs
+    add constraint sleep_logs_duration_minutes_check check (duration_minutes > 0 and duration_minutes <= 1440);
+
 create index if not exists habits_lookup_idx on public.habits(passcode_key, category, tracking_method, archived, sort_order);
 create index if not exists habit_logs_lookup_idx on public.habit_logs(passcode_key, log_date, event_type);
+create index if not exists sleep_logs_lookup_idx on public.sleep_logs(passcode_key, log_date);
 
 alter table public.habits enable row level security;
 alter table public.habit_logs enable row level security;
+alter table public.sleep_logs enable row level security;
 
 -- Open policies for lightweight passcode-wall mode.
 drop policy if exists habits_select_open on public.habits;
@@ -180,8 +217,22 @@ create policy habit_logs_update_open on public.habit_logs for update using (true
 drop policy if exists habit_logs_delete_open on public.habit_logs;
 create policy habit_logs_delete_open on public.habit_logs for delete using (true);
 
+drop policy if exists sleep_logs_select_open on public.sleep_logs;
+create policy sleep_logs_select_open on public.sleep_logs for select using (true);
+
+drop policy if exists sleep_logs_insert_open on public.sleep_logs;
+create policy sleep_logs_insert_open on public.sleep_logs for insert with check (true);
+
+drop policy if exists sleep_logs_update_open on public.sleep_logs;
+create policy sleep_logs_update_open on public.sleep_logs for update using (true) with check (true);
+
+drop policy if exists sleep_logs_delete_open on public.sleep_logs;
+create policy sleep_logs_delete_open on public.sleep_logs for delete using (true);
+
 revoke all on public.habits from anon;
 revoke all on public.habit_logs from anon;
+revoke all on public.sleep_logs from anon;
 
 grant select, insert, update, delete on public.habits to anon;
 grant select, insert, update, delete on public.habit_logs to anon;
+grant select, insert, update, delete on public.sleep_logs to anon;

@@ -14,4 +14,5 @@ window.HABIT_PUBLIC_STATE_TABLE = "focus_dashboard_public";
 // Optional table overrides.
 window.HABIT_TABLE_HABITS = "habits";
 window.HABIT_TABLE_LOGS = "habit_logs";
+window.HABIT_TABLE_SLEEP_LOGS = "sleep_logs";
 window.HABIT_TABLE_SESSIONS = "focus_sessions";
