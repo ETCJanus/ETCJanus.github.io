@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Focus Dashboard | Ewoud Janus</title>
-    <meta name="description" content="Owner-only Focus Dashboard with habit checklist, Pomodoro timer, and consistency heatmap synced through Supabase.">
+    <meta name="description" content="Focus and vice tracking dashboard with timer, tapering budgets, and clean streaks synced through Supabase.">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -13,10 +13,11 @@
             <div>
                 <p class="eyebrow">Private Productivity System</p>
                 <h1>Focus Dashboard</h1>
-                <p class="header-text">Daily habits, focus timer, and consistency at a glance. Built to sync securely between your desktop and phone.</p>
+                <p class="header-text">Stay consistent on good habits and reduce vices with clean, distraction-free tracking.</p>
             </div>
             <div class="header-actions">
                 <a class="subpage-link" href="../../projects.html">Back to Projects</a>
+                <button id="edit-mode-toggle" class="ghost-btn" type="button" hidden>Edit Mode: Off</button>
                 <button id="sign-out-btn" class="ghost-btn" type="button" hidden>Lock</button>
             </div>
         </header>
@@ -38,115 +39,191 @@
         </section>
 
         <main id="dashboard" class="dashboard" hidden>
-            <section class="grid-main" aria-label="Main dashboard">
-                <article class="panel checklist-panel">
-                    <div class="section-head">
-                        <h2>Today</h2>
-                        <span id="today-date" class="section-meta">-</span>
-                    </div>
-                    <div class="progress-wrap" aria-label="Daily progress">
-                        <div class="progress-text-row">
-                            <span id="daily-progress-text">0 of 0 completed</span>
-                            <strong id="daily-progress-percent">0%</strong>
-                        </div>
-                        <div class="progress-track">
-                            <div id="daily-progress-bar" class="progress-bar"></div>
-                        </div>
-                    </div>
-                    <div id="habit-list" class="habit-list"></div>
-                    <p id="habit-empty" class="empty-state" hidden>No active habits yet. Add your first one below.</p>
-                </article>
-
-                <article class="panel timer-panel">
-                    <div class="section-head">
-                        <h2>Focus Timer</h2>
-                        <span id="timer-mode" class="section-meta">Focus</span>
-                    </div>
-                    <div id="timer-display" class="timer-display">25:00</div>
-                    <div class="timer-presets">
-                        <label for="focus-minutes">Focus</label>
-                        <input id="focus-minutes" type="number" min="5" max="120" step="5" value="25">
-                        <label for="break-minutes">Break</label>
-                        <input id="break-minutes" type="number" min="1" max="60" step="1" value="5">
-                    </div>
-                    <div class="timer-link-habit">
-                        <label for="timer-habit-select">Log focus time to</label>
-                        <select id="timer-habit-select">
-                            <option value="">No duration habit selected</option>
-                        </select>
-                    </div>
-                    <div class="timer-actions">
-                        <button id="timer-start-pause" type="button">Start</button>
-                        <button id="timer-reset" type="button" class="ghost-btn">Reset</button>
-                        <button id="timer-skip" type="button" class="ghost-btn">Skip mode</button>
-                    </div>
-                    <p id="timer-status" class="status-line">Ready to focus.</p>
-                </article>
-
-                <article class="panel streak-panel">
-                    <div class="section-head">
-                        <h2>Consistency</h2>
-                        <span class="section-meta">Last 90 days</span>
-                    </div>
-                    <div class="streak-row">
-                        <div class="kpi-card">
-                            <span>Current streak</span>
-                            <strong id="current-streak">0</strong>
-                        </div>
-                        <div class="kpi-card">
-                            <span>Best streak</span>
-                            <strong id="best-streak">0</strong>
-                        </div>
-                    </div>
-                    <div class="heatmap-wrap">
-                        <div id="heatmap" class="heatmap"></div>
-                        <div class="heat-legend">
-                            <span>Less</span>
-                            <span class="heat-dot level-0"></span>
-                            <span class="heat-dot level-1"></span>
-                            <span class="heat-dot level-2"></span>
-                            <span class="heat-dot level-3"></span>
-                            <span>More</span>
-                        </div>
-                    </div>
-                </article>
+            <section class="panel top-controls" aria-label="View controls">
+                <div class="tabs" role="tablist" aria-label="Dashboard tabs">
+                    <button id="tab-focus" class="tab-btn active" role="tab" aria-selected="true" type="button">Focus Dashboard</button>
+                    <button id="tab-vice" class="tab-btn" role="tab" aria-selected="false" type="button">Vice Tracker</button>
+                </div>
             </section>
 
-            <section class="panel manager-panel" aria-label="Habit manager">
-                <div class="section-head">
-                    <h2>Habit Management</h2>
-                    <span class="section-meta">Add, edit, archive</span>
+            <section id="focus-view" class="view-panel active" aria-label="Focus dashboard view">
+                <div class="grid-main">
+                    <article class="panel checklist-panel">
+                        <div class="section-head">
+                            <h2>Today's Focus Habits</h2>
+                            <span id="today-date" class="section-meta">-</span>
+                        </div>
+                        <div class="progress-wrap" aria-label="Daily progress">
+                            <div class="progress-text-row">
+                                <span id="daily-progress-text">0 of 0 completed</span>
+                                <strong id="daily-progress-percent">0%</strong>
+                            </div>
+                            <div class="progress-track">
+                                <div id="daily-progress-bar" class="progress-bar"></div>
+                            </div>
+                        </div>
+                        <div id="focus-habit-list" class="habit-list"></div>
+                        <p id="focus-habit-empty" class="empty-state" hidden>No active focus habits yet.</p>
+                    </article>
+
+                    <article class="panel timer-panel">
+                        <div class="section-head">
+                            <h2>Focus Timer</h2>
+                            <span id="timer-mode" class="section-meta">Focus</span>
+                        </div>
+                        <div id="timer-display" class="timer-display">25:00</div>
+                        <div class="timer-presets">
+                            <label for="focus-minutes">Focus</label>
+                            <input id="focus-minutes" type="number" min="5" max="120" step="5" value="25">
+                            <label for="break-minutes">Break</label>
+                            <input id="break-minutes" type="number" min="1" max="60" step="1" value="5">
+                        </div>
+                        <div class="timer-link-habit">
+                            <label for="timer-habit-select">Log focus time to</label>
+                            <select id="timer-habit-select">
+                                <option value="">No duration habit selected</option>
+                            </select>
+                        </div>
+                        <div class="timer-actions">
+                            <button id="timer-start-pause" type="button">Start</button>
+                            <button id="timer-reset" type="button" class="ghost-btn">Reset</button>
+                            <button id="timer-skip" type="button" class="ghost-btn">Skip mode</button>
+                        </div>
+                        <p id="timer-status" class="status-line">Ready to focus.</p>
+                    </article>
+
+                    <article class="panel streak-panel">
+                        <div class="section-head">
+                            <h2>Consistency</h2>
+                            <span class="section-meta">Last 90 days</span>
+                        </div>
+                        <div class="streak-row">
+                            <div class="kpi-card">
+                                <span>Current streak</span>
+                                <strong id="current-streak">0</strong>
+                            </div>
+                            <div class="kpi-card">
+                                <span>Best streak</span>
+                                <strong id="best-streak">0</strong>
+                            </div>
+                        </div>
+                        <div class="heatmap-wrap">
+                            <div id="heatmap" class="heatmap"></div>
+                            <div class="heat-legend">
+                                <span>Less</span>
+                                <span class="heat-dot level-0"></span>
+                                <span class="heat-dot level-1"></span>
+                                <span class="heat-dot level-2"></span>
+                                <span class="heat-dot level-3"></span>
+                                <span>More</span>
+                            </div>
+                        </div>
+                    </article>
                 </div>
 
-                <form id="habit-form" class="habit-form">
-                    <div class="form-field-block">
-                        <label for="habit-name">Habit name</label>
-                        <input id="habit-name" type="text" maxlength="80" placeholder="e.g. Morning walk" required>
+                <section class="panel manager-panel edit-only" aria-label="Focus habit manager">
+                    <div class="section-head">
+                        <h2>Focus Habit Management</h2>
+                        <span class="section-meta">Add, edit, archive</span>
                     </div>
-                    <div class="form-field-block small">
-                        <label for="habit-type">Type</label>
-                        <select id="habit-type" required>
-                            <option value="boolean">Count</option>
-                            <option value="duration">Duration</option>
-                        </select>
-                    </div>
-                    <div class="form-field-block small">
-                        <label for="habit-target">Count target / day</label>
-                        <input id="habit-target" type="number" min="1" max="20" value="1">
-                    </div>
-                    <div id="duration-target-wrap" class="form-field-block duration-target" hidden>
-                        <label>Duration target</label>
-                        <div class="duration-target-grid">
-                            <input id="habit-target-hours" type="number" min="0" max="24" value="1" aria-label="Target hours">
-                            <span>h</span>
-                            <input id="habit-target-minutes" type="number" min="0" max="59" step="5" value="0" aria-label="Target minutes">
-                            <span>m</span>
+                    <form id="focus-habit-form" class="habit-form">
+                        <div class="form-field-block">
+                            <label for="focus-habit-name">Habit name</label>
+                            <input id="focus-habit-name" type="text" maxlength="80" placeholder="e.g. Morning walk" required>
                         </div>
-                    </div>
-                    <button type="submit">Add habit</button>
-                </form>
+                        <div class="form-field-block small">
+                            <label for="focus-habit-type">Type</label>
+                            <select id="focus-habit-type" required>
+                                <option value="count">Count</option>
+                                <option value="duration">Duration</option>
+                            </select>
+                        </div>
+                        <div class="form-field-block small">
+                            <label for="focus-habit-target">Count target/day</label>
+                            <input id="focus-habit-target" type="number" min="1" max="20" value="1">
+                        </div>
+                        <div id="focus-duration-target-wrap" class="form-field-block duration-target" hidden>
+                            <label>Duration target</label>
+                            <div class="duration-target-grid">
+                                <input id="focus-target-hours" type="number" min="0" max="24" value="1" aria-label="Target hours">
+                                <span>h</span>
+                                <input id="focus-target-minutes" type="number" min="0" max="59" step="5" value="0" aria-label="Target minutes">
+                                <span>m</span>
+                            </div>
+                        </div>
+                        <button type="submit">Add habit</button>
+                    </form>
+                    <div id="focus-manager-list" class="habit-manager-list"></div>
+                </section>
+            </section>
 
-                <div id="habit-manager-list" class="habit-manager-list"></div>
+            <section id="vice-view" class="view-panel" aria-label="Vice tracker view">
+                <div class="vice-grid">
+                    <article class="panel vice-list-panel">
+                        <div class="section-head">
+                            <h2>Vice Tracker</h2>
+                            <span class="section-meta">Positive reinforcement only</span>
+                        </div>
+                        <div id="vice-list" class="habit-list"></div>
+                        <p id="vice-empty" class="empty-state" hidden>No active vices configured.</p>
+                    </article>
+
+                    <article class="panel craving-panel">
+                        <div class="section-head">
+                            <h2>Urge Surfing</h2>
+                            <span class="section-meta">10-min delay tool</span>
+                        </div>
+                        <p class="panel-note">Ride out cravings without acting on them. The timer is intentionally unpausable.</p>
+                        <label for="craving-vice-select">Craving linked to vice</label>
+                        <select id="craving-vice-select">
+                            <option value="">Select vice</option>
+                        </select>
+                        <div id="craving-timer" class="timer-display">10:00</div>
+                        <button id="craving-start" type="button">Craving SOS (10 min)</button>
+                        <p id="craving-status" class="status-line">Not running.</p>
+                        <div id="craving-success" class="craving-success" hidden>Craving defeated. You stayed in control.</div>
+                    </article>
+                </div>
+
+                <section class="panel manager-panel edit-only" aria-label="Vice manager">
+                    <div class="section-head">
+                        <h2>Vice Management</h2>
+                        <span class="section-meta">Configure streaks and budgets</span>
+                    </div>
+                    <form id="vice-form" class="vice-form">
+                        <div class="form-field-block">
+                            <label for="vice-name">Vice name</label>
+                            <input id="vice-name" type="text" maxlength="80" placeholder="e.g. Gaming" required>
+                        </div>
+                        <div class="form-field-block small">
+                            <label for="vice-method">Tracking method</label>
+                            <select id="vice-method" required>
+                                <option value="streak">Streak (abstinence)</option>
+                                <option value="budget">Budget (minutes/day)</option>
+                            </select>
+                        </div>
+                        <div id="vice-budget-fields" class="vice-budget-fields">
+                            <div class="form-field-block small">
+                                <label for="vice-initial-limit">Initial limit (min)</label>
+                                <input id="vice-initial-limit" type="number" min="1" max="1440" value="120">
+                            </div>
+                            <div class="form-field-block small">
+                                <label for="vice-goal-limit">Goal limit (min)</label>
+                                <input id="vice-goal-limit" type="number" min="0" max="1440" value="0">
+                            </div>
+                            <div class="form-field-block small">
+                                <label for="vice-taper-step">Reduce by (min)</label>
+                                <input id="vice-taper-step" type="number" min="1" max="240" value="15">
+                            </div>
+                            <div class="form-field-block small">
+                                <label for="vice-taper-interval">Every (days)</label>
+                                <input id="vice-taper-interval" type="number" min="1" max="30" value="7">
+                            </div>
+                        </div>
+                        <button type="submit">Add vice</button>
+                    </form>
+                    <div id="vice-manager-list" class="habit-manager-list"></div>
+                </section>
             </section>
         </main>
     </div>
