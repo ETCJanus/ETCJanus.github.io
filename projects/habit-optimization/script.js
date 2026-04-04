@@ -330,7 +330,7 @@
                     if (moodLog && moodLog.metadata && moodLog.metadata.level) {
                         const moodEl = document.createElement('div');
                         moodEl.className = 'absolute top-[2px] left-[3px] text-[8px] md:text-[9px] font-bold text-yellow-400 pointer-events-none drop-shadow-[0_1px_1px_rgba(0,0,0,1)] z-10 opacity-90';
-                        moodEl.textContent = '😊 ' + moodLog.metadata.level;
+                        moodEl.textContent = moodLog.metadata.level;
                         moodEl.title = 'Mood: ' + moodLog.metadata.level;
                         cell.appendChild(moodEl);
                     }
