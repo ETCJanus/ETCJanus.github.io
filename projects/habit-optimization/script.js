@@ -464,7 +464,8 @@
 
                 const textSpan = document.createElement('div');
                 textSpan.className = 'font-medium transition-transform';
-            textSpan.innerHTML = getHabitName(habit.name);
+                textSpan.innerHTML = getHabitName(habit.name);
+                label.appendChild(textSpan);
                 modalHabits.appendChild(label);
             });
         }
