@@ -40,16 +40,11 @@
         .day-cell.active:hover .indicator-missing-sleep,
         .day-cell.active:hover .indicator-missing-note { opacity: 0; }
 
-        /* Shiny Success for Bad Habits */
-        @keyframes rainbowGlow {
-            0% { box-shadow: 0 0 12px rgba(255, 0, 0, 0.8); border-color: rgba(255,0,0,0.9); }
-            14% { box-shadow: 0 0 12px rgba(255, 127, 0, 0.8); border-color: rgba(255,127,0,0.9); }
-            28% { box-shadow: 0 0 12px rgba(255, 255, 0, 0.8); border-color: rgba(255,255,0,0.9); }
-            42% { box-shadow: 0 0 12px rgba(0, 255, 0, 0.8); border-color: rgba(0,255,0,0.9); }
-            57% { box-shadow: 0 0 12px rgba(0, 0, 255, 0.8); border-color: rgba(0,0,255,0.9); }
-            71% { box-shadow: 0 0 12px rgba(75, 0, 130, 0.8); border-color: rgba(75,0,130,0.9); }
-            85% { box-shadow: 0 0 12px rgba(148, 0, 211, 0.8); border-color: rgba(148,0,211,0.9); }
-            100% { box-shadow: 0 0 12px rgba(255, 0, 0, 0.8); border-color: rgba(255,0,0,0.9); }
+        /* Shiny Success */
+        @keyframes shinyGlow {
+            0% { box-shadow: 0 0 8px rgba(234, 179, 8, 0.4); border-color: rgba(234, 179, 8, 0.6); }
+            50% { box-shadow: 0 0 16px rgba(234, 179, 8, 0.9); border-color: rgba(234, 179, 8, 1); }
+            100% { box-shadow: 0 0 8px rgba(234, 179, 8, 0.4); border-color: rgba(234, 179, 8, 0.6); }
         }
         @keyframes shineSweep {
             0% { left: -150%; opacity: 0; }
@@ -59,8 +54,8 @@
             100% { left: 150%; opacity: 0; }
         }
         .shiny-day {
-            animation: rainbowGlow 4s linear infinite !important;
-            border: 1px solid rgba(255,0,0,0.9) !important;
+            animation: shinyGlow 3s ease-in-out infinite !important;
+            border: 1px solid rgba(234,179,8,0.8) !important;
             outline: none !important;
             z-index: 5;
             position: relative;
