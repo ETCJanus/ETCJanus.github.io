@@ -65,11 +65,11 @@
         /* Modal specific sizing */
         #day-modal { align-items: center; justify-content: center; backdrop-filter: blur(8px); }
 
-        /* Emoji Energy Tracking */
-        .energy-btn { display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 8px; cursor: pointer; user-select: none; transition: transform 0.1s; }
-        .energy-btn:hover { transform: scale(1.1); background: #21262d; }
-        .energy-btn.selected { background: #238636; border-color: #2ea043; box-shadow: 0 0 10px rgba(46,160,67,0.4); transform: scale(1.1); }
-        .energy-btn.selected span { filter: brightness(1.2); }
+        /* Emoji Mood Tracking */
+        .mood-btn { display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: #161b22; border: 1px solid #30363d; border-radius: 8px; cursor: pointer; user-select: none; transition: transform 0.1s; }
+        .mood-btn:hover { transform: scale(1.1); background: #21262d; }
+        .mood-btn.selected { background: #238636; border-color: #2ea043; box-shadow: 0 0 10px rgba(46,160,67,0.4); transform: scale(1.1); }
+        .mood-btn.selected span { filter: brightness(1.2); }
         
         .sleep-display-btn { display: flex; align-items: center; justify-content: center; background: transparent; border: 1px dashed #30363d; border-radius: 8px; font-size: 1.5rem; cursor: pointer; transition: all 0.2s; width: 100%; height: 50px; }
         .sleep-display-btn:hover { background: #161b22; border-color: #58a6ff; }
@@ -124,13 +124,13 @@
                         <h2 id="modal-date" class="text-xl font-light text-white tracking-wide">...</h2>
                     </div>
                     
-                    <!-- Minified Sleep/Energy Stats Container (Top Header) -->
+                    <!-- Minified Sleep/Mood Stats Container (Top Header) -->
                     <div id="compact-metrics" class="hidden flex items-center justify-center gap-4 border-l border-[#30363d] pl-6 ml-2">
                         <button id="min-sleep-btn" title="Sleep" class="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors bg-[#161b22] px-3 py-1.5 rounded-full border border-[#30363d] hover:border-[#58a6ff]">
                             <span>🌙</span><span id="min-sleep-display"></span>
                         </button>
-                        <button id="min-energy-btn" title="Energy" class="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors bg-[#161b22] px-3 py-1.5 rounded-full border border-[#30363d] hover:border-[#58a6ff]">
-                            <span>⚡</span><span id="min-energy-display"></span>
+                        <button id="min-mood-btn" title="Mood" class="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors bg-[#161b22] px-3 py-1.5 rounded-full border border-[#30363d] hover:border-[#58a6ff]">
+                            <span>😊</span><span id="min-mood-display"></span>
                         </button>
                     </div>
                 </div>
@@ -158,10 +158,10 @@
                     <!-- ENERGY -->
                     <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-3 flex flex-col justify-center transition-all hover:border-[#58a6ff]">
                         <h3 class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1 flex items-center gap-1">
-                            <span>⚡ Energy</span>
+                            <span>😊 Mood</span>
                         </h3>
-                        <div id="energy-inputs-container" class="flex items-center w-full">
-                            <input type="number" id="energy-input" min="1" max="10" placeholder="Scale 1-10" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-1 text-[16px] md:text-xs text-center text-gray-300 focus:border-[#58a6ff] outline-none">
+                        <div id="mood-inputs-container" class="flex items-center w-full">
+                            <input type="number" id="mood-input" min="1" max="10" placeholder="Scale 1-10" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-1 text-[16px] md:text-xs text-center text-gray-300 focus:border-[#58a6ff] outline-none">
                         </div>
                     </div>
                 </div>
@@ -176,7 +176,7 @@
                         <span class="text-gray-600 text-xs transition-transform duration-200" id="note-chevron">▼</span>
                     </button>
                     <div id="note-editor-wrapper" class="hidden border-t border-[#30363d] bg-[#0d1117]">
-                        <textarea id="modal-note" placeholder="What's on your mind?" class="w-full min-h-[100px] resize-none text-[16px] md:text-sm p-4 leading-relaxed text-gray-300 bg-transparent border-none focus:outline-none focus:ring-0"></textarea>
+                        <textarea id="modal-note" placeholder="What's on your mind??" class="w-full min-h-[100px] resize-none text-[16px] md:text-sm p-4 leading-relaxed text-gray-300 bg-transparent border-none focus:outline-none focus:ring-0"></textarea>
                     </div>
                 </div>
 

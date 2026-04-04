@@ -42,7 +42,7 @@
                 <span class="text-[#f78166] text-xs mt-1 font-semibold" id="stat-worst-val">--</span>
             </div>
             <div class="stat-card">
-                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1" id="stat-shiny-title">Shiny Streak ✨</span>
+                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1" id="stat-shiny-title">Shiny Streak ?</span>
                 <span class="text-white text-base font-light tracking-wide truncate" id="stat-shiny-name">--</span>
                 <span class="text-[#bc6bff] text-xs mt-1 font-semibold" id="stat-shiny-val">--</span>
             </div>
@@ -56,6 +56,7 @@
         <div class="flex justify-center gap-3 mt-6">
             <button id="btn-duration" class="view-btn active">Hours Slept</button>
             <button id="btn-times" class="view-btn">Bed / Wake Times</button>
+            <button id="btn-mood" class="view-btn">Mood</button>
         </div>
         <div class="w-full bg-[#161b22] border border-[#30363d] p-4 rounded-xl relative h-64 md:h-80">
             <canvas id="sleepChart"></canvas>
@@ -74,13 +75,15 @@
         const ctx = document.getElementById('sleepChart').getContext('2d');
         const btnDur = document.getElementById('btn-duration');
         const btnTimes = document.getElementById('btn-times');
+        const btnMood = document.getElementById('btn-mood');
 
         let sleepChart;
-        let viewMode = 'duration'; // 'duration' or 'times'
+        let viewMode = 'duration'; // 'duration', 'times', or 'mood'
         
         let dates = [];
         let durationData = [];
         let timesData = [];
+        let moodData = [];
 
         // Utilities
         const formatTimeFromDec = (decHour) => {
@@ -99,13 +102,14 @@
             startRange.setDate(today.getDate() - 30);
             const startStr = startRange.toISOString().split('T')[0];
 
-            const [sleepRes, habitRes, logRes] = await Promise.all([
+            const [sleepRes, habitRes, logRes, moodRes] = await Promise.all([
                 client.from(tableLogs).select('*').eq('passcode_key', passcode).eq('event_type', 'sleep').gte('log_date', startStr).order('log_date', { ascending: true }),
                 client.from('habits').select('*').eq('passcode_key', passcode).eq('archived', false),
-                client.from(tableLogs).select('*').eq('passcode_key', passcode).eq('event_type', 'progress').gte('log_date', startStr)
+                client.from(tableLogs).select('*').eq('passcode_key', passcode).eq('event_type', 'progress').gte('log_date', startStr),
+                client.from(tableLogs).select('*').eq('passcode_key', passcode).eq('event_type', 'mood').gte('log_date', startStr).order('log_date', { ascending: true })
             ]);
 
-            if (sleepRes.data) processData(sleepRes.data);
+            if (sleepRes.data || moodRes.data) processData(sleepRes.data || [], moodRes.data || []);
             if (habitRes.data && logRes.data) processHabitStats(habitRes.data, logRes.data);
             
             renderChart();
@@ -168,70 +172,112 @@
             }
         };
 
-        const processData = (logs) => {
+        const processData = (sleepLogs, moodLogs) => {
             dates = [];
             durationData = [];
             timesData = [];
+            moodData = [];
+
+            const dateSet = new Set();
+            sleepLogs.forEach(l => dateSet.add(l.log_date));
+            moodLogs.forEach(l => dateSet.add(l.log_date));
             
-            logs.forEach(log => {
-                const dateKey = log.log_date;
-                const { start, end } = log.metadata || {};
-                if (!start || !end) return;
+            const sortedDates = Array.from(dateSet).sort();
 
-                const [sh, sm] = start.split(':').map(Number);
-                const [eh, em] = end.split(':').map(Number);
-
-                let sDec = sh + (sm / 60);
-                let eDec = eh + (em / 60);
-
-                let dur = eDec - sDec;
-                if (dur < 0) dur += 24;
-                
-                // Represent sleep starting late evening as 18.0 to 30.0+ on graph
-                if (sDec < 12) sDec += 24; 
-                let shiftEnd = sDec + dur;
+            sortedDates.forEach(dateKey => {
+                const sLog = sleepLogs.find(l => l.log_date === dateKey);
+                const mLog = moodLogs.find(l => l.log_date === dateKey);
 
                 const dateObj = new Date(dateKey + 'T12:00:00');
                 dates.push(dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
-                durationData.push(dur);
-                timesData.push([sDec, shiftEnd]);
+
+                if (sLog && sLog.metadata && sLog.metadata.start && sLog.metadata.end) {
+                    const { start, end } = sLog.metadata;
+                    const shStr = start.split(':')[0];
+                    const smStr = start.split(':')[1];
+                    const ehStr = end.split(':')[0];
+                    const emStr = end.split(':')[1];
+                    const sh = Number(shStr);
+                    const sm = Number(smStr);
+                    const eh = Number(ehStr);
+                    const em = Number(emStr);
+
+                    let sDec = sh + (sm / 60);
+                    let eDec = eh + (em / 60);
+
+                    let dur = eDec - sDec;
+                    if (dur < 0) dur += 24;
+                    
+                    if (sDec < 12) sDec += 24; 
+                    let shiftEnd = sDec + dur;
+
+                    durationData.push(dur);
+                    timesData.push([sDec, shiftEnd]);
+                } else {
+                    durationData.push(null);
+                    timesData.push([null, null]);
+                }
+
+                if (mLog && mLog.metadata && mLog.metadata.level) {
+                    moodData.push(mLog.metadata.level);
+                } else {
+                    moodData.push(null);
+                }
             });
         };
 
         const initChart = () => {
             if (sleepChart) sleepChart.destroy();
             const isDur = viewMode === 'duration';
+            const isMood = viewMode === 'mood';
 
-            const datasets = isDur ? [{
-                label: 'Hours Slept',
-                data: durationData,
-                backgroundColor: 'rgba(88, 166, 255, 0.2)',
-                borderColor: '#58a6ff',
-                pointBackgroundColor: '#58a6ff',
-                borderWidth: 2,
-                pointRadius: 3,
-                tension: 0.3,
-                fill: true
-            }] : [{
-                label: 'Bed Time',
-                data: timesData.map(d => d[0]),
-                backgroundColor: 'transparent',
-                borderColor: '#bc6bff',
-                pointBackgroundColor: '#bc6bff',
-                borderWidth: 2,
-                pointRadius: 3,
-                tension: 0.3
-            }, {
-                label: 'Wake Time',
-                data: timesData.map(d => d[1]),
-                backgroundColor: 'rgba(188, 107, 255, 0.15)',
-                borderColor: '#bc6bff',
-                pointBackgroundColor: '#bc6bff',
-                borderWidth: 2,
-                pointRadius: 3,
-                tension: 0.3,
-                fill: '-1'
-            }];
+            let datasets = [];
+            if (isDur) {
+                datasets = [{
+                    label: 'Hours Slept',
+                    data: durationData,
+                    backgroundColor: 'rgba(88, 166, 255, 0.2)',
+                    borderColor: '#58a6ff',
+                    pointBackgroundColor: '#58a6ff',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.3,
+                    fill: true
+                }];
+            } else if (isMood) {
+                datasets = [{
+                    label: 'Mood',
+                    data: moodData,
+                    backgroundColor: 'rgba(234, 179, 8, 0.2)',
+                    borderColor: '#eab308',
+                    pointBackgroundColor: '#eab308',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.3,
+                    fill: true
+                }];
+            } else {
+                datasets = [{
+                    label: 'Bed Time',
+                    data: timesData.map(d => d[0]),
+                    backgroundColor: 'transparent',
+                    borderColor: '#bc6bff',
+                    pointBackgroundColor: '#bc6bff',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.3
+                }, {
+                    label: 'Wake Time',
+                    data: timesData.map(d => d[1]),
+                    backgroundColor: 'rgba(188, 107, 255, 0.15)',
+                    borderColor: '#bc6bff',
+                    pointBackgroundColor: '#bc6bff',
+                    borderWidth: 2,
+                    pointRadius: 3,
+                    tension: 0.3,
+                    fill: '-1'
+                }];
+            }
 
             const cfg = {
                 type: 'line',
@@ -243,7 +289,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: !isDur, labels: { color: '#8b949e', font: { size: 10, family: 'ui-sans-serif' } } },
+                        legend: { display: (!isDur && !isMood), labels: { color: '#8b949e', font: { size: 10, family: 'ui-sans-serif' } } },
                         tooltip: {
                             callbacks: {
                                 label: (context) => {
@@ -251,6 +297,8 @@
                                         let h = Math.floor(context.raw);
                                         let m = Math.round((context.raw - h) * 60);
                                         return h + 'h ' + m + 'm';
+                                    } else if (isMood) {
+                                        return 'Mood: ' + context.raw + ' / 10';
                                     } else {
                                         return context.dataset.label + ': ' + formatTimeFromDec(context.raw);
                                     }
@@ -265,15 +313,16 @@
                         },
                         y: {
                             grid: { color: '#30363d' },
-                            beginAtZero: isDur,
-                            min: isDur ? 0 : 18,
-                            max: isDur ? undefined : undefined,
+                            beginAtZero: (isDur || isMood),
+                            min: isDur ? 0 : (isMood ? 1 : 18),
+                            max: isDur ? undefined : (isMood ? 10 : undefined),
                             ticks: {
                                 color: '#8b949e',
                                 font: { size: 10, family: 'ui-sans-serif' },
-                                stepSize: isDur ? 2 : 2,
+                                stepSize: isDur ? 2 : (isMood ? 1 : 2),
                                 callback: (val) => {
                                     if (isDur) return val + ' h';
+                                    if (isMood) return val;
                                     return formatTimeFromDec(val);
                                 }
                             }
@@ -292,6 +341,7 @@
             viewMode = 'duration';
             btnDur.classList.add('active');
             btnTimes.classList.remove('active');
+            btnMood.classList.remove('active');
             renderChart();
         });
 
@@ -299,6 +349,15 @@
             viewMode = 'times';
             btnTimes.classList.add('active');
             btnDur.classList.remove('active');
+            btnMood.classList.remove('active');
+            renderChart();
+        });
+
+        btnMood.addEventListener('click', () => {
+            viewMode = 'mood';
+            btnMood.classList.add('active');
+            btnDur.classList.remove('active');
+            btnTimes.classList.remove('active');
             renderChart();
         });
 

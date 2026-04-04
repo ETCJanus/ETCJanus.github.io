@@ -21,10 +21,10 @@
     const sleepEndInput = document.getElementById('sleep-end');
     const minSleepBtn = document.getElementById('min-sleep-btn');
     const minSleepDisplay = document.getElementById('min-sleep-display');
-    const energyInputsContainer = document.getElementById('energy-inputs-container');
-    const energyInput = document.getElementById('energy-input');
-    const minEnergyBtn = document.getElementById('min-energy-btn');
-    const minEnergyDisplay = document.getElementById('min-energy-display');
+    const moodInputsContainer = document.getElementById('mood-inputs-container');
+    const moodInput = document.getElementById('mood-input');
+    const minMoodBtn = document.getElementById('min-mood-btn');
+    const minMoodDisplay = document.getElementById('min-mood-display');
     const expandedMetricsRow = document.getElementById('expanded-metrics-row');
     const compactMetrics = document.getElementById('compact-metrics');
 
@@ -239,13 +239,13 @@
                     const progressLogs = dayLogs.filter(l => l.event_type === 'progress');
                     const noteLog = dayLogs.find(l => l.event_type === 'note' && !l.habit_id);
                     const sleepLog = dayLogs.find(l => l.event_type === 'sleep' && !l.habit_id);
-                    const energyLog = dayLogs.find(l => l.event_type === 'energy' && !l.habit_id);
+                    const moodLog = dayLogs.find(l => l.event_type === 'mood' && !l.habit_id);
 
                     let activeHabits = [...habitsCache];
 
                     let score = 0;
                     let isShiny = false;
-                    const dayHasLogs = progressLogs.length > 0 || sleepLog || noteLog || energyLog;
+                    const dayHasLogs = progressLogs.length > 0 || sleepLog || noteLog || moodLog;
 
                     if (activeHabits.length > 0) {
                         let successes = 0;
@@ -289,7 +289,52 @@
                         sleepDot.className = 'indicator-missing-sleep';
                         sleepDot.title = 'Missing Sleep Log';
                         cell.appendChild(sleepDot);
+                    } else if (sleepLog.metadata && sleepLog.metadata.start && sleepLog.metadata.end) {
+                        const [sh, sm] = sleepLog.metadata.start.split(':').map(Number);
+                        const [eh, em] = sleepLog.metadata.end.split(':').map(Number);
+
+                        let sDec = sh + (sm / 60);
+                        let eDec = eh + (em / 60);
+
+                        let dur = eDec - sDec;
+                        if (dur < 0) dur += 24;
+
+                        if (sDec < 12) sDec += 24; 
+                        let shiftEnd = sDec + dur;
+
+                        let durScore = 40 - (Math.abs(8 - dur) * 10);
+                        if (durScore < 0) durScore = 0;
+
+                        let bedScore = 30;
+                        if (sDec > 24) bedScore -= (sDec - 24) * 10;
+                        if (bedScore < 0) bedScore = 0;
+
+                        let wakeScore = 30;
+                        if (shiftEnd > 34) wakeScore -= (shiftEnd - 34) * 10;
+                        if (wakeScore < 0) wakeScore = 0;
+
+                        let totalSleepScore = Math.round(durScore + bedScore + wakeScore);
+                        
+                        const sleepScoreEl = document.createElement('div');
+                        let colorCls = 'text-[#39d353]'; // Great
+                        if (totalSleepScore < 80) colorCls = 'text-[#58a6ff]'; // Good
+                        if (totalSleepScore < 60) colorCls = 'text-[#d2a8ff]'; // Okay
+                        if (totalSleepScore < 40) colorCls = 'text-[#f78166]'; // Bad
+                        
+                        sleepScoreEl.className = `absolute top-[2px] right-[4px] text-[9px] md:text-[10px] font-bold ${colorCls} pointer-events-none drop-shadow-[0_1px_1px_rgba(0,0,0,1)] z-10 opacity-90`;
+                        sleepScoreEl.textContent = totalSleepScore;
+                        sleepScoreEl.title = 'Sleep Score: ' + totalSleepScore;
+                        cell.appendChild(sleepScoreEl);
                     }
+                    
+                    if (moodLog && moodLog.metadata && moodLog.metadata.level) {
+                        const moodEl = document.createElement('div');
+                        moodEl.className = 'absolute top-[2px] left-[3px] text-[8px] md:text-[9px] font-bold text-yellow-400 pointer-events-none drop-shadow-[0_1px_1px_rgba(0,0,0,1)] z-10 opacity-90';
+                        moodEl.textContent = '😊 ' + moodLog.metadata.level;
+                        moodEl.title = 'Mood: ' + moodLog.metadata.level;
+                        cell.appendChild(moodEl);
+                    }
+
                     if (!noteLog) {
                         const noteDot = document.createElement('span');
                         noteDot.className = 'indicator-missing-note';
@@ -306,7 +351,7 @@
         });
     };
 
-    /* --- Energy Selection Logic --- */
+    /* --- Mood Selection Logic --- */
     // Logic moved to input interactions
 
     /* --- Modal Management --- */
@@ -321,15 +366,15 @@
         const progressLogs = dayLogs.filter(l => l.event_type === 'progress');
         const noteLog = dayLogs.find(l => l.event_type === 'note' && !l.habit_id);
         const sleepLog = dayLogs.find(l => l.event_type === 'sleep' && !l.habit_id);
-        const energyLog = dayLogs.find(l => l.event_type === 'energy' && !l.habit_id);
+        const moodLog = dayLogs.find(l => l.event_type === 'mood' && !l.habit_id);
         
-// Reset Energy
-        energyInput.value = '';
-        let hasEnergy = false;
-        if (energyLog && energyLog.metadata && energyLog.metadata.level) {
-            energyInput.value = energyLog.metadata.level;
-            minEnergyDisplay.innerText = energyLog.metadata.level + '/10';
-            hasEnergy = true;
+// Reset Mood
+        moodInput.value = '';
+        let hasMood = false;
+        if (moodLog && moodLog.metadata && moodLog.metadata.level) {
+            moodInput.value = moodLog.metadata.level;
+            minMoodDisplay.innerText = moodLog.metadata.level + '/10';
+            hasMood = true;
         }
 
         // Populate Note
@@ -360,11 +405,11 @@
             hasSleep = true;
         }
 
-        if (hasSleep || hasEnergy) {
+        if (hasSleep || hasMood) {
             expandedMetricsRow.classList.add('hidden');
             compactMetrics.classList.remove('hidden');
             minSleepBtn.classList.toggle('hidden', !hasSleep);
-            minEnergyBtn.classList.toggle('hidden', !hasEnergy);
+            minMoodBtn.classList.toggle('hidden', !hasMood);
         } else {
             expandedMetricsRow.classList.remove('hidden');
             compactMetrics.classList.add('hidden');
@@ -430,10 +475,10 @@
         sleepStartInput.focus();
     });
 
-    if(minEnergyBtn) minEnergyBtn.addEventListener('click', () => {
+    if(minMoodBtn) minMoodBtn.addEventListener('click', () => {
         compactMetrics.classList.add('hidden');
         expandedMetricsRow.classList.remove('hidden');
-        energyInput.focus();
+        moodInput.focus();
     });
 
     const noteToggleBtn = document.getElementById('note-toggle-btn');
@@ -506,20 +551,20 @@
                 await client.from(config.tableLogs).delete().eq('id', existingSleep.id);
             }
 
-            // Save Energy
-            const existingEnergy = dayLogs.find(l => l.event_type === 'energy' && !l.habit_id);
-            const energyVal = energyInput.value ? parseInt(energyInput.value) : null;
-            if (energyVal >= 1 && energyVal <= 10) {
+            // Save Mood
+            const existingMood = dayLogs.find(l => l.event_type === 'mood' && !l.habit_id);
+            const moodVal = moodInput.value ? parseInt(moodInput.value) : null;
+            if (moodVal >= 1 && moodVal <= 10) {
                 const payload = {
                     passcode_key: passcode,
                     log_date: selectedDate,
-                    event_type: 'energy',
-                    metadata: { level: energyVal }
+                    event_type: 'mood',
+                    metadata: { level: moodVal }
                 };
-                if (existingEnergy && existingEnergy.id) payload.id = existingEnergy.id;
+                if (existingMood && existingMood.id) payload.id = existingMood.id;
                 await client.from(config.tableLogs).upsert(payload);
-            } else if (existingEnergy && existingEnergy.id) {
-                await client.from(config.tableLogs).delete().eq('id', existingEnergy.id);
+            } else if (existingMood && existingMood.id) {
+                await client.from(config.tableLogs).delete().eq('id', existingMood.id);
             }
 
             await loadData();
