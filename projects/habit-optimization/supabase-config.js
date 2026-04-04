@@ -5,9 +5,6 @@ window.HABIT_SUPABASE_ANON_KEY = "sb_publishable_LVLbo3UZiJx2FUUjg48mWw_tfB7VjO9
 // Simple wall passcode (not secure auth). Keep the same value on all your devices.
 window.HABIT_WALL_PASSWORD = "Kato";
 
-console.log('✓ supabase-config.js loaded');
-console.log('  Password:', window.HABIT_WALL_PASSWORD);
-console.log('  URL:', window.HABIT_SUPABASE_URL.substring(0, 30) + '...');
 
 // How long to remember successful unlock in a cookie.
 window.HABIT_WALL_COOKIE_DAYS = 30;

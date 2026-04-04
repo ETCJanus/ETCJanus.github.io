@@ -2,110 +2,307 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habit OS Insights</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/app.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Insights</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="supabase-config.js"></script>
-    <script src="js/app-core.js"></script>
-    <script src="js/page-shell.js"></script>
-    <script src="js/insights.js" defer></script>
+    <style>
+        body { font-family: ui-sans-serif, system-ui, sans-serif; background-color: #0d1117; color: #c9d1d9; margin: 0; padding: 0; min-height: 100vh; overflow-x: hidden; }
+        .view-btn { padding: 8px 16px; background: #21262d; border: 1px solid #30363d; border-radius: 999px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; color: #8b949e; cursor: pointer; transition: all 0.2s; }
+        .view-btn.active { color: #58a6ff; border-color: #58a6ff; box-shadow: 0 0 8px rgba(88,166,255,0.2); }
+        .view-btn:hover:not(.active) { color: #c9d1d9; border-color: #8b949e; }
+        
+        .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: center; transition: border-color 0.2s; }
+        .stat-card:hover { border-color: #58a6ff; }
+    </style>
 </head>
-<body>
-    <div id="auth-screen" class="auth-screen">
-        <article class="auth-panel">
-            <h1 class="auth-title">Owner Access</h1>
-            <p class="auth-text">Enter your dashboard passcode to open Insights.</p>
-            <form id="auth-form" class="inline-form">
-                <input id="auth-password" type="password" placeholder="Password" required>
-                <button class="primary-btn" type="submit">Unlock</button>
-            </form>
-            <p id="auth-status" class="status-line">Not signed in.</p>
-        </article>
-    </div>
+<body class="flex flex-col items-center min-h-screen pt-8 pb-16">
+    <nav class="w-full flex justify-center gap-8 mb-6 text-xs font-semibold tracking-widest text-gray-500 uppercase">
+        <a href="index.html" class="hover:text-white transition-colors">Grid</a>
+        <a href="settings.html" class="hover:text-white transition-colors">Settings</a>
+        <a href="insights.html" class="text-white border-b border-[#58a6ff] pb-1">Insights</a>
+    </nav>
+    <div class="w-full max-w-2xl px-4 flex flex-col gap-6">
+        <div class="text-center mt-2 mb-2">
+            <h1 class="text-2xl tracking-widest text-white uppercase font-light mb-2">My Insights</h1>
+            <p class="text-gray-500 text-sm tracking-wide">Last 30 Days</p>
+        </div>
 
-    <div id="shell-body" class="shell dashboard-shell" hidden>
-        <aside class="sidebar">
-            <div class="brand-block">
-                <p class="brand-tag">Personal Productivity - Insights</p>
-                <div class="sidebar-inline-head">
-                    <h1 class="brand-title">Habit OS</h1>
-                    <div class="topbar-actions">
-                        <button id="insights-refresh-btn" class="ghost-btn" type="button">Refresh</button>
-                        <span class="badge" id="insights-last-updated">--</span>
-                        <button id="sign-out-btn" class="ghost-btn" type="button">Lock</button>
-                    </div>
-                </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="stats-grid">
+            <div class="stat-card">
+                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Top Performer</span>
+                <span class="text-white text-base font-light tracking-wide truncate" id="stat-best-name">--</span>
+                <span class="text-[#39d353] text-xs mt-1 font-semibold" id="stat-best-val">--</span>
             </div>
-            <nav class="nav-group" aria-label="Primary navigation">
-                <a class="nav-link" href="index.html" title="Dashboard"><span class="nav-dot">D</span><span>Dashboard</span></a>
-                <a class="nav-link active" href="insights.html" title="Insights"><span class="nav-dot">I</span><span>Insights</span></a>
-                <a class="nav-link" href="notes.html" title="Notes"><span class="nav-dot">N</span><span>Notes</span></a>
-                <a class="nav-link" href="settings.html" title="Settings"><span class="nav-dot">S</span><span>Settings</span></a>
-            </nav>
-            <div class="sidebar-footer"><p style="margin:0;">Insights page shell</p></div>
-        </aside>
+            <div class="stat-card">
+                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Needs Focus</span>
+                <span class="text-white text-base font-light tracking-wide truncate" id="stat-worst-name">--</span>
+                <span class="text-[#f78166] text-xs mt-1 font-semibold" id="stat-worst-val">--</span>
+            </div>
+            <div class="stat-card">
+                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1" id="stat-shiny-title">Shiny Streak ✨</span>
+                <span class="text-white text-base font-light tracking-wide truncate" id="stat-shiny-name">--</span>
+                <span class="text-[#bc6bff] text-xs mt-1 font-semibold" id="stat-shiny-val">--</span>
+            </div>
+            <div class="stat-card">
+                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Overall</span>
+                <span class="text-white text-base font-light tracking-wide truncate">Consistency</span>
+                <span class="text-[#58a6ff] text-xs mt-1 font-semibold" id="stat-overall-val">--</span>
+            </div>
+        </div>
 
-        <main class="main dashboard-main">
-            <section class="insights-grid">
-                <article class="card chart-card">
-                    <header class="card-head">
-                        <h3 class="card-title">Sleep Trend</h3>
-                        <span class="pill">Last 30 days</span>
-                    </header>
-                    <div class="metric-row">
-                        <article class="metric-card">
-                            <p class="metric-label">Average sleep</p>
-                            <p id="sleep-average" class="metric-value">-</p>
-                        </article>
-                        <article class="metric-card">
-                            <p class="metric-label">Entries logged</p>
-                            <p id="sleep-entries" class="metric-value">0</p>
-                        </article>
-                    </div>
-                    <div id="sleep-chart" class="chart-shell" aria-label="Sleep chart"></div>
-                </article>
-
-                <article class="card">
-                    <header class="card-head">
-                        <h3 class="card-title">Sleep Entry</h3>
-                        <span class="pill">Cloud synced</span>
-                    </header>
-                    <form id="insights-sleep-form" class="compact-form-grid">
-                        <label class="field-label" for="insights-sleep-date">Date</label>
-                        <input id="insights-sleep-date" type="date" required>
-                        <label class="field-label" for="insights-sleep-time">Slept</label>
-                        <input id="insights-sleep-time" type="time" required>
-                        <label class="field-label" for="insights-wake-time">Woke</label>
-                        <input id="insights-wake-time" type="time" required>
-                        <button class="primary-btn" type="submit">Save Sleep</button>
-                    </form>
-                    <p id="insights-status" class="status-line">Waiting for unlock.</p>
-                    <div id="sleep-history-list" class="compact-list"></div>
-                </article>
-
-                <article class="card">
-                    <header class="card-head">
-                        <h3 class="card-title">Focus Health</h3>
-                        <span class="pill">30-day completion</span>
-                    </header>
-                    <div id="focus-health-list" class="compact-list"></div>
-                    <p id="focus-health-empty" class="empty-state" hidden>No focus habits available yet.</p>
-                </article>
-
-                <article class="card">
-                    <header class="card-head">
-                        <h3 class="card-title">Vice Health</h3>
-                        <span class="pill">Current status</span>
-                    </header>
-                    <div id="vice-health-list" class="compact-list"></div>
-                    <p id="vice-health-empty" class="empty-state" hidden>No vice habits available yet.</p>
-                </article>
-            </section>
-        </main>
+        <div class="flex justify-center gap-3 mt-6">
+            <button id="btn-duration" class="view-btn active">Hours Slept</button>
+            <button id="btn-times" class="view-btn">Bed / Wake Times</button>
+        </div>
+        <div class="w-full bg-[#161b22] border border-[#30363d] p-4 rounded-xl relative h-64 md:h-80">
+            <canvas id="sleepChart"></canvas>
+        </div>
     </div>
+
+    <script>
+        const passcode = localStorage.getItem('habit_passcode');
+        if (!passcode) window.location.href = 'index.html';
+
+        const supabaseUrl = window.HABIT_SUPABASE_URL;
+        const supabaseKey = window.HABIT_SUPABASE_ANON_KEY;
+        const tableLogs = 'habit_logs';
+        
+        const client = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const ctx = document.getElementById('sleepChart').getContext('2d');
+        const btnDur = document.getElementById('btn-duration');
+        const btnTimes = document.getElementById('btn-times');
+
+        let sleepChart;
+        let viewMode = 'duration'; // 'duration' or 'times'
+        
+        let dates = [];
+        let durationData = [];
+        let timesData = [];
+
+        // Utilities
+        const formatTimeFromDec = (decHour) => {
+            let h = Math.floor(decHour);
+            let m = Math.round((decHour - h) * 60);
+            if (h >= 24) h -= 24;
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            let h12 = h % 12;
+            if (h12 === 0) h12 = 12;
+            return h12 + ':' + m.toString().padStart(2, '0') + ' ' + ampm;
+        };
+
+        const loadData = async () => {
+            const today = new Date();
+            const startRange = new Date();
+            startRange.setDate(today.getDate() - 30);
+            const startStr = startRange.toISOString().split('T')[0];
+
+            const [sleepRes, habitRes, logRes] = await Promise.all([
+                client.from(tableLogs).select('*').eq('passcode_key', passcode).eq('event_type', 'sleep').gte('log_date', startStr).order('log_date', { ascending: true }),
+                client.from('habits').select('*').eq('passcode_key', passcode).eq('archived', false),
+                client.from(tableLogs).select('*').eq('passcode_key', passcode).eq('event_type', 'progress').gte('log_date', startStr)
+            ]);
+
+            if (sleepRes.data) processData(sleepRes.data);
+            if (habitRes.data && logRes.data) processHabitStats(habitRes.data, logRes.data);
+            
+            renderChart();
+        };
+
+        const processHabitStats = (habits, logs) => {
+            let hStats = {};
+            habits.forEach(h => { hStats[h.id] = { id: h.id, name: h.name, target: h.target_amount, wins: 0, total: 0 }; });
+
+            logs.forEach(l => {
+                const hid = l.habit_id;
+                if (!hStats[hid]) return;
+                hStats[hid].total++;
+                
+                const amount = Number(l.current_amount);
+                if (hStats[hid].target == 1 && amount >= 1) hStats[hid].wins++;
+                if (hStats[hid].target < 0 && amount === 0) hStats[hid].wins++;
+            });
+
+            let best = null, worst = null, shiny = null;
+            let overallWins = 0, overallTotal = 0;
+
+            let valid = Object.values(hStats).filter(s => s.total > 0);
+            valid.forEach(s => {
+                s.rate = s.wins / s.total;
+                overallWins += s.wins;
+                overallTotal += s.total;
+                
+                if (!best || s.rate > best.rate) best = s;
+                if (!worst || s.rate < worst.rate) worst = s;
+                if (s.target == -2 && !shiny) shiny = s; 
+            });
+
+            if (best) {
+                document.getElementById('stat-best-name').textContent = best.name;
+                document.getElementById('stat-best-val').textContent = Math.round(best.rate * 100) + '% Win Rate';
+            }
+            if (worst) {
+                document.getElementById('stat-worst-name').textContent = worst.name;
+                document.getElementById('stat-worst-val').textContent = Math.round(worst.rate * 100) + '% Win Rate';
+            }
+            if (overallTotal > 0) {
+                let ov = Math.round((overallWins / overallTotal) * 100);
+                document.getElementById('stat-overall-val').textContent = ov + '% Success';
+            }
+
+            if (shiny) {
+                document.getElementById('stat-shiny-name').textContent = shiny.name;
+                let shinyLogs = logs.filter(l => l.habit_id === shiny.id);
+                shinyLogs.sort((a,b) => new Date(b.log_date) - new Date(a.log_date));
+                
+                let streak = 0;
+                for(let log of shinyLogs) {
+                    if (Number(log.current_amount) === 0) streak++;
+                    else break;
+                }
+                document.getElementById('stat-shiny-val').textContent = streak + ' Days Clean';
+            } else {
+                document.getElementById('stat-shiny-title').textContent = 'No Shiny Habit';
+            }
+        };
+
+        const processData = (logs) => {
+            dates = [];
+            durationData = [];
+            timesData = [];
+            
+            logs.forEach(log => {
+                const dateKey = log.log_date;
+                const { start, end } = log.metadata || {};
+                if (!start || !end) return;
+
+                const [sh, sm] = start.split(':').map(Number);
+                const [eh, em] = end.split(':').map(Number);
+
+                let sDec = sh + (sm / 60);
+                let eDec = eh + (em / 60);
+
+                let dur = eDec - sDec;
+                if (dur < 0) dur += 24;
+                
+                // Represent sleep starting late evening as 18.0 to 30.0+ on graph
+                if (sDec < 12) sDec += 24; 
+                let shiftEnd = sDec + dur;
+
+                const dateObj = new Date(dateKey + 'T12:00:00');
+                dates.push(dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+                durationData.push(dur);
+                timesData.push([sDec, shiftEnd]);
+            });
+        };
+
+        const initChart = () => {
+            if (sleepChart) sleepChart.destroy();
+            const isDur = viewMode === 'duration';
+
+            const datasets = isDur ? [{
+                label: 'Hours Slept',
+                data: durationData,
+                backgroundColor: 'rgba(88, 166, 255, 0.2)',
+                borderColor: '#58a6ff',
+                pointBackgroundColor: '#58a6ff',
+                borderWidth: 2,
+                pointRadius: 3,
+                tension: 0.3,
+                fill: true
+            }] : [{
+                label: 'Bed Time',
+                data: timesData.map(d => d[0]),
+                backgroundColor: 'transparent',
+                borderColor: '#bc6bff',
+                pointBackgroundColor: '#bc6bff',
+                borderWidth: 2,
+                pointRadius: 3,
+                tension: 0.3
+            }, {
+                label: 'Wake Time',
+                data: timesData.map(d => d[1]),
+                backgroundColor: 'rgba(188, 107, 255, 0.15)',
+                borderColor: '#bc6bff',
+                pointBackgroundColor: '#bc6bff',
+                borderWidth: 2,
+                pointRadius: 3,
+                tension: 0.3,
+                fill: '-1'
+            }];
+
+            const cfg = {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: !isDur, labels: { color: '#8b949e', font: { size: 10, family: 'ui-sans-serif' } } },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    if (isDur) {
+                                        let h = Math.floor(context.raw);
+                                        let m = Math.round((context.raw - h) * 60);
+                                        return h + 'h ' + m + 'm';
+                                    } else {
+                                        return context.dataset.label + ': ' + formatTimeFromDec(context.raw);
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#30363d', display: false },
+                            ticks: { color: '#8b949e', font: { size: 10, family: 'ui-sans-serif' } }
+                        },
+                        y: {
+                            grid: { color: '#30363d' },
+                            beginAtZero: isDur,
+                            min: isDur ? 0 : 18,
+                            max: isDur ? undefined : undefined,
+                            ticks: {
+                                color: '#8b949e',
+                                font: { size: 10, family: 'ui-sans-serif' },
+                                stepSize: isDur ? 2 : 2,
+                                callback: (val) => {
+                                    if (isDur) return val + ' h';
+                                    return formatTimeFromDec(val);
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            sleepChart = new Chart(ctx, cfg);
+        };
+
+        const renderChart = () => {
+            initChart();
+        };
+
+        btnDur.addEventListener('click', () => {
+            viewMode = 'duration';
+            btnDur.classList.add('active');
+            btnTimes.classList.remove('active');
+            renderChart();
+        });
+
+        btnTimes.addEventListener('click', () => {
+            viewMode = 'times';
+            btnTimes.classList.add('active');
+            btnDur.classList.remove('active');
+            renderChart();
+        });
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
 </body>
 </html>

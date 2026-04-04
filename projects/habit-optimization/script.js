@@ -1,0 +1,543 @@
+﻿document.addEventListener('DOMContentLoaded', () => {
+
+    /* --- DOM Elements --- */
+    const authView = document.getElementById('auth-view');
+    const appView = document.getElementById('app-view');
+    const passcodeInput = document.getElementById('passcode-input');
+    const loginBtn = document.getElementById('login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const logoutBtnNav = document.getElementById('logout-btn-nav');
+    const loginError = document.getElementById('login-error');
+    
+    const gridContainer = document.getElementById('grid-container');
+    const dayModal = document.getElementById('day-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const modalDate = document.getElementById('modal-date');
+    const modalHabits = document.getElementById('modal-habits');
+    const modalNote = document.getElementById('modal-note');
+
+    const sleepInputsContainer = document.getElementById('sleep-inputs-container');
+    const sleepStartInput = document.getElementById('sleep-start');
+    const sleepEndInput = document.getElementById('sleep-end');
+    const minSleepBtn = document.getElementById('min-sleep-btn');
+    const minSleepDisplay = document.getElementById('min-sleep-display');
+    const energyInputsContainer = document.getElementById('energy-inputs-container');
+    const energyInput = document.getElementById('energy-input');
+    const minEnergyBtn = document.getElementById('min-energy-btn');
+    const minEnergyDisplay = document.getElementById('min-energy-display');
+    const expandedMetricsRow = document.getElementById('expanded-metrics-row');
+    const compactMetrics = document.getElementById('compact-metrics');
+
+    /* --- Utils --- */
+    const calculateSleepHours = (start, end) => {
+        if (!start || !end) return null;
+        let [h1, m1] = start.split(':').map(Number);
+        let [h2, m2] = end.split(':').map(Number);
+        let d1 = new Date(2000, 0, 1, h1, m1);
+        let d2 = new Date(2000, 0, h1 > h2 || (h1 === h2 && m1 > m2) ? 2 : 1, h2, m2);
+        let diff = (d2 - d1) / (1000 * 60 * 60);
+        return Math.round(diff * 10) / 10 + ' hrs';
+    };
+
+    /* --- App State --- */
+    let client = null;
+    let passcode = localStorage.getItem('habit_passcode') || '';
+    let config = { url: '', key: '', tableHabits: 'habits', tableLogs: 'habit_logs' };
+
+    let habitsCache = [];
+    let logsCache = {};
+    let selectedDate = null;
+
+    /* --- Helpers --- */
+    const formatDate = (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + d;
+    };
+
+    const parseMonthString = (str) => {
+        const [y, m] = str.split('-');
+        return { year: parseInt(y), month: parseInt(m) - 1 };
+    };
+
+    /* --- Initialization --- */
+    const init = () => {
+        config.url = window.HABIT_SUPABASE_URL || '';
+        config.key = window.HABIT_SUPABASE_ANON_KEY || '';
+        
+        if (!config.url || !config.key) {
+            if(loginError) {
+                loginError.textContent = "Supabase config missing";
+                loginError.classList.remove('hidden');
+            }
+            return;
+        }
+        
+        client = window.supabase.createClient(config.url, config.key);
+        
+        if (passcode) {
+            attemptLogin(passcode);
+        } else {
+            showLogin();
+        }
+    };
+
+    /* --- Auth Flow --- */
+    const showLogin = () => {
+        authView.classList.remove('hidden');
+        appView.classList.add('hidden');
+        localStorage.removeItem('habit_passcode');
+        passcode = '';
+    };
+
+    const attemptLogin = async (code) => {
+        if (!code) return;
+        loginError.classList.add('hidden');
+        try {
+            const { data, error } = await client
+                .from(config.tableHabits)
+                .select('id')
+                .eq('passcode_key', code)
+                .limit(1);
+
+            if (error) throw error;
+
+            passcode = code;
+            localStorage.setItem('habit_passcode', code);
+            
+            authView.classList.add('hidden');
+            appView.classList.remove('hidden');
+            
+            await loadData();
+        } catch (e) {
+            console.error('Login Failed', e);
+            loginError.textContent = "Incorrect passcode.";
+            loginError.classList.remove('hidden');
+            showLogin();
+        }
+    };
+
+    if(loginBtn) loginBtn.addEventListener('click', () => attemptLogin(passcodeInput.value.trim()));
+    if(passcodeInput) passcodeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            attemptLogin(passcodeInput.value.trim());
+        }
+    });
+
+    const handleLogout = () => showLogin();
+    if(logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+    if(logoutBtnNav) logoutBtnNav.addEventListener('click', handleLogout);
+
+    /* --- Core Data Loading --- */
+    const loadData = async () => {
+        try {
+            const startRangeStr = localStorage.getItem('habit_grid_start') || '2026-04';
+            const s = parseMonthString(startRangeStr);
+            const activeRangeStart = formatDate(new Date(s.year, s.month, 1));
+
+            const { data: habitsData, error: hError } = await client
+                .from(config.tableHabits)
+                .select('*')
+                .eq('passcode_key', passcode)
+                .eq('archived', false)
+                .order('sort_order', { ascending: true });
+            
+            if (hError) throw hError;
+            habitsCache = habitsData || [];
+
+            const { data: logsData, error: lError } = await client
+                .from(config.tableLogs)
+                .select('*')
+                .eq('passcode_key', passcode)
+                .gte('log_date', activeRangeStart);
+
+            if (lError) throw lError;
+            
+            logsCache = {};
+            (logsData || []).forEach(log => {
+                if (!logsCache[log.log_date]) logsCache[log.log_date] = [];
+                logsCache[log.log_date].push(log);
+            });
+
+            renderGrid();
+        } catch (e) {
+            console.error('Load Data Error:', e);
+            alert('Failed to load dashboard data:\n' + (e.message || JSON.stringify(e)));
+        }
+    };
+
+    /* --- Rendering --- */
+    const renderGrid = () => {
+        gridContainer.innerHTML = '';
+        
+        const todayStr = formatDate(new Date());
+
+        const startRangeStr = localStorage.getItem('habit_grid_start') || '2026-04';
+        const endRangeStr = localStorage.getItem('habit_grid_end') || '2027-03';
+        
+        const s = parseMonthString(startRangeStr);
+        const e = parseMonthString(endRangeStr);
+        
+        const activeRangeStart = formatDate(new Date(s.year, s.month, 1));
+        
+        let months = [];
+        let currY = s.year;
+        let currM = s.month;
+        
+        while (currY < e.year || (currY === e.year && currM <= e.month)) {
+            months.push({ year: currY, month: currM });
+            currM++;
+            if (currM > 11) {
+                currM = 0;
+                currY++;
+            }
+        }
+
+        months.forEach(m => {
+            const monthWrapper = document.createElement('div');
+            monthWrapper.className = 'w-full';
+
+            const monthTitle = document.createElement('h3');
+            const monthName = new Date(m.year, m.month, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+            monthTitle.className = 'text-gray-400 font-light tracking-widest uppercase text-sm mb-4 ml-1';
+            monthTitle.textContent = monthName;
+            monthWrapper.appendChild(monthTitle);
+
+            const grid = document.createElement('div');
+            grid.className = 'month-grid';
+
+            const dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+            dayNames.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'text-center text-xs text-gray-500 font-bold pb-2';
+                header.textContent = day;
+                grid.appendChild(header);
+            });
+
+            const firstDayOffset = (new Date(m.year, m.month, 1).getDay() + 6) % 7; 
+            const daysInMonth = new Date(m.year, m.month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDayOffset; i++) {
+                const empty = document.createElement('div');
+                grid.appendChild(empty);
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const cellDate = new Date(m.year, m.month, d, 12, 0, 0);
+                const dateKey = formatDate(cellDate);
+                
+                const cell = document.createElement('div');
+                
+                // Past start date, not in future
+                if (dateKey < activeRangeStart || dateKey > todayStr) {
+                    cell.className = 'day-cell inactive';
+                    cell.title = new Date(dateKey + 'T12:00:00').toLocaleDateString();
+                } else {
+                    const dayLogs = logsCache[dateKey] || [];
+                    const progressLogs = dayLogs.filter(l => l.event_type === 'progress');
+                    const noteLog = dayLogs.find(l => l.event_type === 'note' && !l.habit_id);
+                    const sleepLog = dayLogs.find(l => l.event_type === 'sleep' && !l.habit_id);
+                    const energyLog = dayLogs.find(l => l.event_type === 'energy' && !l.habit_id);
+
+                    let activeHabits = [...habitsCache];
+
+                    let score = 0;
+                    let isShiny = false;
+                    const dayHasLogs = progressLogs.length > 0 || sleepLog || noteLog || energyLog;
+
+                    if (activeHabits.length > 0) {
+                        let successes = 0;
+                        
+                        activeHabits.forEach(h => {
+                            const l = progressLogs.find(x => x.habit_id === h.id);
+                            const amount = l ? l.current_amount : 0;
+                            
+                            // Good Habit (target 1) -> Success if amount >= 1
+                            if (h.target_amount == 1) {
+                                if (amount >= 1) successes++;
+                            }
+                            // Bad Habit (target < 0) -> Success if amount == 0 (resisted)
+                            else if (h.target_amount < 0) {
+                                if (amount === 0) {
+                                    successes++;
+                                    // If Shiny target (-2) and we successfully avoided it (amount 0) PLUS interacted with day
+                                    if (h.target_amount == -2 && dayHasLogs) isShiny = true;
+                                }
+                            }
+                        });
+                        
+                        const percentage = successes / activeHabits.length;
+                        if (percentage > 0) score = 1;
+                        if (percentage > 0.3) score = 2;
+                        if (percentage > 0.6) score = 3;
+                        if (percentage >= 0.9) score = 4;
+                    } else if (progressLogs.length > 0) {
+                        score = 2; // Legacy fallback
+                    }
+
+                    let classes = 'day-cell active level-' + score;
+                    if (isShiny) classes += ' shiny-day';
+                    cell.className = classes;
+                    cell.title = new Date(dateKey + 'T12:00:00').toLocaleDateString();
+                    cell.addEventListener('click', () => openDayModal(dateKey));
+
+                    // Add dots inside cell if missing
+                    if (!sleepLog) {
+                        const sleepDot = document.createElement('span');
+                        sleepDot.className = 'indicator-missing-sleep';
+                        sleepDot.title = 'Missing Sleep Log';
+                        cell.appendChild(sleepDot);
+                    }
+                    if (!noteLog) {
+                        const noteDot = document.createElement('span');
+                        noteDot.className = 'indicator-missing-note';
+                        noteDot.title = 'Missing Note Log';
+                        cell.appendChild(noteDot);
+                    }
+                }
+                
+                grid.appendChild(cell);
+            }
+
+            monthWrapper.appendChild(grid);
+            gridContainer.appendChild(monthWrapper);
+        });
+    };
+
+    /* --- Energy Selection Logic --- */
+    // Logic moved to input interactions
+
+    /* --- Modal Management --- */
+    const openDayModal = (dateKey) => {
+        selectedDate = dateKey;
+        const niceDateStr = new Date(dateKey + 'T12:00:00').toLocaleDateString(undefined, { 
+            weekday: 'long', month: 'short', day: 'numeric', year: 'numeric'
+        });
+        modalDate.textContent = niceDateStr;
+
+        const dayLogs = logsCache[dateKey] || [];
+        const progressLogs = dayLogs.filter(l => l.event_type === 'progress');
+        const noteLog = dayLogs.find(l => l.event_type === 'note' && !l.habit_id);
+        const sleepLog = dayLogs.find(l => l.event_type === 'sleep' && !l.habit_id);
+        const energyLog = dayLogs.find(l => l.event_type === 'energy' && !l.habit_id);
+        
+// Reset Energy
+        energyInput.value = '';
+        let hasEnergy = false;
+        if (energyLog && energyLog.metadata && energyLog.metadata.level) {
+            energyInput.value = energyLog.metadata.level;
+            minEnergyDisplay.innerText = energyLog.metadata.level + '/10';
+            hasEnergy = true;
+        }
+
+        // Populate Note
+        modalNote.value = noteLog && noteLog.metadata ? noteLog.metadata.text || '' : '';
+        const notePreview = document.getElementById('note-preview');
+        const noteEditorWrapper = document.getElementById('note-editor-wrapper');
+        const noteChevron = document.getElementById('note-chevron');
+        if (modalNote.value.trim().length > 0) {
+            notePreview.classList.add('text-white');
+            notePreview.classList.remove('text-gray-500');
+            notePreview.innerText = modalNote.value.substring(0, 30) + (modalNote.value.length > 30 ? '...' : '');
+        } else {
+            notePreview.classList.add('text-gray-500');
+            notePreview.classList.remove('text-white');
+            notePreview.innerText = 'Add a journal note...';
+        }
+        noteEditorWrapper.classList.add('hidden');
+        noteChevron.classList.remove('rotate-180');
+
+        // Populate Sleep
+        sleepStartInput.value = '';
+        sleepEndInput.value = '';
+        let hasSleep = false;
+        if (sleepLog && sleepLog.metadata && sleepLog.metadata.start && sleepLog.metadata.end) {
+            sleepStartInput.value = sleepLog.metadata.start;
+            sleepEndInput.value = sleepLog.metadata.end;
+            minSleepDisplay.innerText = calculateSleepHours(sleepLog.metadata.start, sleepLog.metadata.end);
+            hasSleep = true;
+        }
+
+        if (hasSleep || hasEnergy) {
+            expandedMetricsRow.classList.add('hidden');
+            compactMetrics.classList.remove('hidden');
+            minSleepBtn.classList.toggle('hidden', !hasSleep);
+            minEnergyBtn.classList.toggle('hidden', !hasEnergy);
+        } else {
+            expandedMetricsRow.classList.remove('hidden');
+            compactMetrics.classList.add('hidden');
+        }
+
+        modalHabits.innerHTML = '';
+        
+        // Allow backfilling any active habit regardless of creation date
+        let activeHabits = [...habitsCache];
+
+        if (activeHabits.length === 0) {
+            modalHabits.innerHTML = '<p class="text-sm text-gray-600 italic">No active habits for this date.</p>'; 
+        } else {
+            activeHabits.forEach(habit => {
+                const log = progressLogs.find(x => x.habit_id === habit.id);
+                // "Checked" means amount > 0
+                const isChecked = log ? log.current_amount > 0 : false;
+
+                const label = document.createElement('label');
+                
+                let baseClass = 'relative flex items-center justify-center px-4 py-2.5 rounded-lg cursor-pointer transition-all border border-solid text-center min-h-[44px] select-none';
+                let unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-gray-500 hover:bg-[#21262d]';
+                let selectedClass = '';
+
+                if (habit.target_amount == 1) { // GOOD
+                    selectedClass = 'bg-green-500/20 border-green-500 text-green-300 shadow-[0_0_10px_rgba(34,197,94,0.2)]';
+                } else if (habit.target_amount < 0) { // BAD (Avoid)
+                    const isShiny = habit.target_amount == -2;
+                    selectedClass = isShiny 
+                        ? 'bg-yellow-500/20 border-yellow-500 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.2)]'
+                        : 'bg-red-500/20 border-red-500 text-red-300 shadow-[0_0_10px_rgba(239,68,68,0.2)]';
+                }
+
+                label.className = `group ${baseClass} ${isChecked ? selectedClass : unselectedClass}`;
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'sr-only peer';
+                checkbox.dataset.id = habit.id;
+                checkbox.checked = isChecked;
+                
+                checkbox.addEventListener('change', (e) => {
+                    label.className = `group ${baseClass} ${e.target.checked ? selectedClass : unselectedClass}`;
+                });
+
+                label.appendChild(checkbox);
+
+                const textSpan = document.createElement('div');
+                textSpan.className = 'text-sm font-medium tracking-wide leading-tight px-1 group-active:scale-95 transition-transform';
+                textSpan.innerHTML = habit.name;
+                label.appendChild(textSpan);
+
+                modalHabits.appendChild(label);
+            });
+        }
+
+        dayModal.classList.remove('hidden');
+    };
+
+    if(minSleepBtn) minSleepBtn.addEventListener('click', () => {
+        compactMetrics.classList.add('hidden');
+        expandedMetricsRow.classList.remove('hidden');
+        sleepStartInput.focus();
+    });
+
+    if(minEnergyBtn) minEnergyBtn.addEventListener('click', () => {
+        compactMetrics.classList.add('hidden');
+        expandedMetricsRow.classList.remove('hidden');
+        energyInput.focus();
+    });
+
+    const noteToggleBtn = document.getElementById('note-toggle-btn');
+    if (noteToggleBtn) {
+        noteToggleBtn.addEventListener('click', () => {
+            const wrapper = document.getElementById('note-editor-wrapper');
+            const chevron = document.getElementById('note-chevron');
+            wrapper.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-180');
+            if(!wrapper.classList.contains('hidden')) {
+                modalNote.focus();
+            }
+        });
+    }
+
+/* --- Saving Data --- */
+    const autoSaveDayData = async () => {
+        if (!selectedDate) return;
+        
+        try {
+            const checkboxes = modalHabits.querySelectorAll('input[type="checkbox"]');
+            for (const cb of checkboxes) {
+                const habitId = cb.getAttribute('data-id');
+                const isChecked = cb.checked;
+
+                await client.from(config.tableLogs).upsert({
+                    passcode_key: passcode,
+                    habit_id: habitId,
+                    log_date: selectedDate,
+                    event_type: 'progress',
+                    current_amount: isChecked ? 1 : 0,
+                    amount_delta: 0
+                }, { onConflict: 'passcode_key, habit_id, log_date, event_type' });
+            }
+
+            const dayLogs = logsCache[selectedDate] || [];
+
+            // Save Note
+            const noteText = modalNote.value.trim();
+            const existingNote = dayLogs.find(l => l.event_type === 'note' && !l.habit_id);
+
+            if (noteText) {
+                const payload = {
+                    passcode_key: passcode,
+                    log_date: selectedDate,
+                    event_type: 'note',
+                    metadata: { text: noteText }
+                };
+                if (existingNote && existingNote.id) payload.id = existingNote.id;
+                await client.from(config.tableLogs).upsert(payload, { onConflict: 'passcode_key, habit_id, log_date, event_type' });
+            } else if (existingNote && existingNote.id) {
+                await client.from(config.tableLogs).delete().eq('id', existingNote.id);
+            }
+
+            // Save Sleep
+            const sStart = sleepStartInput.value;
+            const sEnd = sleepEndInput.value;
+            const existingSleep = dayLogs.find(l => l.event_type === 'sleep' && !l.habit_id);
+
+            if (sStart && sEnd) {
+                const payload = {
+                    passcode_key: passcode,
+                    log_date: selectedDate,
+                    event_type: 'sleep',
+                    metadata: { start: sStart, end: sEnd }
+                };
+                if (existingSleep && existingSleep.id) payload.id = existingSleep.id;
+                await client.from(config.tableLogs).upsert(payload);
+            } else if (existingSleep && existingSleep.id) {
+                await client.from(config.tableLogs).delete().eq('id', existingSleep.id);
+            }
+
+            // Save Energy
+            const existingEnergy = dayLogs.find(l => l.event_type === 'energy' && !l.habit_id);
+            const energyVal = energyInput.value ? parseInt(energyInput.value) : null;
+            if (energyVal >= 1 && energyVal <= 10) {
+                const payload = {
+                    passcode_key: passcode,
+                    log_date: selectedDate,
+                    event_type: 'energy',
+                    metadata: { level: energyVal }
+                };
+                if (existingEnergy && existingEnergy.id) payload.id = existingEnergy.id;
+                await client.from(config.tableLogs).upsert(payload);
+            } else if (existingEnergy && existingEnergy.id) {
+                await client.from(config.tableLogs).delete().eq('id', existingEnergy.id);
+            }
+
+            await loadData();
+        } catch (e) {
+            console.error('Save error', e);
+        }
+    };
+
+    const handleModalClose = async () => {
+        dayModal.classList.add('hidden');
+        await autoSaveDayData();
+    };
+
+    if(closeModalBtn) closeModalBtn.addEventListener('click', handleModalClose);
+
+    if(dayModal) dayModal.addEventListener('click', (e) => {
+        if (e.target === dayModal) handleModalClose();
+    });
+
+    init();
+});
