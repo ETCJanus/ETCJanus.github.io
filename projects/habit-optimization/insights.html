@@ -42,7 +42,7 @@
                 <span class="text-[#f78166] text-xs mt-1 font-semibold" id="stat-worst-val">--</span>
             </div>
             <div class="stat-card">
-                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1" id="stat-shiny-title">Shiny Streak ?</span>
+                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1" id="stat-shiny-title">Shiny Streak ✨</span>
                 <span class="text-white text-base font-light tracking-wide truncate" id="stat-shiny-name">--</span>
                 <span class="text-[#bc6bff] text-xs mt-1 font-semibold" id="stat-shiny-val">--</span>
             </div>
@@ -126,7 +126,7 @@
                 
                 const amount = Number(l.current_amount);
                 if (hStats[hid].target == 1 && amount >= 1) hStats[hid].wins++;
-                if (hStats[hid].target < 0 && amount === 0) hStats[hid].wins++;
+                if (hStats[hid].target < 0 && amount >= 1) hStats[hid].wins++;
             });
 
             let best = null, worst = null, shiny = null;
@@ -138,8 +138,11 @@
                 overallWins += s.wins;
                 overallTotal += s.total;
                 
-                if (!best || s.rate > best.rate) best = s;
-                if (!worst || s.rate < worst.rate) worst = s;
+                if (s.target == 1) {
+                    if (!best || s.rate > best.rate) best = s;
+                    if (!worst || s.rate < worst.rate) worst = s;
+                }
+                
                 if (s.target == -2 && !shiny) shiny = s; 
             });
 
@@ -163,10 +166,10 @@
                 
                 let streak = 0;
                 for(let log of shinyLogs) {
-                    if (Number(log.current_amount) === 0) streak++;
+                    if (Number(log.current_amount) >= 1) streak++;
                     else break;
                 }
-                document.getElementById('stat-shiny-val').textContent = streak + ' Days Clean';
+                document.getElementById('stat-shiny-val').textContent = streak + ' Days Streak';
             } else {
                 document.getElementById('stat-shiny-title').textContent = 'No Shiny Habit';
             }

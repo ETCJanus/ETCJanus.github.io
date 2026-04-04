@@ -258,12 +258,12 @@
                             if (h.target_amount == 1) {
                                 if (amount >= 1) successes++;
                             }
-                            // Bad Habit (target < 0) -> Success if amount == 0 (resisted)
+                            // Bad Habit (target < 0) -> Success if checked
                             else if (h.target_amount < 0) {
-                                if (amount === 0) {
+                                if (amount >= 1) {
                                     successes++;
-                                    // If Shiny target (-2) and we successfully avoided it (amount 0) PLUS interacted with day
-                                    if (h.target_amount == -2 && dayHasLogs) isShiny = true;
+                                    // If Shiny target (-2)
+                                    if (h.target_amount == -2) isShiny = true;
                                 }
                             }
                         });
@@ -430,17 +430,22 @@
 
                 const label = document.createElement('label');
                 
-                let baseClass = 'relative flex items-center justify-center px-4 py-2.5 rounded-lg cursor-pointer transition-all border border-solid text-center min-h-[44px] select-none';
-                let unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-gray-500 hover:bg-[#21262d]';
+                let baseClass = 'relative flex items-center justify-center px-4 py-2.5 rounded-lg cursor-pointer transition-all border border-solid text-center min-h-[44px] select-none text-sm tracking-wide leading-tight group-active:scale-[0.98]';
+                let unselectedClass = '';
                 let selectedClass = '';
 
                 if (habit.target_amount == 1) { // GOOD
-                    selectedClass = 'bg-green-500/20 border-green-500 text-green-300 shadow-[0_0_10px_rgba(34,197,94,0.2)]';
+                    unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-green-500/50 hover:bg-[#21262d] border-l-2 border-l-green-500/30';
+                    selectedClass = 'bg-green-500/20 border-green-500 text-green-300 shadow-[0_0_10px_rgba(34,197,94,0.2)] border-l-2 border-l-green-500';
                 } else if (habit.target_amount < 0) { // BAD (Avoid)
                     const isShiny = habit.target_amount == -2;
-                    selectedClass = isShiny 
-                        ? 'bg-yellow-500/20 border-yellow-500 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.2)]'
-                        : 'bg-red-500/20 border-red-500 text-red-300 shadow-[0_0_10px_rgba(239,68,68,0.2)]';
+                    if (isShiny) {
+                        unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-yellow-500/50 hover:bg-[#21262d] border-l-2 border-l-yellow-500/30';
+                        selectedClass = 'bg-yellow-500/20 border-yellow-500 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.2)] border-l-2 border-l-yellow-500';
+                    } else {
+                        unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-red-500/50 hover:bg-[#21262d] border-l-2 border-l-red-500/30';
+                        selectedClass = 'bg-red-500/20 border-red-500 text-red-300 shadow-[0_0_10px_rgba(239,68,68,0.2)] border-l-2 border-l-red-500';
+                    }
                 }
 
                 label.className = `group ${baseClass} ${isChecked ? selectedClass : unselectedClass}`;
@@ -458,7 +463,7 @@
                 label.appendChild(checkbox);
 
                 const textSpan = document.createElement('div');
-                textSpan.className = 'text-sm font-medium tracking-wide leading-tight px-1 group-active:scale-95 transition-transform';
+                textSpan.className = 'font-medium transition-transform';
                 textSpan.innerHTML = habit.name;
                 label.appendChild(textSpan);
 
