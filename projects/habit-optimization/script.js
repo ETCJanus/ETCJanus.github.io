@@ -302,6 +302,9 @@
                     const displayDate = new Date(dateKey + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
                     
                     cell.addEventListener('mouseenter', (e) => {
+                        // Disable tooltip on mobile / touch devices
+                        if (window.matchMedia("(pointer: coarse)").matches || window.innerWidth < 768) return;
+
                         const tooltip = document.getElementById('grid-tooltip');
                         if (!tooltip) return;
                         

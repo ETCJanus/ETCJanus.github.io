@@ -48,6 +48,9 @@ alter table public.habit_logs enable row level security;
 create policy habits_open on public.habits for all using (true) with check (true);
 create policy habit_logs_open on public.habit_logs for all using (true) with check (true);
 
+-- Enable Realtime Sync Broadcasting for PC / Mobile instant refresh
+alter publication supabase_realtime add table public.habit_logs;
+
 -- Grants to allow the javascript client to query
 grant usage on schema public to anon;
 grant all on public.habits to anon;
