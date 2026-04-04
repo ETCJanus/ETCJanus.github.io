@@ -62,6 +62,13 @@
         <div class="w-full bg-[#161b22] border border-[#30363d] p-4 rounded-xl relative h-64 md:h-80">
             <canvas id="sleepChart"></canvas>
         </div>
+
+        <div class="mt-4 bg-[#161b22] border border-[#30363d] p-5 rounded-xl">
+            <h2 class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-3 border-b border-[#30363d] pb-2">Discoveries Engine</h2>
+            <div id="correlation-results" class="flex flex-col gap-3 text-sm text-gray-300 font-light">
+                <p class="animate-pulse">Analyzing patterns...</p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -113,7 +120,93 @@
             if (sleepRes.data || moodRes.data) processData(sleepRes.data || [], moodRes.data || []);
             if (habitRes.data && logRes.data) processHabitStats(habitRes.data, logRes.data);
             
+            runCorrelationEngine(habitRes.data || [], logRes.data || [], sleepRes.data || [], moodRes.data || []);
+            
             renderChart();
+        };
+
+        const runCorrelationEngine = (habits, progressLogs, sleepLogs, moodLogs) => {
+            const resultsDiv = document.getElementById('correlation-results');
+            if (habits.length === 0 || progressLogs.length === 0) {
+                resultsDiv.innerHTML = '<p class="opacity-50">Not enough data to calculate discoveries yet.</p>';
+                return;
+            }
+
+            let discoveries = [];
+
+            // Helper to get daily completion percentage
+            const daysMap = {};
+            progressLogs.forEach(l => {
+                if (!daysMap[l.log_date]) daysMap[l.log_date] = { wins: 0, total: habits.length, isShinyClean: true };
+                const h = habits.find(h => h.id === l.habit_id);
+                if (!h) return;
+                
+                const amt = Number(l.current_amount);
+                if (h.target_amount == 1 && amt >= 1) daysMap[l.log_date].wins++;
+                if (h.target_amount == -2 && amt >= 1) daysMap[l.log_date].isShinyClean = true;
+                if (h.target_amount == -2 && amt == 0) daysMap[l.log_date].isShinyClean = false; // broke shiny
+            });
+
+            // Discovery 1: Sleep vs Habit Success
+            if (sleepLogs.length > 2) {
+                let goodSleepWinsSum = 0, goodSleepDays = 0;
+                let badSleepWinsSum = 0, badSleepDays = 0;
+
+                sleepLogs.forEach(sl => {
+                    const d = daysMap[sl.log_date];
+                    if (!d || !sl.metadata || !sl.metadata.start || !sl.metadata.end) return;
+
+                    const [sh, sm] = sl.metadata.start.split(':').map(Number);
+                    const [eh, em] = sl.metadata.end.split(':').map(Number);
+                    let sDec = sh + (sm / 60);
+                    let eDec = eh + (em / 60);
+                    let dur = eDec - sDec;
+                    if (dur < 0) dur += 24;
+
+                    const successRate = d.wins / d.total;
+                    if (dur >= 7) { goodSleepWinsSum += successRate; goodSleepDays++; }
+                    else { badSleepWinsSum += successRate; badSleepDays++; }
+                });
+
+                if (goodSleepDays > 0 && badSleepDays > 0) {
+                    const goodAvg = goodSleepWinsSum / goodSleepDays;
+                    const badAvg = badSleepWinsSum / badSleepDays;
+                    if (goodAvg > badAvg + 0.1) {
+                        discoveries.push(`🌟 You are <strong class="text-[#39d353]">${Math.round((goodAvg - badAvg) * 100)}% more likely</strong> to complete your habits on days you sleep over 7 hours.`);
+                    }
+                }
+            }
+
+            // Discovery 2: Shiny Streak vs Mood
+            if (moodLogs.length > 2) {
+                let shinyMoodSum = 0, shinyDays = 0;
+                let brokenMoodSum = 0, brokenDays = 0;
+
+                moodLogs.forEach(ml => {
+                    const d = daysMap[ml.log_date];
+                    if (!d || !ml.metadata || !ml.metadata.level) return;
+
+                    const mood = ml.metadata.level;
+                    if (d.isShinyClean) { shinyMoodSum += mood; shinyDays++; }
+                    else { brokenMoodSum += mood; brokenDays++; }
+                });
+
+                if (shinyDays > 0 && brokenDays > 0) {
+                    const shinyAvg = shinyMoodSum / shinyDays;
+                    const brokenAvg = brokenMoodSum / brokenDays;
+                    if (shinyAvg > brokenAvg + 0.5) {
+                        discoveries.push(`🔥 Your average mood is <strong class="text-[#bc6bff]">${(shinyAvg - brokenAvg).toFixed(1)} points higher</strong> when your Shiny streak is uncompromised.`);
+                    } else if (brokenAvg > shinyAvg + 0.5) {
+                        discoveries.push(`⚖️ Interestingly, your mood averages <strong class="text-yellow-400">${(brokenAvg - shinyAvg).toFixed(1)} points higher</strong> on days you break your Shiny streak.`);
+                    }
+                }
+            }
+
+            if (discoveries.length > 0) {
+                resultsDiv.innerHTML = discoveries.map(d => `<p>${d}</p>`).join('');
+            } else {
+                resultsDiv.innerHTML = '<p class="opacity-50">Log more sleep and mood data to unlock behavioral discoveries.</p>';
+            }
         };
 
         const processHabitStats = (habits, logs) => {

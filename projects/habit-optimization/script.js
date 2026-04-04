@@ -117,6 +117,17 @@
             appView.classList.remove('hidden');
             
             await loadData();
+
+            // Realtime Sync setup
+            client.channel('public:habit_logs')
+                .on('postgres_changes', { event: '*', schema: 'public', table: config.tableLogs }, payload => {
+                    // Only auto-refresh if the day modal is NOT currently open and actively being edited
+                    if (dayModal.classList.contains('hidden')) {
+                        loadData();
+                    }
+                })
+                .subscribe();
+
         } catch (e) {
             console.error('Login Failed', e);
             loginError.textContent = "Incorrect passcode.";
@@ -286,7 +297,60 @@
                     let classes = 'day-cell active level-' + score;
                     if (isShiny) classes += ' shiny-day';
                     cell.className = classes;
-                    cell.title = new Date(dateKey + 'T12:00:00').toLocaleDateString();
+                    
+                    // Setup Glanceable Grid Tooltip
+                    const displayDate = new Date(dateKey + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+                    
+                    cell.addEventListener('mouseenter', (e) => {
+                        const tooltip = document.getElementById('grid-tooltip');
+                        if (!tooltip) return;
+                        
+                        document.getElementById('tooltip-date').innerText = displayDate;
+                        
+                        const noteDiv = document.getElementById('tooltip-note');
+                        if (noteLog && noteLog.metadata && noteLog.metadata.text) {
+                            noteDiv.innerText = '"' + noteLog.metadata.text + '"';
+                            noteDiv.classList.remove('hidden');
+                        } else {
+                            noteDiv.classList.add('hidden');
+                        }
+
+                        const metricsDiv = document.getElementById('tooltip-metrics');
+                        metricsDiv.innerHTML = '';
+                        
+                        if (moodLog && moodLog.metadata && moodLog.metadata.level) {
+                            metricsDiv.innerHTML += `<span>🎭 ${moodLog.metadata.level}/10</span>`;
+                        }
+                        if (sleepLog && sleepLog.metadata && sleepLog.metadata.start && sleepLog.metadata.end) {
+                            const hours = calculateSleepHours(sleepLog.metadata.start, sleepLog.metadata.end);
+                            metricsDiv.innerHTML += `<span>💤 ${hours}</span>`;
+                        }
+                        
+                        if (metricsDiv.innerHTML === '') {
+                            metricsDiv.innerHTML = '<span class="opacity-50 italic">No extra metrics logged</span>';
+                        }
+                        
+                        tooltip.classList.remove('hidden');
+                        
+                        // Positioning
+                        const rect = cell.getBoundingClientRect();
+                        
+                        let top = rect.top - tooltip.offsetHeight - 10;
+                        let left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2);
+                        
+                        // Prevent spilling off screen
+                        if (left < 10) left = 10;
+                        if (top < 10) top = rect.bottom + 10; // Show below if no room above
+                        
+                        tooltip.style.top = top + 'px';
+                        tooltip.style.left = left + 'px';
+                    });
+                    
+                    cell.addEventListener('mouseleave', () => {
+                        const tooltip = document.getElementById('grid-tooltip');
+                        if (tooltip) tooltip.classList.add('hidden');
+                    });
+
                     cell.addEventListener('click', () => openDayModal(dateKey));
 
                     // Add dots inside cell if missing
@@ -435,8 +499,8 @@
                 const isChecked = log ? log.current_amount > 0 : false;
 
                 const label = document.createElement('label');
-                
-                let baseClass = 'relative flex items-center justify-center px-4 py-2.5 rounded-lg cursor-pointer transition-all border border-solid text-center min-h-[44px] select-none text-sm tracking-wide leading-tight group-active:scale-[0.98]';
+
+                let baseClass = 'relative flex items-center justify-between px-4 py-2.5 rounded-lg cursor-pointer transition-all border border-solid text-center min-h-[44px] select-none text-sm tracking-wide leading-tight group-active:scale-[0.98]';
                 let unselectedClass = '';
                 let selectedClass = '';
 
@@ -455,17 +519,79 @@
                 checkbox.className = 'sr-only peer';
                 checkbox.dataset.id = habit.id;
                 checkbox.checked = isChecked;
-                
-                checkbox.addEventListener('change', (e) => {
-                    label.className = `group ${baseClass} ${e.target.checked ? selectedClass : unselectedClass}`;
-                });
+
+                const getStreak = (cChecked) => {
+                    let pastStreak = 0;
+                    let checkDate = new Date(selectedDate + 'T12:00:00');
+                    checkDate.setDate(checkDate.getDate() - 1);
+                    
+                    let checkLimit = 0;
+                    while(checkLimit < 365) {
+                        checkLimit++;
+                        const dKey = formatDate(checkDate);
+                        const dLogs = logsCache[dKey] || [];
+                        const prog = dLogs.find(l => l.event_type === 'progress' && l.habit_id === habit.id);
+                        
+                        if (!logsCache.hasOwnProperty(dKey) && checkLimit > 30) {
+                            break;
+                        }
+
+                        const pAmt = prog ? prog.current_amount : 0;
+                        
+                        let success = false;
+                        if (habit.target_amount == 1 && pAmt >= 1) success = true;
+                        if (habit.target_amount == -2 && pAmt >= 1) success = true; // Checked means clean/shiny
+                        
+                        if (success) {
+                            pastStreak++;
+                            checkDate.setDate(checkDate.getDate() - 1);
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    let successToday = false;
+                    let amt = cChecked ? 1 : 0;
+                    if (habit.target_amount == 1 && amt >= 1) successToday = true;
+                    if (habit.target_amount == -2 && amt >= 1) successToday = true;
+                    
+                    return successToday ? pastStreak + 1 : pastStreak;
+                };
+
+                const streakVal = getStreak(isChecked);
 
                 label.appendChild(checkbox);
 
                 const textSpan = document.createElement('div');
-                textSpan.className = 'font-medium transition-transform';
+                textSpan.className = 'font-medium transition-transform flex-1 text-left';
                 textSpan.innerHTML = getHabitName(habit.name);
                 label.appendChild(textSpan);
+
+                const streakSpan = document.createElement('div');
+                streakSpan.className = 'text-xs font-bold opacity-70 tracking-widest ml-4 transition-transform flex items-center gap-1.5';
+                streakSpan.innerHTML = `<span class="opacity-50">🔥</span> <span>${streakVal}</span>`;
+                label.appendChild(streakSpan);
+
+                const checkConfetti = () => {
+                    const allCheckboxes = modalHabits.querySelectorAll('input[type="checkbox"]');
+                    const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
+                    if (allChecked && window.confetti) {
+                        window.confetti({
+                            particleCount: 80,
+                            spread: 70,
+                            origin: { y: 0.8 },
+                            colors: ['#39d353', '#2ea043', '#58a6ff']
+                        });
+                    }
+                };
+
+                checkbox.addEventListener('change', (e) => {
+                    label.className = `group ${baseClass} ${e.target.checked ? selectedClass : unselectedClass}`;
+                    const newStreak = getStreak(e.target.checked);
+                    streakSpan.innerHTML = `<span class="opacity-50">🔥</span> <span>${newStreak}</span>`;
+                    
+                    if (e.target.checked) checkConfetti();
+                });
                 modalHabits.appendChild(label);
             });
         }
@@ -532,7 +658,7 @@
                     metadata: { text: noteText }
                 };
                 if (existingNote && existingNote.id) payload.id = existingNote.id;
-                await client.from(config.tableLogs).upsert(payload, { onConflict: 'passcode_key, habit_id, log_date, event_type' });
+                await client.from(config.tableLogs).upsert(payload);
             } else if (existingNote && existingNote.id) {
                 await client.from(config.tableLogs).delete().eq('id', existingNote.id);
             }
