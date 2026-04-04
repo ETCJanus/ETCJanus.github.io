@@ -21,7 +21,7 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.2s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    <script src="theme.js"></script>
 </head>
 <body class="flex flex-col items-center min-h-screen pt-12 pb-20">
     <nav class="w-full flex justify-center gap-8 py-6 text-xs font-semibold tracking-widest text-gray-500 uppercase absolute top-0">
@@ -53,7 +53,7 @@
                         <label class="text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Habit Type</label>
                         <select id="new-habit-type" class="w-full p-3 text-sm bg-[#21262d] border border-[#30363d] text-white rounded outline-none focus:border-[#58a6ff]">
                             <option value="1">Good Habit (Do this)</option>
-                            <option value="-1">Bad Habit (Avoid this)</option>
+
                             <option value="-2">Shiny Target (Avoid this & Celebrate!)</option>
                         </select>
                     </div>
@@ -73,6 +73,17 @@
 
         <!-- TAB: Display -->
         <div id="tab-display" class="tab-content px-2">
+            <div class="bg-[#161b22] px-5 py-5 rounded-md border border-[#30363d] mb-4">
+                <h2 class="text-xs uppercase tracking-widest text-gray-500 mb-4 font-semibold pb-2 border-b border-[#30363d]">App Theme</h2>
+                <div class="flex flex-col gap-4">
+                    <select id="theme-selector" class="w-full p-3 text-sm bg-[#21262d] border border-[#30363d] text-white rounded outline-none focus:border-[#58a6ff]">
+                        <option value="dark">Dark (Default)</option>
+                        <option value="light">Light</option>
+                        <option value="blue">Midnight Blue</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="bg-[#161b22] px-5 py-5 rounded-md border border-[#30363d]">
                 <h2 class="text-xs uppercase tracking-widest text-gray-500 mb-4 font-semibold pb-2 border-b border-[#30363d]">Grid Date Range</h2>
                 <div class="flex flex-col gap-4">
@@ -92,6 +103,20 @@
 
         <!-- TAB: Profile -->
         <div id="tab-profile" class="tab-content px-2">
+            <div class="bg-[#161b22] px-5 py-5 rounded-md border border-[#30363d] mb-4">
+                <h2 class="text-xs uppercase tracking-widest text-gray-500 mb-3 font-semibold pb-2 text-center w-full">Privacy</h2>
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <p class="text-sm text-white mb-0.5">Stealth Mode</p>
+                        <p class="text-[10px] text-gray-500">Replaces "weed" with "phone usage"</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                      <input type="checkbox" id="stealth-toggle" class="sr-only peer">
+                      <div class="w-9 h-5 bg-[#30363d] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+                    </label>
+                </div>
+            </div>
+
             <div class="bg-[#161b22] px-5 py-8 rounded-md border border-red-900/50 flex flex-col items-center">
                 <h2 class="text-xs uppercase tracking-widest text-gray-500 mb-3 font-semibold pb-2 text-center w-full">Security</h2>
                 <p class="text-sm text-gray-400 text-center mb-6 max-w-[280px]">If you reset your passcode, you will be logged out.</p>
@@ -145,6 +170,26 @@
                     setTimeout(() => settingsFeedback.classList.add('hidden'), 3000);
                 }
             });
+
+            // Theme Logic
+            const themeSelector = document.getElementById('theme-selector');
+            if(themeSelector) {
+                themeSelector.value = localStorage.getItem('habit_theme') || 'dark';
+                themeSelector.addEventListener('change', (e) => {
+                    localStorage.setItem('habit_theme', e.target.value);
+                    window.location.reload();
+                });
+            }
+
+            // Stealth Logic
+            const stealthToggle = document.getElementById('stealth-toggle');
+            if(stealthToggle) {
+                stealthToggle.checked = localStorage.getItem('habit_stealth_mode') === 'true';
+                stealthToggle.addEventListener('change', (e) => {
+                    localStorage.setItem('habit_stealth_mode', e.target.checked);
+                    loadHabits(); // reload names visually
+                });
+            }
 
             // Profile Logic
             document.getElementById('reset-passcode-btn').addEventListener('click', () => {
@@ -207,11 +252,12 @@
 
                         const nameP = document.createElement('p');
                         nameP.className = 'text-white text-sm font-semibold mb-1 tracking-wide';
-                        nameP.textContent = h.name;
+                        const isStealth = localStorage.getItem('habit_stealth_mode') === 'true';
+                        nameP.textContent = isStealth ? h.name.replace(/weed/gi, 'phone usage') : h.name;
 
                         const typebadge = document.createElement('span');
                         let tText = 'Good Habit'; let tColor = 'text-green-400 border-green-400/30 bg-green-400/10';
-                        if (h.target_amount == -1) { tText = 'Avoidance'; tColor = 'text-orange-400 border-orange-400/30 bg-orange-400/10'; }
+
                         if (h.target_amount == -2) { tText = 'Shiny (Avoid)'; tColor = 'text-yellow-400 border-yellow-400/30 bg-yellow-400/10'; }
 
                         typebadge.className = 'text-[9px] uppercase px-2 py-0.5 rounded border ' + tColor;

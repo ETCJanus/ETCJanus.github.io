@@ -16,7 +16,7 @@
         
         .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: center; transition: border-color 0.2s; }
         .stat-card:hover { border-color: #58a6ff; }
-    </style>
+    <script src="theme.js"></script>
 </head>
 <body class="flex flex-col items-center min-h-screen pt-8 pb-16">
     <nav class="w-full flex justify-center gap-8 mb-6 text-xs font-semibold tracking-widest text-gray-500 uppercase">
@@ -126,7 +126,7 @@
                 
                 const amount = Number(l.current_amount);
                 if (hStats[hid].target == 1 && amount >= 1) hStats[hid].wins++;
-                if (hStats[hid].target < 0 && amount >= 1) hStats[hid].wins++;
+                if (hStats[hid].target == -2 && amount >= 1) hStats[hid].wins++;
             });
 
             let best = null, worst = null, shiny = null;
@@ -146,12 +146,15 @@
                 if (s.target == -2 && !shiny) shiny = s; 
             });
 
+            const isStealth = localStorage.getItem('habit_stealth_mode') === 'true';
+            const getName = (name) => isStealth ? name.replace(/weed/gi, 'phone usage') : name;
+
             if (best) {
-                document.getElementById('stat-best-name').textContent = best.name;
+                document.getElementById('stat-best-name').textContent = getName(best.name);
                 document.getElementById('stat-best-val').textContent = Math.round(best.rate * 100) + '% Win Rate';
             }
             if (worst) {
-                document.getElementById('stat-worst-name').textContent = worst.name;
+                document.getElementById('stat-worst-name').textContent = getName(worst.name);
                 document.getElementById('stat-worst-val').textContent = Math.round(worst.rate * 100) + '% Win Rate';
             }
             if (overallTotal > 0) {
@@ -160,7 +163,7 @@
             }
 
             if (shiny) {
-                document.getElementById('stat-shiny-name').textContent = shiny.name;
+                document.getElementById('stat-shiny-name').textContent = getName(shiny.name);
                 let shinyLogs = logs.filter(l => l.habit_id === shiny.id);
                 shinyLogs.sort((a,b) => new Date(b.log_date) - new Date(a.log_date));
                 

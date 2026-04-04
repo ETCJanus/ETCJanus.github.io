@@ -56,6 +56,13 @@
         return y + '-' + m + '-' + d;
     };
 
+    const getHabitName = (name) => {
+        if (localStorage.getItem('habit_stealth_mode') === 'true') {
+            return name.replace(/weed/gi, 'phone usage');
+        }
+        return name;
+    };
+
     const parseMonthString = (str) => {
         const [y, m] = str.split('-');
         return { year: parseInt(y), month: parseInt(m) - 1 };
@@ -258,12 +265,11 @@
                             if (h.target_amount == 1) {
                                 if (amount >= 1) successes++;
                             }
-                            // Bad Habit (target < 0) -> Success if checked
-                            else if (h.target_amount < 0) {
+                            // Shiny target (-2) -> Success if checked     
+                            else if (h.target_amount == -2) {
                                 if (amount >= 1) {
                                     successes++;
-                                    // If Shiny target (-2)
-                                    if (h.target_amount == -2) isShiny = true;
+                                    isShiny = true;  
                                 }
                             }
                         });
@@ -437,15 +443,9 @@
                 if (habit.target_amount == 1) { // GOOD
                     unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-green-500/50 hover:bg-[#21262d] border-l-2 border-l-green-500/30';
                     selectedClass = 'bg-green-500/20 border-green-500 text-green-300 shadow-[0_0_10px_rgba(34,197,94,0.2)] border-l-2 border-l-green-500';
-                } else if (habit.target_amount < 0) { // BAD (Avoid)
-                    const isShiny = habit.target_amount == -2;
-                    if (isShiny) {
-                        unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-yellow-500/50 hover:bg-[#21262d] border-l-2 border-l-yellow-500/30';
-                        selectedClass = 'bg-yellow-500/20 border-yellow-500 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.2)] border-l-2 border-l-yellow-500';
-                    } else {
-                        unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-red-500/50 hover:bg-[#21262d] border-l-2 border-l-red-500/30';
-                        selectedClass = 'bg-red-500/20 border-red-500 text-red-300 shadow-[0_0_10px_rgba(239,68,68,0.2)] border-l-2 border-l-red-500';
-                    }
+                } else if (habit.target_amount == -2) { // SHINY
+                    unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-yellow-500/50 hover:bg-[#21262d] border-l-2 border-l-yellow-500/30';
+                    selectedClass = 'bg-yellow-500/20 border-yellow-500 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.2)] border-l-2 border-l-yellow-500';
                 }
 
                 label.className = `group ${baseClass} ${isChecked ? selectedClass : unselectedClass}`;
@@ -464,9 +464,7 @@
 
                 const textSpan = document.createElement('div');
                 textSpan.className = 'font-medium transition-transform';
-                textSpan.innerHTML = habit.name;
-                label.appendChild(textSpan);
-
+            textSpan.innerHTML = getHabitName(habit.name);
                 modalHabits.appendChild(label);
             });
         }
