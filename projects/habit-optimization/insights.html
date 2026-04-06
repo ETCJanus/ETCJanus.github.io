@@ -30,7 +30,16 @@
             <h1 class="text-2xl tracking-widest text-white uppercase font-light mb-2">My Insights</h1>
             <p class="text-gray-500 text-sm tracking-wide">Last 30 Days</p>
         </div>
-
+          <!-- Weekly Mini-Summary -->
+          <div id="weekly-summary" class="w-full max-w-md mx-auto mb-2 py-3 px-6 bg-[#161b22] border border-[#30363d] rounded-full flex flex-col items-center justify-center opacity-0 transition-opacity duration-500">
+              <p class="text-sm text-[#8b949e] font-semibold tracking-wide text-center m-0">
+                  <span id="weekly-summary-text">Calculating weekly progress...</span>
+                  <span id="weekly-summary-emoji" class="ml-1">⏳</span>
+              </p>
+              <div class="w-full h-1.5 bg-[#0d1117] rounded-full mt-2 overflow-hidden border border-[#30363d]">
+                  <div id="weekly-summary-bar" class="h-full bg-[#238636] w-0 transition-all duration-1000 ease-out"></div>
+              </div>
+          </div>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="stats-grid">
             <div class="stat-card">
                 <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Top Performer</span>
@@ -104,6 +113,79 @@
             return h12 + ':' + m.toString().padStart(2, '0') + ' ' + ampm;
         };
 
+        const formatDate = (date) => {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + d;
+        };
+
+        const renderWeeklySummary = (habitsWait, allLogs) => {
+            const summaryWrapper = document.getElementById('weekly-summary');
+            const textEl = document.getElementById('weekly-summary-text');
+            const barEl = document.getElementById('weekly-summary-bar');
+            const emojiEl = document.getElementById('weekly-summary-emoji');
+            
+            if (!summaryWrapper || !textEl || !barEl) return;
+            
+            if (habitsWait.length === 0) {
+                summaryWrapper.classList.add('opacity-0');
+                textEl.textContent = "No habits tracked.";
+                return;
+            }
+            
+            const today = new Date();
+            const startOfWeek = new Date(today);
+            const day = today.getDay() || 7; // Convert Sun (0) to 7
+            startOfWeek.setDate(today.getDate() - day + 1); // Monday of current week
+            
+            const weekDates = [];
+            for(let i = 0; i < 7; i++) {
+                const d = new Date(startOfWeek);
+                d.setDate(d.getDate() + i);
+                if (d <= today) {
+                    weekDates.push(formatDate(d));
+                }
+            }
+
+            let possible = 0;
+            let completed = 0;
+            
+            weekDates.forEach(dateStr => {
+                const dayLogs = allLogs.filter(l => l.log_date === dateStr && l.event_type === 'progress');
+                habitsWait.forEach(habit => {
+                    possible += 1;
+                    const log = dayLogs.find(l => l.habit_id === habit.id);
+                    if (log && log.current_amount > 0) {
+                        completed += 1;
+                    } else if (habit.target_amount < 0 && (!log || log.current_amount === 0)) {
+                        completed += 1;
+                    }
+                });
+            });
+
+            let pct = 0;
+            let text = "Let's start fresh this week!";
+            if (possible > 0) {
+                pct = Math.round((completed / possible) * 100);
+                text = `You've completed ${pct}% of your habits this week!`;
+            }
+
+            summaryWrapper.classList.remove('opacity-0');
+            textEl.textContent = text;
+            
+            let emoji = "💪";
+            if (pct >= 100) emoji = "🚀";
+            else if (pct < 50) emoji = "🌱";
+            else if (pct < 20) emoji = "😴";
+            emojiEl.textContent = emoji;
+
+            requestAnimationFrame(() => {
+                barEl.style.width = `${pct}%`;
+                barEl.className = `h-full transition-all duration-1000 ease-out ${pct >= 80 ? 'bg-[#39d353]' : pct >= 50 ? 'bg-[#2ea043]' : 'bg-[#e3b341]'}`;
+            });
+        };
+
         const loadData = async () => {
             const today = new Date();
             const startRange = new Date();
@@ -118,8 +200,10 @@
             ]);
 
             if (sleepRes.data || moodRes.data) processData(sleepRes.data || [], moodRes.data || []);
-            if (habitRes.data && logRes.data) processHabitStats(habitRes.data, logRes.data);
-            
+              if (habitRes.data && logRes.data) {
+                  processHabitStats(habitRes.data, logRes.data);
+                  renderWeeklySummary(habitRes.data, logRes.data);
+              }
             runCorrelationEngine(habitRes.data || [], logRes.data || [], sleepRes.data || [], moodRes.data || []);
             
             renderChart();

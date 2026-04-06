@@ -121,7 +121,12 @@
                 </div>
                 
                 <button id="reset-passcode-btn" class="w-full max-w-[200px] border border-red-500 text-red-400 py-2.5 rounded-md hover:bg-red-500/10 transition-colors uppercase tracking-widest text-xs font-bold">Log Out</button>
-            </div>
+
+                  <div class="flex flex-col items-center w-full mt-8">
+                      <h2 class="text-xs uppercase tracking-widest text-gray-500 mb-3 font-semibold pb-2 text-center w-full">Data Management</h2>
+                      <p class="text-sm text-gray-400 text-center mb-6 max-w-[280px]">Download a full backup of your habits and logs.</p>
+                      <button id="export-data-btn" class="w-full max-w-[200px] border border-[#58a6ff] text-[#58a6ff] py-2.5 rounded-md hover:bg-[#58a6ff]/10 transition-colors uppercase tracking-widest text-xs font-bold">Export Backup</button>
+                  </div>
         </div>
         
     </div>
@@ -197,10 +202,41 @@
                 window.location.href = 'index.html';
             });
 
-            // Supabase Init
-            const url = window.HABIT_SUPABASE_URL;
-            const key = window.HABIT_SUPABASE_ANON_KEY;
-            if (!url || !key) return;
+              document.getElementById('export-data-btn').addEventListener('click', async () => {
+                  const url = window.HABIT_SUPABASE_URL;
+                  const key = window.HABIT_SUPABASE_ANON_KEY;
+                  if (!url || !key) return;
+                  const client = window.supabase.createClient(url, key);
+                  
+                  try {
+                      document.getElementById('export-data-btn').textContent = "Downloading...";
+                      const { data: habits, error: hError } = await client.from('habits').select('*').eq('passcode_key', passcode);
+                      if (hError) throw hError;
+                      
+                      const habitIds = habits.map(h => h.id);
+                      const { data: logs, error: lError } = await client.from('habit_logs').select('*').in('habit_id', habitIds);
+                      if (lError) throw lError;
+                      
+                      const backup = {
+                          exportDate: new Date().toISOString(),
+                          habits,
+                          logs
+                      };
+                      
+                      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
+                      const downloadAnchorNode = document.createElement('a');
+                      downloadAnchorNode.setAttribute("href", dataStr);
+                      downloadAnchorNode.setAttribute("download", `habit_tracker_backup_${new Date().toISOString().split('T')[0]}.json`);
+                      document.body.appendChild(downloadAnchorNode);
+                      downloadAnchorNode.click();
+                      downloadAnchorNode.remove();
+                  } catch (e) {
+                      console.error("Export Error:", e);
+                      alert("Failed to export data.");
+                  } finally {
+                      document.getElementById('export-data-btn').textContent = "Export Backup";
+                  }
+              });
 
             const client = window.supabase.createClient(url, key);
             

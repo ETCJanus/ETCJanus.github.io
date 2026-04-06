@@ -1,0 +1,2 @@
+export const state = { client: null, passcode: localStorage.getItem(habit_passcode) || `, habitsCache: [], logsCache: {}, selectedDate: null };
+export const config = { url: window.HABIT_SUPABASE_URL || `, key: window.HABIT_SUPABASE_ANON_KEY || `, tableHabits: habits, tableLogs: habit_logs };
