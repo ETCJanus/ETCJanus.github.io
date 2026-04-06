@@ -12,6 +12,7 @@
     const gridContainer = document.getElementById('grid-container');
     const dayModal = document.getElementById('day-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
+    const closeModalBtnBottom = document.getElementById('close-modal-btn-bottom');
     const modalDate = document.getElementById('modal-date');
     const modalHabits = document.getElementById('modal-habits');
     const modalNote = document.getElementById('modal-note');
@@ -748,10 +749,51 @@
     };
 
     if(closeModalBtn) closeModalBtn.addEventListener('click', handleModalClose);
+    if(closeModalBtnBottom) closeModalBtnBottom.addEventListener('click', handleModalClose);
 
     if(dayModal) dayModal.addEventListener('click', (e) => {
         if (e.target === dayModal) handleModalClose();
     });
+
+    // --- Swipe Navigation --- //
+    const navigateDay = async (offset) => {
+        if (!selectedDate) return;
+        
+        // Auto-save the current day's data before navigating away
+        await autoSaveDayData();
+        
+        // Calculate next date considering timezone variations
+        const current = new Date(selectedDate + 'T12:00:00');
+        current.setDate(current.getDate() + offset);
+        
+        const nextDateStr = formatDate(current);
+        openDayModal(nextDateStr);
+    };
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    if (dayModal) {
+        dayModal.addEventListener('touchstart', e => {
+            // Ignore swipe starts on inputs or textareas so they can be scrolled/interacted normally
+            if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
+            touchStartX = e.changedTouches[0].screenX;
+            touchEndX = e.changedTouches[0].screenX; // reset
+        }, {passive: true});
+
+        dayModal.addEventListener('touchend', e => {
+            // Re-check target input/textarea just in case
+            if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea') return;
+            touchEndX = e.changedTouches[0].screenX;
+            
+            const threshold = 50; 
+            if (touchEndX < touchStartX - threshold) {
+                navigateDay(1); // Swipe left -> Go to Next Day
+            } else if (touchEndX > touchStartX + threshold) {
+                navigateDay(-1); // Swipe right -> Go to Previous Day
+            }
+        }, {passive: true});
+    }
 
     init();
 });
