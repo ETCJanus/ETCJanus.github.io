@@ -254,41 +254,41 @@
             <div class="p-3 sm:p-4 md:p-8 overflow-y-auto flex flex-col gap-3 md:gap-6 flex-grow pb-6 md:pb-12">
 
                 <!-- Quick Metrics Row (Expanded) -->
-                <div id="expanded-metrics-row" class="grid grid-cols-2 gap-2 md:gap-3">
+                <div id="expanded-metrics-row" class="grid grid-cols-2 gap-px bg-[#30363d] border border-[#30363d] rounded-xl overflow-hidden shadow-sm">
                     <!-- SLEEP -->
-                    <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-2.5 md:p-3 flex flex-col justify-center transition-all hover:border-[#58a6ff]">
-                        <h3 class="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1 md:mb-1.5 flex items-center gap-1">
-                            <span>🌙 Sleep Time</span>
-                        </h3>
-                        <div id="sleep-inputs-container" class="flex items-center gap-1">
-                            <input type="time" id="sleep-start" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-1 text-[13px] md:text-xs text-center text-gray-300 focus:border-[#58a6ff] outline-none h-7 md:h-auto">
-                            <span class="text-gray-600 text-[10px]">-</span>
-                            <input type="time" id="sleep-end" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-1 text-[13px] md:text-xs text-center text-gray-300 focus:border-[#58a6ff] outline-none h-7 md:h-auto">
+                    <div class="bg-[#161b22] px-3 md:px-4 py-2 md:py-3 flex items-center justify-between focus-within:bg-[#1f242d] transition-colors relative h-11 md:h-12">
+                        <div class="flex items-center gap-1.5 pointer-events-none">
+                            <span class="text-sm opacity-70">🌙</span>
+                        </div>
+                        <div id="sleep-inputs-container" class="flex items-center justify-end w-full">
+                            <input type="time" id="sleep-start" class="w-[70px] bg-transparent border-none p-0 text-[13px] sm:text-[14px] text-gray-200 focus:ring-0 focus:text-white outline-none font-medium">
+                            <span class="text-gray-600 text-[10px] mx-0.5">-</span>
+                            <input type="time" id="sleep-end" class="w-[70px] bg-transparent border-none p-0 text-[13px] sm:text-[14px] text-gray-200 focus:ring-0 focus:text-white outline-none font-medium">
                         </div>
                     </div>
 
                     <!-- ENERGY -->
-                    <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-2.5 md:p-3 flex flex-col justify-center transition-all hover:border-[#58a6ff]">
-                        <h3 class="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1 md:mb-1.5 flex items-center gap-1">
-                            <span>😊 Mood</span>
-                        </h3>
-                        <div id="mood-inputs-container" class="flex items-center w-full">
-                            <input type="number" id="mood-input" min="1" max="10" placeholder="Scale 1-10" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-1 text-[13px] md:text-xs text-center text-gray-300 focus:border-[#58a6ff] outline-none h-7 md:h-auto">
+                    <div class="bg-[#161b22] px-3 md:px-4 py-2 md:py-3 flex items-center justify-between focus-within:bg-[#1f242d] transition-colors relative h-11 md:h-12">
+                        <div class="flex items-center gap-1.5 pointer-events-none">
+                            <span class="text-sm opacity-70">😊</span>
+                        </div>
+                        <div id="mood-inputs-container" class="flex items-center justify-end w-full">
+                            <input type="number" id="mood-input" min="1" max="10" placeholder="1-10" class="w-16 bg-transparent border-none p-0 text-[13px] sm:text-[14px] text-right text-gray-200 focus:ring-0 focus:text-white outline-none font-medium">
                         </div>
                     </div>
                 </div>
 
                 <!-- JOURNAL NOTE -->
-                <div class="bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden transition-all duration-300" id="note-container">
-                    <button id="note-toggle-btn" class="w-full px-3 py-2 md:px-4 md:py-3 flex items-center justify-between text-left hover:bg-[#21262d] transition-colors">
-                        <div class="flex items-center gap-2 md:gap-3">
-                            <span class="text-gray-500 text-sm md:text-base">📝</span>
-                            <span class="text-[13px] md:text-sm text-gray-300 font-medium" id="note-preview">Add a journal note...</span>
+                <div class="bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden transition-all duration-300 shadow-sm" id="note-container">
+                    <button id="note-toggle-btn" class="w-full px-3 py-2 md:px-4 md:py-3 flex items-center justify-between text-left hover:bg-[#21262d] transition-colors h-12 md:h-14">
+                        <div class="flex items-center gap-2.5 overflow-hidden">
+                            <span class="text-sm opacity-70 flex-shrink-0">📝</span>
+                            <span class="text-[13px] sm:text-[14px] text-gray-300 font-medium truncate" id="note-preview">Add a journal note...</span>
                         </div>
-                        <span class="text-gray-600 text-[10px] md:text-xs transition-transform duration-200" id="note-chevron">▼</span>
+                        <span class="text-gray-600 text-[10px] transition-transform duration-200 flex-shrink-0 ml-2" id="note-chevron">▼</span>
                     </button>
                     <div id="note-editor-wrapper" class="hidden border-t border-[#30363d] bg-[#0d1117]">
-                        <textarea id="modal-note" placeholder="What's on your mind??" class="w-full min-h-[60px] md:min-h-[100px] resize-none text-[16px] md:text-sm p-3 md:p-4 leading-relaxed text-gray-300 bg-transparent border-none focus:outline-none focus:ring-0"></textarea>
+                        <textarea id="modal-note" placeholder="Write down your thoughts..." class="w-full min-h-[60px] md:min-h-[80px] resize-none text-[14px] p-3 leading-relaxed text-gray-200 bg-transparent border-none focus:outline-none focus:ring-0"></textarea>
                     </div>
                 </div>
 

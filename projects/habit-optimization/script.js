@@ -260,6 +260,7 @@
 
                     let score = 0;
                     let isShiny = false;
+                    let isPerfect = false;
                     const dayHasLogs = progressLogs.length > 0 || sleepLog || noteLog || moodLog;
 
                     if (activeHabits.length > 0) {
@@ -283,7 +284,7 @@
                         });
                         
                         if (successes === activeHabits.length && activeHabits.length > 0) {
-                            isShiny = true;
+                            isPerfect = true;
                         }
                         
                         const percentage = successes / activeHabits.length;
@@ -297,6 +298,7 @@
 
                     let classes = 'day-cell active level-' + score;
                     if (isShiny) classes += ' shiny-day';
+                    if (isPerfect) classes += ' perfect-day';
                     cell.className = classes;
                     
                     // Setup Glanceable Grid Tooltip
@@ -503,16 +505,16 @@
 
                 const label = document.createElement('label');
 
-                let baseClass = 'relative flex items-center justify-between px-4 py-2.5 rounded-lg cursor-pointer transition-all border border-solid text-center min-h-[44px] select-none text-sm tracking-wide leading-tight group-active:scale-[0.98]';
+                let baseClass = 'relative flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border text-center min-h-[34px] sm:min-h-[40px] select-none text-[12px] sm:text-[13px] font-medium tracking-wide leading-tight group-active:scale-[0.98] transition-all shadow-sm';
                 let unselectedClass = '';
                 let selectedClass = '';
 
                 if (habit.target_amount == 1) { // GOOD
                     unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-green-500/50 hover:bg-[#21262d] border-l-2 border-l-green-500/30';
-                    selectedClass = 'bg-green-500/20 border-green-500 text-green-300 shadow-[0_0_10px_rgba(34,197,94,0.2)] border-l-2 border-l-green-500';
+                    selectedClass = 'bg-green-500/20 border-green-500 text-green-400 shadow-[0_0_8px_rgba(34,197,94,0.15)] border-l-2 border-l-green-500';
                 } else if (habit.target_amount == -2) { // SHINY
                     unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-yellow-500/50 hover:bg-[#21262d] border-l-2 border-l-yellow-500/30';
-                    selectedClass = 'bg-yellow-500/20 border-yellow-500 text-yellow-300 shadow-[0_0_10px_rgba(234,179,8,0.2)] border-l-2 border-l-yellow-500';
+                    selectedClass = 'bg-yellow-500/20 border-yellow-500 text-yellow-400 shadow-[0_0_8px_rgba(234,179,8,0.15)] border-l-2 border-l-yellow-500';
                 }
 
                 label.className = `group ${baseClass} ${isChecked ? selectedClass : unselectedClass}`;
