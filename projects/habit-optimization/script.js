@@ -19,11 +19,12 @@
     const sleepInputsContainer = document.getElementById('sleep-inputs-container');
     const sleepStartInput = document.getElementById('sleep-start');
     const sleepEndInput = document.getElementById('sleep-end');
-    const minSleepBtn = document.getElementById('min-sleep-btn');
+    const minMetricsBtn = document.getElementById('min-metrics-btn');
+    const minSleepWrap = document.getElementById('min-sleep-wrap');
     const minSleepDisplay = document.getElementById('min-sleep-display');
     const moodInputsContainer = document.getElementById('mood-inputs-container');
     const moodInput = document.getElementById('mood-input');
-    const minMoodBtn = document.getElementById('min-mood-btn');
+    const minMoodWrap = document.getElementById('min-mood-wrap');
     const minMoodDisplay = document.getElementById('min-mood-display');
     const expandedMetricsRow = document.getElementById('expanded-metrics-row');
     const compactMetrics = document.getElementById('compact-metrics');
@@ -483,12 +484,28 @@
 
         if (hasSleep || hasMood) {
             expandedMetricsRow.classList.add('hidden');
-            compactMetrics.classList.remove('hidden');
-            minSleepBtn.classList.toggle('hidden', !hasSleep);
-            minMoodBtn.classList.toggle('hidden', !hasMood);
+            if (minMetricsBtn) {
+                minMetricsBtn.classList.remove('hidden');
+                minMetricsBtn.classList.add('flex');
+            }
+            if (minSleepWrap) {
+                minSleepWrap.classList.toggle('hidden', !hasSleep);
+                minSleepWrap.classList.toggle('flex', hasSleep);
+            }
+            if (minMoodWrap) {
+                minMoodWrap.classList.toggle('hidden', !hasMood);
+                minMoodWrap.classList.toggle('flex', hasMood);
+            }
+            const metricsDivider = document.getElementById('metrics-divider');
+            if (metricsDivider) {
+                metricsDivider.classList.toggle('hidden', !(hasSleep && hasMood));
+            }
         } else {
             expandedMetricsRow.classList.remove('hidden');
-            compactMetrics.classList.add('hidden');
+            if (minMetricsBtn) {
+                minMetricsBtn.classList.add('hidden');
+                minMetricsBtn.classList.remove('flex');
+            }
         }
 
         modalHabits.innerHTML = '';
@@ -505,16 +522,16 @@
 
                 const label = document.createElement('label');
 
-                let baseClass = 'relative flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border text-center min-h-[34px] sm:min-h-[40px] select-none text-[12px] sm:text-[13px] font-medium tracking-wide leading-tight group-active:scale-[0.98] transition-all shadow-sm';
+                let baseClass = 'relative flex flex-col items-center justify-center gap-1.5 p-2.5 sm:p-3 rounded-lg border text-center min-h-[64px] sm:min-h-[72px] select-none text-[11px] sm:text-[12px] font-medium tracking-wide leading-tight group-active:scale-[0.96] transition-all shadow-sm w-full';
                 let unselectedClass = '';
                 let selectedClass = '';
 
                 if (habit.target_amount == 1) { // GOOD
-                    unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-green-500/50 hover:bg-[#21262d] border-l-2 border-l-green-500/30';
-                    selectedClass = 'bg-green-500/20 border-green-500 text-green-400 shadow-[0_0_8px_rgba(34,197,94,0.15)] border-l-2 border-l-green-500';
+                    unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-green-500/50 hover:bg-[#21262d] border-b-2 border-b-green-500/30';
+                    selectedClass = 'bg-green-500/20 border-green-500 text-green-400 shadow-[0_0_8px_rgba(34,197,94,0.15)] border-b-2 border-b-green-500';
                 } else if (habit.target_amount == -2) { // SHINY
-                    unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-yellow-500/50 hover:bg-[#21262d] border-l-2 border-l-yellow-500/30';
-                    selectedClass = 'bg-yellow-500/20 border-yellow-500 text-yellow-400 shadow-[0_0_8px_rgba(234,179,8,0.15)] border-l-2 border-l-yellow-500';
+                    unselectedClass = 'bg-[#161b22] border-[#30363d] text-gray-400 hover:border-yellow-500/50 hover:bg-[#21262d] border-b-2 border-b-yellow-500/30';
+                    selectedClass = 'bg-yellow-500/20 border-yellow-500 text-yellow-400 shadow-[0_0_8px_rgba(234,179,8,0.15)] border-b-2 border-b-yellow-500';
                 }
 
                 label.className = `group ${baseClass} ${isChecked ? selectedClass : unselectedClass}`;
@@ -568,13 +585,13 @@
                 label.appendChild(checkbox);
 
                 const textSpan = document.createElement('div');
-                textSpan.className = 'font-medium transition-transform flex-1 text-left';
+                textSpan.className = 'font-semibold transition-transform w-[90%] break-words line-clamp-2 leading-tight';
                 textSpan.innerHTML = getHabitName(habit.name);
                 label.appendChild(textSpan);
 
                 const streakSpan = document.createElement('div');
-                streakSpan.className = 'text-xs font-bold opacity-70 tracking-widest ml-4 transition-transform flex items-center gap-1.5';
-                streakSpan.innerHTML = `<span class="opacity-50">🔥</span> <span>${streakVal}</span>`;
+                streakSpan.className = 'text-[10px] font-bold opacity-80 tracking-widest flex items-center justify-center gap-1 transition-transform';
+                streakSpan.innerHTML = `<span class="opacity-50 text-[10px] pb-[1px]">🔥</span> <span>${streakVal}</span>`;
                 label.appendChild(streakSpan);
 
                 const checkConfetti = () => {
@@ -604,16 +621,11 @@
         dayModal.classList.remove('hidden');
     };
 
-    if(minSleepBtn) minSleepBtn.addEventListener('click', () => {
-        compactMetrics.classList.add('hidden');
+    if(minMetricsBtn) minMetricsBtn.addEventListener('click', () => {
+        minMetricsBtn.classList.add('hidden');
+        minMetricsBtn.classList.remove('flex');
         expandedMetricsRow.classList.remove('hidden');
         sleepStartInput.focus();
-    });
-
-    if(minMoodBtn) minMoodBtn.addEventListener('click', () => {
-        compactMetrics.classList.add('hidden');
-        expandedMetricsRow.classList.remove('hidden');
-        moodInput.focus();
     });
 
     const noteToggleBtn = document.getElementById('note-toggle-btn');

@@ -237,14 +237,15 @@
                     </div>
                     
                     <!-- Minified Sleep/Mood Stats Container (Top Header) -->
-                    <div id="compact-metrics" class="hidden flex items-center justify-center gap-2 md:gap-4 border-l border-[#30363d] pl-3 ml-1 md:pl-6 md:ml-2">
-                        <button id="min-sleep-btn" title="Sleep" class="flex items-center gap-1.5 md:gap-2 text-[11px] md:text-sm font-medium text-gray-300 hover:text-white transition-colors bg-[#161b22] px-2 py-1 md:px-3 md:py-1.5 rounded-full border border-[#30363d] hover:border-[#58a6ff]">
-                            <span>🌙</span><span id="min-sleep-display"></span>
-                        </button>
-                        <button id="min-mood-btn" title="Mood" class="flex items-center gap-1.5 md:gap-2 text-[11px] md:text-sm font-medium text-gray-300 hover:text-white transition-colors bg-[#161b22] px-2 py-1 md:px-3 md:py-1.5 rounded-full border border-[#30363d] hover:border-[#58a6ff]">
-                            <span>😊</span><span id="min-mood-display"></span>
-                        </button>
-                    </div>
+                    <button id="min-metrics-btn" title="Edit Metrics" class="hidden flex items-center justify-center gap-2.5 px-3 md:px-4 py-1.5 md:py-2 ml-2 md:ml-4 bg-[#161b22] border border-[#30363d] rounded-full hover:border-[#58a6ff] hover:bg-[#1f242d] transition-all shadow-sm group">
+                        <div id="min-sleep-wrap" class="hidden flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors">
+                            <span class="opacity-80">🌙</span><span id="min-sleep-display"></span>
+                        </div>
+                        <div id="metrics-divider" class="hidden w-[1.5px] h-3 bg-[#30363d] group-hover:bg-[#4b5563] transition-colors rounded-full rounded-full"></div>
+                        <div id="min-mood-wrap" class="hidden flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors">
+                            <span class="opacity-80">😊</span><span id="min-mood-display"></span>
+                        </div>
+                    </button>
                 </div>
                 
 <button id="close-modal-btn" class="text-gray-400 hover:text-white transition-colors w-10 h-10 md:w-8 md:h-8 hidden md:flex items-center justify-center rounded-full hover:bg-[#21262d] bg-[#161b22] md:bg-transparent border border-[#30363d] md:border-transparent shadow-lg md:shadow-none text-2xl md:text-base leading-none pb-1 md:pb-0 z-50">&times;</button>
@@ -295,7 +296,7 @@
                 <!-- HABITS -->
                 <div>
                     <h3 class="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-2 md:mb-3 px-1">Habits & Goals</h3>
-                    <div id="modal-habits" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 mb-0 md:mb-4">
+                    <div id="modal-habits" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 md:gap-3 mb-0 md:mb-4">
                         <!-- Habit chunks injected here -->
                     </div>
                 </div>
