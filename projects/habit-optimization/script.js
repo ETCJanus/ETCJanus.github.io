@@ -256,7 +256,7 @@
                     const sleepLog = dayLogs.find(l => l.event_type === 'sleep' && !l.habit_id);
                     const moodLog = dayLogs.find(l => l.event_type === 'mood' && !l.habit_id);
 
-                    let activeHabits = [...habitsCache];
+                    let activeHabits = habitsCache.filter(h => h.created_at && h.created_at.substring(0, 10) <= dateKey);
 
                     let score = 0;
                     let isShiny = false;
@@ -277,11 +277,11 @@
                             else if (h.target_amount == -2) {
                                 if (amount >= 1) {
                                     successes++;
-                                    isShiny = true;  
                                 }
                             }
                         });
                         
+                        isShiny = (successes === activeHabits.length && activeHabits.length > 0);
                         const percentage = successes / activeHabits.length;
                         if (percentage > 0) score = 1;
                         if (percentage > 0.3) score = 2;
@@ -487,8 +487,7 @@
 
         modalHabits.innerHTML = '';
         
-        // Allow backfilling any active habit regardless of creation date
-        let activeHabits = [...habitsCache];
+        let activeHabits = habitsCache.filter(h => h.created_at && h.created_at.substring(0, 10) <= dateKey);
 
         if (activeHabits.length === 0) {
             modalHabits.innerHTML = '<p class="text-sm text-gray-600 italic">No active habits for this date.</p>'; 
