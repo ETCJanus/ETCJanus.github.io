@@ -181,7 +181,7 @@
                 return el;
             };
 
-                        const maxPendingVisible = 5;
+                        const maxPendingVisible = 3;
             const visiblePending = pendingExpanded ? pendingTasks : pendingTasks.slice(0, maxPendingVisible);
             
             visiblePending.forEach(t => container.appendChild(createCard(t)));
