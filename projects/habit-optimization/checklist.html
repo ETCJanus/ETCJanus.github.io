@@ -96,31 +96,37 @@
             }
         };
 
+        let completedExpanded = false;
+
         const renderTasks = () => {
             const container = document.getElementById('tasks-container');
             container.innerHTML = '';
             
-            // Sort: pending first, then completed. By target date or creation.
-            const sorted = [...tasks].sort((a,b) => {
-                if(a.completed !== b.completed) return a.completed ? 1 : -1;
+            const pendingTasks = tasks.filter(t => !t.completed).sort((a,b) => {
                 return new Date(b.created_at) - new Date(a.created_at);
             });
 
-            if(sorted.length === 0) {
+            const completedTasks = tasks.filter(t => t.completed).sort((a,b) => {
+                const dateA = a.completed_date ? new Date(a.completed_date) : new Date(a.created_at);
+                const dateB = b.completed_date ? new Date(b.completed_date) : new Date(b.created_at);
+                return dateB - dateA;
+            });
+
+            if(tasks.length === 0) {
                 container.innerHTML = '<p class="text-center text-gray-500 text-sm italic">Clean slate.</p>';
                 return;
             }
 
-            sorted.forEach(t => {
+            const createCard = (t) => {
                 const el = document.createElement('div');
-                el.className = 'task-card group ' + (t.completed ? 'opacity-50' : '');
+                el.className = 'flex items-center justify-between p-3 bg-[#161b22] border border-[#30363d] rounded-xl cursor-pointer hover:border-gray-500 transition-colors group ' + (t.completed ? 'opacity-50 hover:opacity-80' : '');
                 
                 const left = document.createElement('div');
-                left.className = 'flex items-center gap-3 w-content overflow-hidden';
+                left.className = 'flex items-center gap-3 overflow-hidden';
                 
                 const btn = document.createElement('button');
                 btn.className = 'w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ' + 
-                    (t.completed ? 'bg-green-500 border-green-500 text-black' : 'bg-[#0d1117] border-[#30363d] hover:border-gray-400');
+                    (t.completed ? 'bg-green-500 border-green-500 text-black' : 'bg-[#0d1117] border-[#30363d] group-hover:border-gray-400');
                 btn.innerHTML = t.completed ? '✓' : '';
                 
                 const text = document.createElement('span');
@@ -131,7 +137,7 @@
                 left.appendChild(text);
 
                 const right = document.createElement('div');
-                right.className = 'flex items-center gap-3 text-xs';
+                right.className = 'flex items-center justify-end gap-3 text-xs flex-shrink-0';
                 
                 if (t.target_date) {
                     const dSpan = document.createElement('span');
@@ -141,7 +147,7 @@
                 }
 
                 const delBtn = document.createElement('button');
-                delBtn.className = 'text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity font-bold px-1';
+                delBtn.className = 'text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity font-bold px-1 ml-1 text-base';
                 delBtn.textContent = '✕';
                 
                 delBtn.addEventListener('click', async (e) => {
@@ -160,31 +166,55 @@
                 
                 el.addEventListener('click', async () => {
                     t.completed = !t.completed;
-                    t.completed_date = t.completed ? new Date().toISOString().split('T')[0] : null;
+                    t.completed_date = t.completed ? new Date().toISOString() : null;
+                    playSound(t.completed ? 'tick' : 'untick');
                     
-                    if (t.completed) {
-                        playSound('tick');
-                        el.classList.add('opacity-50');
-                        text.classList.add('line-through', 'text-gray-500');
-                        btn.innerHTML = '✓';
-                        btn.className = 'w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border transition-colors bg-green-500 border-green-500 text-black';
-                    } else {
-                        playSound('untick');
-                        el.classList.remove('opacity-50');
-                        text.classList.remove('line-through', 'text-gray-500');
-                        btn.innerHTML = '';
-                        btn.className = 'w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border transition-colors bg-[#0d1117] border-[#30363d] hover:border-gray-400';
-                    }
-
-                    setTimeout(() => renderTasks(), 400);
+                    // Delay slightly for sound, then re-render completely to move to correct section
+                    setTimeout(() => renderTasks(), 250);
                     
                     await client.from('tasks').update({ completed: t.completed, completed_date: t.completed_date }).eq('id', t.id);
                 });
 
                 el.appendChild(left);
                 el.appendChild(right);
-                container.appendChild(el);
-            });
+                return el;
+            };
+
+            pendingTasks.forEach(t => container.appendChild(createCard(t)));
+
+            if (completedTasks.length > 0) {
+                const completeBlock = document.createElement('div');
+                completeBlock.className = 'mt-3 border border-[#30363d] rounded-xl overflow-hidden';
+                
+                const header = document.createElement('button');
+                header.className = 'w-full flex items-center justify-between p-3 bg-[#161b22] hover:bg-[#21262d] transition-colors text-sm text-gray-500';
+                
+                const headerText = document.createElement('span');
+                headerText.className = 'font-medium tracking-wide uppercase text-[10px] ml-1';
+                headerText.textContent = `Completed (${completedTasks.length})`;
+                
+                const chevron = document.createElement('span');
+                chevron.className = 'transform transition-transform text-[10px] duration-200 ' + (completedExpanded ? 'rotate-180' : 'rotate-0');
+                chevron.innerHTML = '▼';
+                
+                header.appendChild(headerText);
+                header.appendChild(chevron);
+                completeBlock.appendChild(header);
+                
+                const list = document.createElement('div');
+                list.className = 'flex-col gap-2 p-2 bg-[#0d1117] ' + (completedExpanded ? 'flex' : 'hidden');
+                
+                completedTasks.forEach(t => list.appendChild(createCard(t)));
+                
+                header.addEventListener('click', () => {
+                    completedExpanded = !completedExpanded;
+                    list.className = 'flex-col gap-2 p-2 bg-[#0d1117] ' + (completedExpanded ? 'flex' : 'hidden');
+                    chevron.className = 'transform transition-transform text-[10px] duration-200 ' + (completedExpanded ? 'rotate-180' : 'rotate-0');
+                });
+                
+                completeBlock.appendChild(list);
+                container.appendChild(completeBlock);
+            }
         };
 
         const addTask = async () => {
