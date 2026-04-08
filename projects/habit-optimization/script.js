@@ -222,7 +222,7 @@ function appInit() {
     let observer = null;
 
     const renderGrid = (append = false) => {
-        let batchSize = append ? 2 : 3;
+        let batchSize = append ? 2 : 1;
 
         // If not appending, reset the grid and state
         if (!append) {
@@ -231,7 +231,7 @@ function appInit() {
                 observer.disconnect();
                 observer = null;
             }
-            batchSize = Math.max(3, currentRenderedMonths); // Re-render what we already had
+            batchSize = Math.max(1, currentRenderedMonths); // Re-render what we already had
             currentRenderedMonths = 0;
         }
         
@@ -486,20 +486,23 @@ function appInit() {
 
             monthWrapper.appendChild(grid);
             gridContainer.appendChild(monthWrapper);
-            
-            // Intersection Observer on the last month of the batch
-            if (index === monthsToRender.length - 1) {
-                if (!observer) {
-                    observer = new IntersectionObserver((entries) => {
-                        if (entries[0].isIntersecting) {
-                            observer.unobserve(monthWrapper);
-                            renderGrid(true); // Append next batch
-                        }
-                    }, { rootMargin: '200px' });
-                }
-                observer.observe(monthWrapper);
-            }
+
         });
+
+        // Ensure button is appended after the grid loops
+        const existingBtn = document.getElementById('load-more-months-btn');
+        if (existingBtn) existingBtn.remove();
+        
+        const loadMoreBtn = document.createElement('button');
+        loadMoreBtn.id = 'load-more-months-btn';
+        loadMoreBtn.className = 'w-full py-4 mt-4 border border-[#30363d] bg-transparent rounded-xl text-gray-500 font-semibold tracking-widest uppercase text-xs hover:bg-[#161b22] hover:text-white hover:border-gray-500 transition-all';
+        loadMoreBtn.textContent = 'Load More Months';
+        loadMoreBtn.addEventListener('click', () => {
+            loadMoreBtn.textContent = 'Loading...';
+            loadMoreBtn.style.opacity = '0.5';
+            setTimeout(() => renderGrid(true), 50);
+        });
+        gridContainer.appendChild(loadMoreBtn);
     };
 
     /* --- Mood Selection Logic --- */
