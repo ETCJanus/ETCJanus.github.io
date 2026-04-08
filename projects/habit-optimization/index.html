@@ -69,19 +69,19 @@
                     </div>
                     
                     <!-- Minified Sleep/Mood Stats Container (Top Header) -->
-                    <button id="open-memory-log-btn" title="Add Details" class="hidden flex items-center justify-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 ml-2 md:ml-4 bg-[#161b22] border border-[#30363d] rounded-full hover:border-[#58a6ff] hover:bg-[#1f242d] transition-all shadow-sm text-[11px] md:text-[12px] font-medium text-gray-300">
+                    <button id="open-memory-log-btn" title="Add Details" class="hidden items-center justify-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 ml-2 md:ml-4 bg-[#161b22] border border-[#30363d] rounded-full hover:border-[#58a6ff] hover:bg-[#1f242d] transition-all shadow-sm text-[11px] md:text-[12px] font-medium text-gray-300">
                         📝 <span class="hidden sm:inline">Add Details</span>
                     </button>
-                    <button id="min-metrics-btn" title="Edit Metrics" class="hidden flex items-center justify-center gap-2.5 px-3 md:px-4 py-1.5 md:py-2 ml-2 md:ml-4 bg-[#161b22] border border-[#30363d] rounded-full hover:border-[#58a6ff] hover:bg-[#1f242d] transition-all shadow-sm group">
-                        <div id="min-sleep-wrap" class="hidden flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors">
+                    <button id="min-metrics-btn" title="Edit Metrics" class="hidden items-center justify-center gap-2.5 px-3 md:px-4 py-1.5 md:py-2 ml-2 md:ml-4 bg-[#161b22] border border-[#30363d] rounded-full hover:border-[#58a6ff] hover:bg-[#1f242d] transition-all shadow-sm group">
+                        <div id="min-sleep-wrap" class="hidden items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors">
                             <span class="opacity-80">🌙</span><span id="min-sleep-display"></span>
                         </div>
                         <div id="metrics-divider-1" class="hidden w-[1.5px] h-3 bg-[#30363d] group-hover:bg-[#4b5563] transition-colors rounded-full"></div>
-                        <div id="min-mood-wrap" class="hidden flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors">
+                        <div id="min-mood-wrap" class="hidden items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors">
                             <span class="opacity-80">😊</span><span id="min-mood-display"></span>
                         </div>
                         <div id="metrics-divider-2" class="hidden w-[1.5px] h-3 bg-[#30363d] group-hover:bg-[#4b5563] transition-colors rounded-full"></div>
-                        <div id="min-note-wrap" class="hidden flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors">
+                        <div id="min-note-wrap" class="hidden items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors">
                             <span class="opacity-80">📝</span>
                         </div>
                     </button>
@@ -107,13 +107,13 @@
                         <a href="checklist.html" class="group text-[10px] md:text-[11px] text-gray-400 hover:text-white uppercase tracking-widest font-semibold transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-0 whitespace-nowrap">
                             📋 Checklist <span class="text-[9px] opacity-0 group-hover:opacity-100 transition-opacity">?</span>
                         </a>
-                        <button id="add-task-quick-btn" class="w-6 h-6 flex items-center justify-center rounded-full bg-[#161b22] border border-[#30363d] text-gray-400 hover:text-white hover:border-[#58a6ff] hover:bg-[#1f242d] transition-all font-bold group" title="Add specific task for this day">
-                            +
+                        <button id="add-task-quick-btn" class="w-6 h-6 flex items-center justify-center rounded-full bg-[#161b22] border border-[#30363d] text-gray-400 hover:text-white hover:border-[#58a6ff] hover:bg-[#1f242d] transition-all group" title="Add specific task for this day">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         </button>
                     </div>
 
                     <!-- Quick Add Form (Hidden by default) -->
-                    <div id="quick-task-form" class="hidden flex items-center gap-2 mb-3 bg-[#161b22] p-1.5 rounded-lg border border-[#30363d]">
+                    <div id="quick-task-form" class="hidden items-center gap-2 mb-3 bg-[#161b22] p-1.5 rounded-lg border border-[#30363d]">
                          <input type="text" id="quick-task-input" placeholder="New specific task for this date..." class="flex-grow bg-transparent border-none text-[13px] text-gray-200 px-2 py-1 focus:ring-0 focus:text-white outline-none">
                          <button id="save-quick-task-btn" class="bg-[#238636] hover:bg-[#2ea043] text-white text-[10px] uppercase font-bold tracking-wider px-3 py-1.5 rounded transition-colors hidden opacity-0">Add</button>
                     </div>

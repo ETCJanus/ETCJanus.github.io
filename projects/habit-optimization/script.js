@@ -825,6 +825,7 @@ function appInit() {
 
     if (addTaskQuickBtn) addTaskQuickBtn.addEventListener('click', () => {
         quickTaskForm.classList.toggle('hidden');
+        quickTaskForm.classList.toggle('flex');
         if (!quickTaskForm.classList.contains('hidden')) {
             quickTaskInput.focus();
         }
@@ -842,6 +843,7 @@ function appInit() {
         const text = quickTaskInput.value.trim();
         if (!text) return;
         quickTaskForm.classList.add('hidden');
+        quickTaskForm.classList.remove('flex');
         quickTaskInput.value = '';
         saveQuickTaskBtn.classList.add('hidden', 'opacity-0');
 
