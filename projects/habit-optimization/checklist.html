@@ -97,6 +97,7 @@
         };
 
         let completedExpanded = false;
+        let pendingExpanded = false;
 
         const renderTasks = () => {
             const container = document.getElementById('tasks-container');
@@ -127,7 +128,7 @@
                 const btn = document.createElement('button');
                 btn.className = 'w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ' + 
                     (t.completed ? 'bg-green-500 border-green-500 text-black' : 'bg-[#0d1117] border-[#30363d] group-hover:border-gray-400');
-                btn.innerHTML = t.completed ? '?' : '';
+                btn.innerHTML = t.completed ? '✓' : '';
                 
                 const text = document.createElement('span');
                 text.className = 'text-sm text-gray-300 truncate ' + (t.completed ? 'line-through text-gray-500' : '');
@@ -148,7 +149,7 @@
 
                 const delBtn = document.createElement('button');
                 delBtn.className = 'text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity font-bold px-1 ml-1 text-base';
-                delBtn.textContent = '?';
+                delBtn.textContent = '❌';
                 
                 delBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
@@ -180,7 +181,21 @@
                 return el;
             };
 
-            pendingTasks.forEach(t => container.appendChild(createCard(t)));
+                        const maxPendingVisible = 5;
+            const visiblePending = pendingExpanded ? pendingTasks : pendingTasks.slice(0, maxPendingVisible);
+            
+            visiblePending.forEach(t => container.appendChild(createCard(t)));
+            
+            if (pendingTasks.length > maxPendingVisible) {
+                const togglePendingBtn = document.createElement('button');
+                togglePendingBtn.className = 'w-full py-2 mt-1 text-xs text-gray-500 hover:text-white transition-colors bg-[#161b22] border border-[#30363d] rounded-xl font-medium tracking-wide flex justify-center items-center gap-1.5';
+                togglePendingBtn.innerHTML = pendingExpanded ? '<span class="text-[10px]">▲</span> Show Less' : `<span class="text-[10px]">▼</span> Show ${pendingTasks.length - maxPendingVisible} More`;
+                togglePendingBtn.addEventListener('click', () => {
+                    pendingExpanded = !pendingExpanded;
+                    renderTasks();
+                });
+                container.appendChild(togglePendingBtn);
+            }
 
             if (completedTasks.length > 0) {
                 const completeBlock = document.createElement('div');
@@ -195,7 +210,7 @@
                 
                 const chevron = document.createElement('span');
                 chevron.className = 'transform transition-transform text-[10px] duration-200 ' + (completedExpanded ? 'rotate-180' : 'rotate-0');
-                chevron.innerHTML = '?';
+                chevron.innerHTML = '▼';
                 
                 header.appendChild(headerText);
                 header.appendChild(chevron);
