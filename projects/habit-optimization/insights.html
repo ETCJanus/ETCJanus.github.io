@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,6 +9,15 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="supabase-config.js"></script>
     <link rel="stylesheet" href="global-styles.css">
+    <style>
+        /* Specific overrides for insights buttons and cards lost during global extraction */
+        .view-btn { padding: 8px 16px; background: #21262d; border: 1px solid #30363d; border-radius: 999px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; color: #8b949e; cursor: pointer; transition: all 0.2s; }
+        .view-btn.active { color: #58a6ff; border-color: #58a6ff; box-shadow: 0 0 8px rgba(88,166,255,0.2); }
+        .view-btn:hover:not(.active) { color: #c9d1d9; border-color: #8b949e; }
+        
+        .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: center; transition: border-color 0.2s; }
+        .stat-card:hover { border-color: #58a6ff; }
+    </style>
     <script src="theme.js"></script>
 </head>
 <body class="flex flex-col items-center min-h-screen pt-8 pb-16">
@@ -26,7 +35,7 @@
           <div id="weekly-summary" class="w-full max-w-md mx-auto mb-2 py-3 px-6 bg-[#161b22] border border-[#30363d] rounded-full flex flex-col items-center justify-center opacity-0 transition-opacity duration-500">
               <p class="text-sm text-[#8b949e] font-semibold tracking-wide text-center m-0">
                   <span id="weekly-summary-text">Calculating weekly progress...</span>
-                  <span id="weekly-summary-emoji" class="ml-1">⏳</span>
+                  <span id="weekly-summary-emoji" class="ml-1">â³</span>
               </p>
               <div class="w-full h-1.5 bg-[#0d1117] rounded-full mt-2 overflow-hidden border border-[#30363d]">
                   <div id="weekly-summary-bar" class="h-full bg-[#238636] w-0 transition-all duration-1000 ease-out"></div>
@@ -44,7 +53,7 @@
                 <span class="text-[#f78166] text-xs mt-1 font-semibold" id="stat-worst-val">--</span>
             </div>
             <div class="stat-card">
-                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1" id="stat-shiny-title">Shiny Streak ✨</span>
+                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1" id="stat-shiny-title">Shiny Streak âœ¨</span>
                 <span class="text-white text-base font-light tracking-wide truncate" id="stat-shiny-name">--</span>
                 <span class="text-[#bc6bff] text-xs mt-1 font-semibold" id="stat-shiny-val">--</span>
             </div>
@@ -166,10 +175,10 @@
             summaryWrapper.classList.remove('opacity-0');
             textEl.textContent = text;
             
-            let emoji = "💪";
-            if (pct >= 100) emoji = "🚀";
-            else if (pct < 50) emoji = "🌱";
-            else if (pct < 20) emoji = "😴";
+            let emoji = "ðŸ’ª";
+            if (pct >= 100) emoji = "ðŸš€";
+            else if (pct < 50) emoji = "ðŸŒ±";
+            else if (pct < 20) emoji = "ðŸ˜´";
             emojiEl.textContent = emoji;
 
             requestAnimationFrame(() => {
@@ -248,7 +257,7 @@
                     const goodAvg = goodSleepWinsSum / goodSleepDays;
                     const badAvg = badSleepWinsSum / badSleepDays;
                     if (goodAvg > badAvg + 0.1) {
-                        discoveries.push(`🌟 You are <strong class="text-[#39d353]">${Math.round((goodAvg - badAvg) * 100)}% more likely</strong> to complete your habits on days you sleep over 7 hours.`);
+                        discoveries.push(`ðŸŒŸ You are <strong class="text-[#39d353]">${Math.round((goodAvg - badAvg) * 100)}% more likely</strong> to complete your habits on days you sleep over 7 hours.`);
                     }
                 }
             }
@@ -271,9 +280,9 @@
                     const shinyAvg = shinyMoodSum / shinyDays;
                     const brokenAvg = brokenMoodSum / brokenDays;
                     if (shinyAvg > brokenAvg + 0.5) {
-                        discoveries.push(`🔥 Your average mood is <strong class="text-[#bc6bff]">${(shinyAvg - brokenAvg).toFixed(1)} points higher</strong> when your Shiny streak is uncompromised.`);
+                        discoveries.push(`ðŸ”¥ Your average mood is <strong class="text-[#bc6bff]">${(shinyAvg - brokenAvg).toFixed(1)} points higher</strong> when your Shiny streak is uncompromised.`);
                     } else if (brokenAvg > shinyAvg + 0.5) {
-                        discoveries.push(`⚖️ Interestingly, your mood averages <strong class="text-yellow-400">${(brokenAvg - shinyAvg).toFixed(1)} points higher</strong> on days you break your Shiny streak.`);
+                        discoveries.push(`âš–ï¸ Interestingly, your mood averages <strong class="text-yellow-400">${(brokenAvg - shinyAvg).toFixed(1)} points higher</strong> on days you break your Shiny streak.`);
                     }
                 }
             }
@@ -541,3 +550,4 @@
     </script>
 </body>
 </html>
+
