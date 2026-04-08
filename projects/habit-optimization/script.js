@@ -1,15 +1,10 @@
 function appInit() {
 
     /* --- DOM Elements --- */
-    const authView = document.getElementById('auth-view');
-    const appView = document.getElementById('app-view');
-    const passcodeInput = document.getElementById('passcode-input');
-    const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
     const logoutBtnNav = document.getElementById('logout-btn-nav');
-    const loginError = document.getElementById('login-error');
-    
     const gridContainer = document.getElementById('grid-container');
+    if (!gridContainer) return;
     const dayModal = document.getElementById('day-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
     const modalDate = document.getElementById('modal-date');
@@ -141,77 +136,35 @@ function appInit() {
         config.key = window.HABIT_SUPABASE_ANON_KEY || '';
         
         if (!config.url || !config.key) {
-            if(loginError) {
-                loginError.textContent = "Supabase config missing";
-                loginError.classList.remove('hidden');
-            }
+            console.error("Supabase config missing");
             return;
         }
         
         client = window.supabase.createClient(config.url, config.key);
         
-        if (passcode) {
-            attemptLogin(passcode);
-        } else {
-            showLogin();
+        if (!passcode) {
+            window.location.href = 'login.html';
+            return;
         }
-    };
+        
+        document.body.classList.remove('justify-center');
+        
+        // Setup Realtime Sync
+        client.channel('public:habit_logs')
+            .on('postgres_changes', { event: '*', schema: 'public', table: config.tableLogs }, payload => {
+                if (dayModal && dayModal.classList.contains('hidden')) {
+                    loadData();
+                }
+            })
+            .subscribe();
 
+        loadData();
+    };
     /* --- Auth Flow --- */
-    const showLogin = () => {
-        authView.classList.remove('hidden');
-        appView.classList.add('hidden');
+    const handleLogout = () => {
         localStorage.removeItem('habit_passcode');
-        passcode = '';
+        window.location.href = 'login.html';
     };
-
-    const attemptLogin = async (code) => {
-        if (!code) return;
-        loginError.classList.add('hidden');
-        try {
-            const { data, error } = await client
-                .from(config.tableHabits)
-                .select('id')
-                .eq('passcode_key', code)
-                .limit(1);
-
-            if (error) throw error;
-
-            passcode = code;
-            localStorage.setItem('habit_passcode', code);
-            
-            authView.classList.add('hidden');
-            appView.classList.remove('hidden');
-            
-            await loadData();
-
-            // Realtime Sync setup
-            client.channel('public:habit_logs')
-                .on('postgres_changes', { event: '*', schema: 'public', table: config.tableLogs }, payload => {
-                    // Only auto-refresh if the day modal is NOT currently open and actively being edited
-                    if (dayModal.classList.contains('hidden')) {
-                        loadData();
-                    }
-                })
-                .subscribe();
-
-        } catch (e) {
-            console.error('Login Failed', e);
-            loginError.textContent = "Incorrect passcode.";
-            loginError.classList.remove('hidden');
-            showLogin();
-        }
-    };
-
-    if(loginBtn) loginBtn.addEventListener('click', () => attemptLogin(passcodeInput.value.trim()));
-    if(passcodeInput) passcodeInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            attemptLogin(passcodeInput.value.trim());
-        }
-    });
-
-    const handleLogout = () => showLogin();
     if(logoutBtn) logoutBtn.addEventListener('click', handleLogout);
     if(logoutBtnNav) logoutBtnNav.addEventListener('click', handleLogout);
 

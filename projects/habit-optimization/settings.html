@@ -77,13 +77,13 @@
                 <p id="feedback-msg" class="text-xs mt-3 hidden text-center"></p>
             </div>
 
-            <div>
-                <h2 class="text-xs uppercase tracking-widest text-gray-500 mb-3 font-semibold pb-2 border-b border-[#30363d]">Active Habits</h2>
-                <div id="habits-list" class="flex flex-col gap-3">
+            <details class="bg-[#161b22] px-5 py-5 rounded-md border border-[#30363d] mb-4">
+                <summary class="text-xs uppercase tracking-widest text-gray-500 font-semibold cursor-pointer outline-none marker:text-[#58a6ff]">Active Habits (Click to Expand)</summary>
+                <div id="habits-list" class="flex flex-col gap-3 mt-4">
                     <p class="text-sm text-gray-500 italic text-center">Loading...</p>
                 </div>
-                <p class="mt-8 text-[10px] text-gray-600 text-center italic">Archiving a habit hides it from today onwards without deleting historical progress.</p>
-            </div>
+                <p class="mt-6 text-[10px] text-gray-600 text-center italic">Archiving a habit hides it from today onwards without deleting historical progress.</p>
+            </details>
         </div>
 
         <!-- TAB: Display -->
@@ -142,7 +142,7 @@
         
     </div>
 
-    <script> (() => { document.addEventListener('DOMContentLoaded', async () => {
+    <script> (() => { const initSettings = async () => {
             const passcode = localStorage.getItem('habit_passcode');
             if (!passcode) {
                 window.location.href = 'index.html';
@@ -404,7 +404,9 @@
             });
 
             loadHabits();
-        }); })(); </script>
+        };
+        if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initSettings); } else { initSettings(); }
+        })(); </script>
 </body>
 </html>
 

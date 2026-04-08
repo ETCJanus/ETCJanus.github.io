@@ -15,97 +15,8 @@
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen pb-16 pt-8">
 
-    <!-- Auth / Visitor View -->
-    <div id="auth-view" class="w-full max-w-4xl px-4 flex flex-col gap-8 mx-auto mt-16 mb-20 relative">
-        
-        <div class="flex flex-col gap-2 mb-4">
-            <span class="text-gray-500 uppercase tracking-widest text-xs font-semibold">Personal Project &middot; Web App</span>
-            <h1 class="text-3xl md:text-5xl font-light tracking-wide text-white">Quantified Self Tracker</h1>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16 items-start">
-            <div class="flex flex-col gap-6 text-gray-300 leading-relaxed text-sm md:text-[15px]">
-                <p>
-                    A personal web app I made to track my daily routines, using a GitHub-style contribution grid to visualize how I'm doing over months or years at a glance.
-                </p>
-                <p class="text-gray-400">
-                    I built this because I was tired of using habit trackers that were either full of ads or locked basic features behind subscriptions. I just wanted a clean, fast way to log my days and see a dense overview of my consistency without any extra noise. 
-                    <strong class="text-gray-200 font-medium tracking-wide">It's not meant to be a product, just my own deeply personal dashboard.</strong>
-                </p>
-
-                <!-- Embedded Login for Owner -->
-                <div class="flex flex-col gap-3 mt-4 p-5 border border-[#30363d] rounded-xl bg-[#161b22]">
-                    <h2 class="text-xs font-semibold tracking-widest text-[#58a6ff] uppercase mb-1">Owner Login</h2>
-                    <input type="password" id="passcode-input" placeholder="Your key..." class="w-full text-sm p-3 bg-[#0d1117] border border-[#30363d] rounded outline-none focus:border-[#58a6ff] text-white transition-colors" />
-                    <button id="login-btn" class="btn-primary py-2.5 text-xs uppercase tracking-wider rounded">Access Dashboard</button>
-                    <p id="login-error" class="hidden text-red-400 text-xs text-center mt-2"></p>
-                </div>
-            </div>
-
-            <!-- Public Preview Grid -->
-            <div class="bg-[#161b22] p-5 md:p-6 rounded-xl border border-[#30363d] shadow-2xl relative">
-                <div class="flex justify-between items-center mb-5">
-                    <span class="text-xs font-semibold text-gray-500 tracking-widest uppercase">Current Month Preview</span>
-                </div>
-                
-                <div id="live-month-preview" class="grid gap-[6px] grid-cols-7 w-full"></div>
-                <script> (async () => { 
-                        const previewContainer = document.getElementById('live-month-preview');
-                        const today = new Date();
-                        const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-                        const colors = ['#0d1117', '#0e4429', '#006d32', '#26a641', '#39d353'];
-                        
-                        let gridHtml = '';
-                        for(let i=1; i<=daysInMonth; i++) {
-                            gridHtml += `<div id="preview-day-${i}" style="aspect-ratio: 1; border-radius: 4px; background-color: ${colors[0]}; outline: 1px solid rgba(255,255,255,0.05);"></div>`;
-                        }
-                        previewContainer.innerHTML = gridHtml;
-
-                        try {
-                            const datePrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-                            const client = window.supabase.createClient(window.HABIT_SUPABASE_URL, window.HABIT_SUPABASE_ANON_KEY);
-                            const { data, error } = await client.from('habit_logs')
-                                .select('log_date, current_amount')
-                                .gte('log_date', `${datePrefix}-01`)
-                                .lte('log_date', `${datePrefix}-${daysInMonth}`);
-                                
-                            if (!error && data) {
-                                const dayCounts = {};
-                                data.forEach(log => {
-                                    if (log.current_amount > 0) {
-                                        if(!dayCounts[log.log_date]) dayCounts[log.log_date] = 0;
-                                        dayCounts[log.log_date]++;
-                                    }
-                                });
-
-                                Object.keys(dayCounts).forEach(dStr => {
-                                    const dayNum = parseInt(dStr.split('-')[2]);
-                                    const count = dayCounts[dStr];
-                                    let level = count > 5 ? 4 : count > 3 ? 3 : count > 1 ? 2 : count > 0 ? 1 : 0;
-                                    const el = document.getElementById(`preview-day-${dayNum}`);
-                                    if (el) el.style.backgroundColor = colors[level];
-                                });
-                            }
-                        } catch(e) {}
-                     })(); </script>
-
-                <div class="flex justify-between mt-6 text-[10px] uppercase font-semibold tracking-wider text-gray-500 items-center">
-                    <span>Less</span>
-                    <div class="flex gap-1.5 border border-[#30363d] p-1.5 rounded-md bg-[#0d1117]">
-                        <div class="w-[10px] h-[10px] rounded-[2px] bg-[#0d1117] outline outline-1 outline-white/5"></div>
-                        <div class="w-[10px] h-[10px] rounded-[2px] bg-[#0e4429] outline outline-1 outline-white/5"></div>
-                        <div class="w-[10px] h-[10px] rounded-[2px] bg-[#006d32] outline outline-1 outline-white/5"></div>
-                        <div class="w-[10px] h-[10px] rounded-[2px] bg-[#26a641] outline outline-1 outline-white/5"></div>
-                        <div class="w-[10px] h-[10px] rounded-[2px] bg-[#39d353] outline outline-1 outline-white/5"></div>
-                    </div>
-                    <span>More</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- App View -->
-    <div id="app-view" class="w-full hidden flex flex-col items-center max-w-4xl px-4 relative mt-12">
+    
+    <div id="app-view" class="w-full flex flex-col items-center max-w-4xl px-4 relative mt-12">
         <nav class="w-full flex justify-center items-center gap-10 mb-4 text-gray-500 absolute -top-12 opacity-80 hover:opacity-100 transition-opacity">
         <a href="index.html" title="Tracker" class="relative flex flex-col items-center justify-center transition-all group text-white">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-[26px] h-[26px] transition-transform " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
@@ -159,19 +70,19 @@
                     
                     <!-- Minified Sleep/Mood Stats Container (Top Header) -->
                     <button id="open-memory-log-btn" title="Add Details" class="hidden flex items-center justify-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 ml-2 md:ml-4 bg-[#161b22] border border-[#30363d] rounded-full hover:border-[#58a6ff] hover:bg-[#1f242d] transition-all shadow-sm text-[11px] md:text-[12px] font-medium text-gray-300">
-                        ?? <span class="hidden sm:inline">Add Details</span>
+                        📝 <span class="hidden sm:inline">Add Details</span>
                     </button>
                     <button id="min-metrics-btn" title="Edit Metrics" class="hidden flex items-center justify-center gap-2.5 px-3 md:px-4 py-1.5 md:py-2 ml-2 md:ml-4 bg-[#161b22] border border-[#30363d] rounded-full hover:border-[#58a6ff] hover:bg-[#1f242d] transition-all shadow-sm group">
                         <div id="min-sleep-wrap" class="hidden flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors">
-                            <span class="opacity-80">??</span><span id="min-sleep-display"></span>
+                            <span class="opacity-80">💤</span><span id="min-sleep-display"></span>
                         </div>
                         <div id="metrics-divider-1" class="hidden w-[1.5px] h-3 bg-[#30363d] group-hover:bg-[#4b5563] transition-colors rounded-full"></div>
                         <div id="min-mood-wrap" class="hidden flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors">
-                            <span class="opacity-80">??</span><span id="min-mood-display"></span>
+                            <span class="opacity-80">🧠</span><span id="min-mood-display"></span>
                         </div>
                         <div id="metrics-divider-2" class="hidden w-[1.5px] h-3 bg-[#30363d] group-hover:bg-[#4b5563] transition-colors rounded-full"></div>
                         <div id="min-note-wrap" class="hidden flex items-center gap-1 md:gap-1.5 text-[11px] md:text-[13px] font-medium text-gray-300 group-hover:text-white transition-colors">
-                            <span class="opacity-80">??</span>
+                            <span class="opacity-80">📝</span>
                         </div>
                     </button>
                 </div>
@@ -194,7 +105,7 @@
                 <div class="mt-2 md:mt-4 border-t border-[#30363d] pt-4 md:pt-6">
                     <div class="flex flex-row items-center justify-between px-1 mb-3">
                         <a href="checklist.html" class="group text-[10px] md:text-[11px] text-gray-400 hover:text-white uppercase tracking-widest font-semibold transition-colors flex items-center gap-1.5 focus:outline-none focus:ring-0 whitespace-nowrap">
-                            ?? Checklist <span class="text-[9px] opacity-0 group-hover:opacity-100 transition-opacity">?</span>
+                            ✅ Checklist <span class="text-[9px] opacity-0 group-hover:opacity-100 transition-opacity">?</span>
                         </a>
                         <button id="add-task-quick-btn" class="w-6 h-6 flex items-center justify-center rounded-full bg-[#161b22] border border-[#30363d] text-gray-400 hover:text-white hover:border-[#58a6ff] hover:bg-[#1f242d] transition-all font-bold group" title="Add specific task for this day">
                             +
@@ -217,7 +128,7 @@
             <!-- Memory Log Overlay Modal (Hidden by default) -->
             <div id="memory-log-overlay" class="hidden absolute inset-0 bg-[#0d1117] z-40 flex flex-col">
                 <div class="px-4 py-3 md:px-6 md:py-4 border-b border-[#30363d] flex justify-between items-center bg-[#0d1117]">
-                    <h3 class="text-sm font-semibold text-white flex items-center gap-2">?? Log Details</h3>
+                    <h3 class="text-sm font-semibold text-white flex items-center gap-2">📊 Log Details</h3>
                     <button id="close-memory-log-btn" class="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#21262d] transition-colors font-bold text-lg leading-none pb-1">&times;</button>
                 </div>
                 <div class="p-4 md:p-6 flex flex-col gap-4 flex-grow relative pb-20">
@@ -225,7 +136,7 @@
                     <div class="grid grid-cols-2 gap-2 md:gap-3">
                         <!-- SLEEP -->
                         <div class="bg-[#161b22] px-3 md:px-4 py-3 md:py-4 flex flex-col justify-center border border-[#30363d] rounded-xl transition-all hover:border-[#58a6ff]">
-                            <span class="text-[10px] md:text-[11px] text-gray-500 uppercase tracking-widest font-bold mb-2 flex items-center gap-1.5">?? Sleep Time</span>
+                            <span class="text-[10px] md:text-[11px] text-gray-500 uppercase tracking-widest font-bold mb-2 flex items-center gap-1.5">💤 Sleep Time</span>
                             <div id="sleep-inputs-container" class="flex items-center gap-1 w-full justify-between">
                                 <input type="time" id="sleep-start" class="w-[45%] bg-transparent border-b border-[#30363d] p-0 text-[14px] text-center text-white focus:ring-0 focus:border-[#58a6ff] outline-none font-medium h-8">
                                 <span class="text-gray-600 text-xs">-</span>
@@ -235,7 +146,7 @@
 
                         <!-- ENERGY -->
                         <div class="bg-[#161b22] px-3 md:px-4 py-3 md:py-4 flex flex-col justify-center border border-[#30363d] rounded-xl transition-all hover:border-[#58a6ff]">
-                             <span class="text-[10px] md:text-[11px] text-gray-500 uppercase tracking-widest font-bold mb-2 flex items-center gap-1.5">?? Mood</span>
+                             <span class="text-[10px] md:text-[11px] text-gray-500 uppercase tracking-widest font-bold mb-2 flex items-center gap-1.5">🧠 Mood</span>
                             <div id="mood-inputs-container" class="flex items-center justify-center w-full h-8">
                                 <input type="number" id="mood-input" min="1" max="10" placeholder="Scale 1-10" class="w-full bg-transparent border-b border-[#30363d] p-0 text-[14px] text-center text-white focus:ring-0 focus:border-[#58a6ff] outline-none font-medium h-8">
                             </div>
@@ -246,7 +157,7 @@
                     <div class="bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden flex flex-col flex-grow shadow-sm min-h-[200px]">
                         <div class="px-4 py-3 border-b border-[#30363d] flex items-center justify-between gap-2">
                             <div class="flex items-center gap-2">
-                                <span class="text-gray-500 text-sm">??</span>
+                                <span class="text-gray-500 text-sm">📝</span>
                                 <span class="text-[11px] text-gray-400 uppercase tracking-widest font-semibold">Journal Note</span>
                             </div>
                             <span id="save-memory-log-btn" class="text-[10px] text-green-500 font-semibold cursor-pointer hover:text-green-400 uppercase tracking-widest invisible">Auto-saved ?</span>
