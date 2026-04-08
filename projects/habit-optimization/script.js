@@ -738,7 +738,14 @@ function appInit() {
                     if (!t.target_date) return true; 
                     return t.target_date <= dateKey; 
                 }
-            }).sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
+            }).sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                const aPlanned = !!a.target_date;
+                const bPlanned = !!b.target_date;
+                if (aPlanned && !bPlanned) return -1;
+                if (!aPlanned && bPlanned) return 1;
+                return 0;
+            });
 
             if (dayTasks.length === 0) {
                 modalChecklist.innerHTML = '<p class="text-xs text-gray-600 italic px-1">Checklist clear.</p>';
