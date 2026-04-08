@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -18,7 +18,7 @@
         </a>
         <a href="checklist.html" title="Checklist" class="relative flex flex-col items-center justify-center transition-all group text-white">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-[26px] h-[26px] transition-transform " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="6" height="6" rx="1"/><path d="m3 17 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></svg>
-            <span class="absolute -bottom-[8px] w-1.5 h-1.5 rounded-full transition-all duration-300 bg-[#58a6ff] opacity-100"></span>
+            <span class="absolute -bottom-[8px] w-1.5 h-1.5 rounded-full transition-all duration-300 bg-[#58a6ff] opacity-100 nav-active-indicator"></span>
         </a>
         <a href="insights.html" title="Insights" class="relative flex flex-col items-center justify-center transition-all group hover:text-white text-gray-500 opacity-70 hover:opacity-100">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-[26px] h-[26px] transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
@@ -127,7 +127,7 @@
                 const btn = document.createElement('button');
                 btn.className = 'w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ' + 
                     (t.completed ? 'bg-green-500 border-green-500 text-black' : 'bg-[#0d1117] border-[#30363d] group-hover:border-gray-400');
-                btn.innerHTML = t.completed ? '✓' : '';
+                btn.innerHTML = t.completed ? '?' : '';
                 
                 const text = document.createElement('span');
                 text.className = 'text-sm text-gray-300 truncate ' + (t.completed ? 'line-through text-gray-500' : '');
@@ -148,7 +148,7 @@
 
                 const delBtn = document.createElement('button');
                 delBtn.className = 'text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity font-bold px-1 ml-1 text-base';
-                delBtn.textContent = '✕';
+                delBtn.textContent = '?';
                 
                 delBtn.addEventListener('click', async (e) => {
                     e.stopPropagation();
@@ -195,7 +195,7 @@
                 
                 const chevron = document.createElement('span');
                 chevron.className = 'transform transition-transform text-[10px] duration-200 ' + (completedExpanded ? 'rotate-180' : 'rotate-0');
-                chevron.innerHTML = '▼';
+                chevron.innerHTML = '?';
                 
                 header.appendChild(headerText);
                 header.appendChild(chevron);

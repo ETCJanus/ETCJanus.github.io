@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -32,7 +32,7 @@
         </a>
         <a href="insights.html" title="Insights" class="relative flex flex-col items-center justify-center transition-all group text-white">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-[26px] h-[26px] transition-transform " viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
-            <span class="absolute -bottom-[8px] w-1.5 h-1.5 rounded-full transition-all duration-300 bg-[#58a6ff] opacity-100"></span>
+            <span class="absolute -bottom-[8px] w-1.5 h-1.5 rounded-full transition-all duration-300 bg-[#58a6ff] opacity-100 nav-active-indicator"></span>
         </a>
         <a href="settings.html" title="Settings" class="relative flex flex-col items-center justify-center transition-all group hover:text-white text-gray-500 opacity-70 hover:opacity-100">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-[26px] h-[26px] transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -48,7 +48,7 @@
           <div id="weekly-summary" class="w-full max-w-md mx-auto mb-2 py-3 px-6 bg-[#161b22] border border-[#30363d] rounded-full flex flex-col items-center justify-center opacity-0 transition-opacity duration-500">
               <p class="text-sm text-[#8b949e] font-semibold tracking-wide text-center m-0">
                   <span id="weekly-summary-text">Calculating weekly progress...</span>
-                  <span id="weekly-summary-emoji" class="ml-1">â³</span>
+                  <span id="weekly-summary-emoji" class="ml-1">⏳</span>
               </p>
               <div class="w-full h-1.5 bg-[#0d1117] rounded-full mt-2 overflow-hidden border border-[#30363d]">
                   <div id="weekly-summary-bar" class="h-full bg-[#238636] w-0 transition-all duration-1000 ease-out"></div>
@@ -66,7 +66,7 @@
                 <span class="text-[#f78166] text-xs mt-1 font-semibold" id="stat-worst-val">--</span>
             </div>
             <div class="stat-card">
-                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1" id="stat-shiny-title">Shiny Streak âœ¨</span>
+                <span class="text-[9px] text-gray-500 uppercase tracking-widest font-semibold mb-1" id="stat-shiny-title">Shiny Streak ✨</span>
                 <span class="text-white text-base font-light tracking-wide truncate" id="stat-shiny-name">--</span>
                 <span class="text-[#bc6bff] text-xs mt-1 font-semibold" id="stat-shiny-val">--</span>
             </div>
@@ -188,10 +188,10 @@
             summaryWrapper.classList.remove('opacity-0');
             textEl.textContent = text;
             
-            let emoji = "💪";
-            if (pct >= 100) emoji = "🚀";
-            else if (pct < 50) emoji = "🌱";
-            else if (pct < 20) emoji = "😴";
+            let emoji = "??";
+            if (pct >= 100) emoji = "??";
+            else if (pct < 50) emoji = "??";
+            else if (pct < 20) emoji = "??";
             emojiEl.textContent = emoji;
 
             requestAnimationFrame(() => {
@@ -270,7 +270,7 @@
                     const goodAvg = goodSleepWinsSum / goodSleepDays;
                     const badAvg = badSleepWinsSum / badSleepDays;
                     if (goodAvg > badAvg + 0.1) {
-                        discoveries.push(`ðŸŒŸ You are <strong class="text-[#39d353]">${Math.round((goodAvg - badAvg) * 100)}% more likely</strong> to complete your habits on days you sleep over 7 hours.`);
+                        discoveries.push(`🌟 You are <strong class="text-[#39d353]">${Math.round((goodAvg - badAvg) * 100)}% more likely</strong> to complete your habits on days you sleep over 7 hours.`);
                     }
                 }
             }
@@ -293,9 +293,9 @@
                     const shinyAvg = shinyMoodSum / shinyDays;
                     const brokenAvg = brokenMoodSum / brokenDays;
                     if (shinyAvg > brokenAvg + 0.5) {
-                        discoveries.push(`ðŸ”¥ Your average mood is <strong class="text-[#bc6bff]">${(shinyAvg - brokenAvg).toFixed(1)} points higher</strong> when your Shiny streak is uncompromised.`);
+                        discoveries.push(`🔥 Your average mood is <strong class="text-[#bc6bff]">${(shinyAvg - brokenAvg).toFixed(1)} points higher</strong> when your Shiny streak is uncompromised.`);
                     } else if (brokenAvg > shinyAvg + 0.5) {
-                        discoveries.push(`âš–ï¸ Interestingly, your mood averages <strong class="text-yellow-400">${(brokenAvg - shinyAvg).toFixed(1)} points higher</strong> on days you break your Shiny streak.`);
+                        discoveries.push(`⚖️ Interestingly, your mood averages <strong class="text-yellow-400">${(brokenAvg - shinyAvg).toFixed(1)} points higher</strong> on days you break your Shiny streak.`);
                     }
                 }
             }
