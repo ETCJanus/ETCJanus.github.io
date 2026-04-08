@@ -277,11 +277,15 @@
                             else if (h.target_amount == -2) {
                                 if (amount >= 1) {
                                     successes++;
+                                    isShiny = true;
                                 }
                             }
                         });
                         
-                        isShiny = (successes === activeHabits.length && activeHabits.length > 0);
+                        if (successes === activeHabits.length && activeHabits.length > 0) {
+                            isShiny = true;
+                        }
+                        
                         const percentage = successes / activeHabits.length;
                         if (percentage > 0) score = 1;
                         if (percentage > 0.3) score = 2;
