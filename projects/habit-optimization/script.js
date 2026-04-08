@@ -265,30 +265,55 @@
     };
 
     /* --- Rendering --- */
-    const renderGrid = () => {
-        gridContainer.innerHTML = '';          const todayStr = formatDate(new Date());
-        const startRangeStr = localStorage.getItem('habit_grid_start') || '2026-04';
-        const endRangeStr = localStorage.getItem('habit_grid_end') || '2027-03';
+    let currentRenderedMonths = 0;
+    let observer = null;
+
+    const renderGrid = (append = false) => {
+        let batchSize = append ? 2 : 3;
+
+        // If not appending, reset the grid and state
+        if (!append) {
+            gridContainer.innerHTML = '';
+            if (observer) {
+                observer.disconnect();
+                observer = null;
+            }
+            batchSize = Math.max(3, currentRenderedMonths); // Re-render what we already had
+            currentRenderedMonths = 0;
+        }
+        
+        const todayStr = formatDate(new Date());
+        let startRangeStr = localStorage.getItem('habit_grid_start') || formatDate(new Date()).substring(0, 7);
         
         const s = parseMonthString(startRangeStr);
-        const e = parseMonthString(endRangeStr);
-        
         const activeRangeStart = formatDate(new Date(s.year, s.month, 1));
         
-        let months = [];
+        let monthsToRender = [];
         let currY = s.year;
         let currM = s.month;
         
-        while (currY < e.year || (currY === e.year && currM <= e.month)) {
-            months.push({ year: currY, month: currM });
+        // Calculate the starting point for this render batch
+        for (let i = 0; i < currentRenderedMonths; i++) {
             currM++;
             if (currM > 11) {
                 currM = 0;
                 currY++;
             }
         }
+        
+        // Add next batch of months
+        for (let i = 0; i < batchSize; i++) {
+            monthsToRender.push({ year: currY, month: currM });
+            currM++;
+            if (currM > 11) {
+                currM = 0;
+                currY++;
+            }
+        }
+        
+        currentRenderedMonths += batchSize;
 
-        months.forEach(m => {
+        monthsToRender.forEach((m, index) => {
             const monthWrapper = document.createElement('div');
             monthWrapper.className = 'w-full';
 
@@ -508,6 +533,19 @@
 
             monthWrapper.appendChild(grid);
             gridContainer.appendChild(monthWrapper);
+            
+            // Intersection Observer on the last month of the batch
+            if (index === monthsToRender.length - 1) {
+                if (!observer) {
+                    observer = new IntersectionObserver((entries) => {
+                        if (entries[0].isIntersecting) {
+                            observer.unobserve(monthWrapper);
+                            renderGrid(true); // Append next batch
+                        }
+                    }, { rootMargin: '200px' });
+                }
+                observer.observe(monthWrapper);
+            }
         });
     };
 

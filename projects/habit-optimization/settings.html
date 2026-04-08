@@ -104,10 +104,7 @@
                     <div class="flex flex-col w-full">
                         <label class="text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 ml-1">Start Month</label>
                         <input type="month" id="start-month-input" class="w-full p-3 text-sm bg-[#21262d] border border-[#30363d] text-white rounded outline-none focus:border-[#58a6ff]">
-                    </div>
-                    <div class="flex flex-col w-full">
-                        <label class="text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 ml-1">End Month</label>
-                        <input type="month" id="end-month-input" class="w-full p-3 text-sm bg-[#21262d] border border-[#30363d] text-white rounded outline-none focus:border-[#58a6ff]">
+                        <p class="text-[10px] text-gray-500 italic mt-2 ml-1">Grid automatically extends as you scroll downwards.</p>
                     </div>
                 </div>
                 <button id="save-range-btn" class="btn-primary w-full py-3 mt-4 text-sm tracking-wide">Save Range</button>
@@ -166,23 +163,20 @@
 
             // Display Config Base
             const startInput = document.getElementById('start-month-input');
-            const endInput = document.getElementById('end-month-input');
             const saveRangeBtn = document.getElementById('save-range-btn');
             const settingsFeedback = document.getElementById('settings-feedback');
             
             startInput.value = localStorage.getItem('habit_grid_start') || '2026-04';
-            endInput.value = localStorage.getItem('habit_grid_end') || '2027-03';
             
             saveRangeBtn.addEventListener('click', () => {
-                if (startInput.value && endInput.value && startInput.value <= endInput.value) {
+                if (startInput.value) {
                     localStorage.setItem('habit_grid_start', startInput.value);
-                    localStorage.setItem('habit_grid_end', endInput.value);
                     settingsFeedback.textContent = 'Settings saved! Check your grid.';
                     settingsFeedback.className = 'text-xs mt-3 text-green-400 text-center';
                     settingsFeedback.classList.remove('hidden');
                     setTimeout(() => settingsFeedback.classList.add('hidden'), 3000);
                 } else {
-                    settingsFeedback.textContent = 'Invalid date range.';
+                    settingsFeedback.textContent = 'Invalid start month.';
                     settingsFeedback.className = 'text-xs mt-3 text-red-400 text-center';
                     settingsFeedback.classList.remove('hidden');
                     setTimeout(() => settingsFeedback.classList.add('hidden'), 3000);
