@@ -46,6 +46,70 @@
     let passcode = localStorage.getItem('habit_passcode') || '';
     let config = { url: '', key: '', tableHabits: 'habits', tableLogs: 'habit_logs', tableTasks: 'tasks' };
 
+    let audioCtx = null;
+    const playSound = (type) => {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            
+            if (type === 'tick') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.05, now + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'untick') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.05, now + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'success') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(554.37, now + 0.1);
+                osc.frequency.setValueAtTime(659.25, now + 0.2);
+                osc.frequency.setValueAtTime(880, now + 0.3);
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.075, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+            } else if (type === 'shiny') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.1);
+                osc.frequency.setValueAtTime(783.99, now + 0.2);
+                osc.frequency.setValueAtTime(1046.50, now + 0.3);
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.05, now + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+                osc.start(now); osc.stop(now + 0.8);
+            } else if (type === 'perfect') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(554.37, now + 0.1);
+                osc.frequency.setValueAtTime(659.25, now + 0.15);
+                osc.frequency.setValueAtTime(880, now + 0.2);
+                osc.frequency.setValueAtTime(1108.73, now + 0.3);
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.06, now + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 1.0);
+                osc.start(now); osc.stop(now + 1.0);
+            }
+        } catch (e) {}
+    };
+
     let habitsCache = [];
     let tasksCache = [];
     let logsCache = {};
@@ -636,17 +700,25 @@
                 const checkConfetti = () => {
                     const allCheckboxes = modalHabits.querySelectorAll('input[type="checkbox"]');
                     const allChecked = Array.from(allCheckboxes).every(cb => cb.checked);
-                    if (allChecked && window.confetti) {
-                        window.confetti({
-                            particleCount: 80,
-                            spread: 70,
-                            origin: { y: 0.8 },
-                            colors: ['#39d353', '#2ea043', '#58a6ff']
-                        });
+                    if (allChecked) {
+                        playSound('perfect'); // Play perfect day success sound
+                        if (window.confetti) {
+                            window.confetti({
+                                particleCount: 80,
+                                spread: 70,
+                                origin: { y: 0.8 },
+                                colors: ['#39d353', '#2ea043', '#58a6ff']
+                            });
+                        }
                     }
                 };
 
                 checkbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        playSound(habit.target_amount == -2 ? 'shiny' : 'success');
+                    } else {
+                        playSound('untick');
+                    }
                     label.className = `group ${baseClass} ${e.target.checked ? selectedClass : unselectedClass}`;
                     const newStreak = getStreak(e.target.checked);
                     streakSpan.innerHTML = `<span class="opacity-70 text-[9px]">🔥</span> <span class="text-gray-200 leading-none">${newStreak}</span>`;
@@ -672,7 +744,7 @@
                     if (!t.target_date) return true; 
                     return t.target_date <= dateKey; 
                 }
-            });
+            }).sort((a, b) => (a.completed === b.completed) ? 0 : a.completed ? 1 : -1);
 
             if (dayTasks.length === 0) {
                 modalChecklist.innerHTML = '<p class="text-xs text-gray-600 italic px-1">Checklist clear.</p>';
@@ -707,10 +779,12 @@
                             btn.className = `w-4 h-4 mt-0.5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${newStatus ? 'bg-green-500 border-green-500 text-black' : 'bg-transparent border-gray-500 hover:border-white'}`;
                             
                             if (newStatus) {
+                                playSound('tick');
                                 textDiv.classList.add('line-through', 'text-gray-500');
                                 taskRow.classList.add('opacity-50');
                                 if (window.confetti) window.confetti({ particleCount: 40, spread: 50, colors: ['#58a6ff']});
                             } else {
+                                playSound('untick');
                                 textDiv.classList.remove('line-through', 'text-gray-500');
                                 taskRow.classList.remove('opacity-50');
                             }
@@ -822,7 +896,22 @@
     };
 
     if (closeMemoryLogBtn) closeMemoryLogBtn.addEventListener('click', closeOverlay);
-    if (saveMemoryLogBtn) saveMemoryLogBtn.addEventListener('click', closeOverlay);
+    if (saveMemoryLogBtn) {
+        saveMemoryLogBtn.addEventListener('click', closeOverlay);
+        
+        let saveTimeout;
+        const autoTriggerSaveUI = () => {
+            saveMemoryLogBtn.classList.remove('invisible');
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                saveMemoryLogBtn.classList.add('invisible');
+            }, 1500);
+        };
+        modalNote.addEventListener('input', autoTriggerSaveUI);
+        sleepStartInput.addEventListener('change', autoTriggerSaveUI);
+        sleepEndInput.addEventListener('change', autoTriggerSaveUI);
+        moodInput.addEventListener('input', autoTriggerSaveUI);
+    }
 
 /* --- Saving Data --- */
     const autoSaveDayData = async () => {
