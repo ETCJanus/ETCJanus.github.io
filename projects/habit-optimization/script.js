@@ -677,45 +677,66 @@
             if (dayTasks.length === 0) {
                 modalChecklist.innerHTML = '<p class="text-xs text-gray-600 italic px-1">Checklist clear.</p>';
             } else {
-                dayTasks.forEach(task => {
-                    const taskRow = document.createElement('div');
-                    taskRow.className = 'flex items-start gap-2.5 p-2 md:p-3 bg-[#161b22] border border-[#30363d] rounded-lg transition-colors group cursor-pointer hover:border-[#58a6ff]/50';
-                    if (task.completed) taskRow.classList.add('opacity-50');
+                let isExpandedTask = false;
+                const maxVisibleTasks = 3;
 
-                    const btn = document.createElement('button');
-                    btn.className = `w-4 h-4 mt-0.5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${task.completed ? 'bg-green-500 border-green-500 text-black' : 'bg-transparent border-gray-500 hover:border-white'}`;
-                    btn.innerHTML = task.completed ? '✓' : '';
-                    btn.style.fontSize = '10px';
+                const renderTasks = () => {
+                    modalChecklist.innerHTML = '';
+                    const visibleTasks = isExpandedTask ? dayTasks : dayTasks.slice(0, maxVisibleTasks);
 
-                    const textDiv = document.createElement('div');
-                    textDiv.className = `text-[12px] md:text-[13px] text-gray-300 leading-snug flex-grow select-none ${task.completed ? 'line-through text-gray-500' : ''}`;
-                    textDiv.textContent = task.text;
+                    visibleTasks.forEach(task => {
+                        const taskRow = document.createElement('div');
+                        taskRow.className = 'flex items-start gap-2.5 p-2 md:p-3 bg-[#161b22] border border-[#30363d] rounded-lg transition-colors group cursor-pointer hover:border-[#58a6ff]/50';
+                        if (task.completed) taskRow.classList.add('opacity-50');
 
-                    taskRow.addEventListener('click', async () => {
-                        const newStatus = !task.completed;
-                        task.completed = newStatus;
-                        task.completed_date = newStatus ? dateKey : null;
+                        const btn = document.createElement('button');
+                        btn.className = `w-4 h-4 mt-0.5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${task.completed ? 'bg-green-500 border-green-500 text-black' : 'bg-transparent border-gray-500 hover:border-white'}`;
+                        btn.innerHTML = task.completed ? '✓' : '';
+                        btn.style.fontSize = '10px';
 
-                        btn.innerHTML = newStatus ? '✓' : '';
-                        btn.className = `w-4 h-4 mt-0.5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${newStatus ? 'bg-green-500 border-green-500 text-black' : 'bg-transparent border-gray-500 hover:border-white'}`;
-                        
-                        if (newStatus) {
-                            textDiv.classList.add('line-through', 'text-gray-500');
-                            taskRow.classList.add('opacity-50');
-                            if (window.confetti) window.confetti({ particleCount: 40, spread: 50, colors: ['#58a6ff']});
-                        } else {
-                            textDiv.classList.remove('line-through', 'text-gray-500');
-                            taskRow.classList.remove('opacity-50');
-                        }
+                        const textDiv = document.createElement('div');
+                        textDiv.className = `text-[12px] md:text-[13px] text-gray-300 leading-snug flex-grow select-none ${task.completed ? 'line-through text-gray-500' : ''}`;
+                        textDiv.textContent = task.text;
 
-                        // Background sync
-                        await client.from(config.tableTasks).update({ completed: newStatus, completed_date: task.completed_date }).eq('id', task.id);
+                        taskRow.addEventListener('click', async () => {
+                            const newStatus = !task.completed;
+                            task.completed = newStatus;
+                            task.completed_date = newStatus ? dateKey : null;
+
+                            btn.innerHTML = newStatus ? '✓' : '';
+                            btn.className = `w-4 h-4 mt-0.5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${newStatus ? 'bg-green-500 border-green-500 text-black' : 'bg-transparent border-gray-500 hover:border-white'}`;
+                            
+                            if (newStatus) {
+                                textDiv.classList.add('line-through', 'text-gray-500');
+                                taskRow.classList.add('opacity-50');
+                                if (window.confetti) window.confetti({ particleCount: 40, spread: 50, colors: ['#58a6ff']});
+                            } else {
+                                textDiv.classList.remove('line-through', 'text-gray-500');
+                                taskRow.classList.remove('opacity-50');
+                            }
+
+                            // Background sync
+                            await client.from(config.tableTasks).update({ completed: newStatus, completed_date: task.completed_date }).eq('id', task.id);
+                        });
+
+                        taskRow.appendChild(btn);
+                        taskRow.appendChild(textDiv);
+                        modalChecklist.appendChild(taskRow);
                     });
 
-                    taskRow.appendChild(btn);
-                    taskRow.appendChild(textDiv);
-                    modalChecklist.appendChild(taskRow);
-                });
+                    if (dayTasks.length > maxVisibleTasks) {
+                        const toggleBtn = document.createElement('button');
+                        toggleBtn.className = 'w-full text-[10px] uppercase tracking-widest font-semibold text-gray-600 hover:text-[#58a6ff] hover:bg-[#161b22] border border-transparent hover:border-[#30363d] rounded-md mt-1 mb-1 py-1.5 transition-all text-center flex items-center justify-center gap-1.5';
+                        toggleBtn.innerHTML = isExpandedTask ? '<span class="text-[8px]">▲</span> Show Less' : `<span class="text-[8px]">▼</span> +${dayTasks.length - maxVisibleTasks} More Tasks`;
+                        toggleBtn.onclick = () => {
+                            isExpandedTask = !isExpandedTask;
+                            renderTasks();
+                        };
+                        modalChecklist.appendChild(toggleBtn);
+                    }
+                };
+
+                renderTasks();
             }
         }
 
