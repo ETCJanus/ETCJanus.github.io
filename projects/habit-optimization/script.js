@@ -3,7 +3,6 @@
     /* --- DOM Elements --- */
     const authView = document.getElementById('auth-view');
     const appView = document.getElementById('app-view');
-    const portfolioNav = document.getElementById('portfolio-nav');
     const passcodeInput = document.getElementById('passcode-input');
     const loginBtn = document.getElementById('login-btn');
     const logoutBtn = document.getElementById('logout-btn');
@@ -94,7 +93,6 @@
     /* --- Auth Flow --- */
     const showLogin = () => {
         authView.classList.remove('hidden');
-        if (portfolioNav) portfolioNav.classList.remove('hidden');
         appView.classList.add('hidden');
         localStorage.removeItem('habit_passcode');
         passcode = '';
@@ -116,7 +114,6 @@
             localStorage.setItem('habit_passcode', code);
             
             authView.classList.add('hidden');
-            if (portfolioNav) portfolioNav.classList.add('hidden');
             appView.classList.remove('hidden');
             
             await loadData();
