@@ -341,6 +341,12 @@
                         if (moodLog && moodLog.metadata && moodLog.metadata.level) {
                             metricsDiv.innerHTML += `<span>🎭 ${moodLog.metadata.level}/10</span>`;
                         }
+                        
+                        const dayTasks = tasksCache.filter(t => t.completed && (t.completed_date === dateKey || (t.target_date === dateKey && !t.completed_date)));
+                        if (dayTasks.length > 0) {
+                            metricsDiv.innerHTML += `<span>📋 ${dayTasks.length} Tasks</span>`;
+                        }
+
                         if (sleepLog && sleepLog.metadata && sleepLog.metadata.start && sleepLog.metadata.end) {
                             const hours = calculateSleepHours(sleepLog.metadata.start, sleepLog.metadata.end);
                             metricsDiv.innerHTML += `<span>💤 ${hours}</span>`;
@@ -411,7 +417,7 @@
                         if (totalSleepScore < 60) colorCls = 'text-[#d2a8ff]'; // Okay
                         if (totalSleepScore < 40) colorCls = 'text-[#f78166]'; // Bad
                         
-                        sleepScoreEl.className = `absolute top-[2px] right-[4px] text-[9px] md:text-[10px] font-bold ${colorCls} pointer-events-none drop-shadow-[0_1px_1px_rgba(0,0,0,1)] z-10 opacity-90`;
+                        sleepScoreEl.className = `absolute top-[2px] right-[4px] text-[10px] md:text-[11px] font-extrabold ${colorCls} pointer-events-none drop-shadow-[0_2px_2px_rgba(0,0,0,1)] z-10 opacity-100`;
                         sleepScoreEl.textContent = totalSleepScore;
                         sleepScoreEl.title = 'Sleep Score: ' + totalSleepScore;
                         cell.appendChild(sleepScoreEl);
@@ -419,7 +425,7 @@
                     
                     if (moodLog && moodLog.metadata && moodLog.metadata.level) {
                         const moodEl = document.createElement('div');
-                        moodEl.className = 'absolute top-[2px] left-[3px] text-[8px] md:text-[9px] font-bold text-yellow-400 pointer-events-none drop-shadow-[0_1px_1px_rgba(0,0,0,1)] z-10 opacity-90';
+                        moodEl.className = 'absolute top-[2px] left-[4px] text-[10px] md:text-[11px] font-extrabold text-yellow-400 pointer-events-none drop-shadow-[0_2px_2px_rgba(0,0,0,1)] z-10 opacity-100';
                         moodEl.textContent = moodLog.metadata.level;
                         moodEl.title = 'Mood: ' + moodLog.metadata.level;
                         cell.appendChild(moodEl);
