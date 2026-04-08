@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+function appInit() {
 
     /* --- DOM Elements --- */
     const authView = document.getElementById('auth-view');
@@ -428,17 +428,17 @@
                         metricsDiv.innerHTML = '';
                         
                         if (moodLog && moodLog.metadata && moodLog.metadata.level) {
-                            metricsDiv.innerHTML += `<span>🎭 ${moodLog.metadata.level}/10</span>`;
+                            metricsDiv.innerHTML += `<span>?? ${moodLog.metadata.level}/10</span>`;
                         }
                         
                         const dayTasks = tasksCache.filter(t => t.completed && (t.completed_date === dateKey || (t.target_date === dateKey && !t.completed_date)));
                         if (dayTasks.length > 0) {
-                            metricsDiv.innerHTML += `<span>📋 ${dayTasks.length} Tasks</span>`;
+                            metricsDiv.innerHTML += `<span>?? ${dayTasks.length} Tasks</span>`;
                         }
 
                         if (sleepLog && sleepLog.metadata && sleepLog.metadata.start && sleepLog.metadata.end) {
                             const hours = calculateSleepHours(sleepLog.metadata.start, sleepLog.metadata.end);
-                            metricsDiv.innerHTML += `<span>💤 ${hours}</span>`;
+                            metricsDiv.innerHTML += `<span>?? ${hours}</span>`;
                         }
                         
                         if (metricsDiv.innerHTML === '') {
@@ -729,7 +729,7 @@
 
                 const streakSpan = document.createElement('div');
                 streakSpan.className = 'absolute -top-1.5 -right-1.5 bg-[#0d1117] border border-[#30363d] rounded-full px-1.5 py-[2px] text-[9px] font-bold flex items-center justify-center gap-[2px] shadow-sm z-10 transition-colors group-hover:border-[#58a6ff]/50';
-                streakSpan.innerHTML = `<span class="opacity-70 text-[9px]">🔥</span> <span class="text-gray-300 leading-none">${streakVal}</span>`;
+                streakSpan.innerHTML = `<span class="opacity-70 text-[9px]">??</span> <span class="text-gray-300 leading-none">${streakVal}</span>`;
                 if (streakVal === 0) {
                     streakSpan.classList.add('hidden');
                 }
@@ -759,7 +759,7 @@
                     }
                     label.className = `group ${baseClass} ${e.target.checked ? selectedClass : unselectedClass}`;
                     const newStreak = getStreak(e.target.checked);
-                    streakSpan.innerHTML = `<span class="opacity-70 text-[9px]">🔥</span> <span class="text-gray-200 leading-none">${newStreak}</span>`;
+                    streakSpan.innerHTML = `<span class="opacity-70 text-[9px]">??</span> <span class="text-gray-200 leading-none">${newStreak}</span>`;
                     if (newStreak === 0) {
                         streakSpan.classList.add('hidden');
                     } else {
@@ -801,7 +801,7 @@
 
                         const btn = document.createElement('button');
                         btn.className = `w-4 h-4 mt-0.5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${task.completed ? 'bg-green-500 border-green-500 text-black' : 'bg-transparent border-gray-500 hover:border-white'}`;
-                        btn.innerHTML = task.completed ? '✓' : '';
+                        btn.innerHTML = task.completed ? '?' : '';
                         btn.style.fontSize = '10px';
 
                         const textDiv = document.createElement('div');
@@ -813,7 +813,7 @@
                             task.completed = newStatus;
                             task.completed_date = newStatus ? dateKey : null;
 
-                            btn.innerHTML = newStatus ? '✓' : '';
+                            btn.innerHTML = newStatus ? '?' : '';
                             btn.className = `w-4 h-4 mt-0.5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${newStatus ? 'bg-green-500 border-green-500 text-black' : 'bg-transparent border-gray-500 hover:border-white'}`;
                             
                             if (newStatus) {
@@ -839,7 +839,7 @@
                     if (dayTasks.length > maxVisibleTasks) {
                         const toggleBtn = document.createElement('button');
                         toggleBtn.className = 'w-full text-[10px] uppercase tracking-widest font-semibold text-gray-600 hover:text-[#58a6ff] hover:bg-[#161b22] border border-transparent hover:border-[#30363d] rounded-md mt-1 mb-1 py-1.5 transition-all text-center flex items-center justify-center gap-1.5';
-                        toggleBtn.innerHTML = isExpandedTask ? '<span class="text-[8px]">▲</span> Show Less' : `<span class="text-[8px]">▼</span> +${dayTasks.length - maxVisibleTasks} More Tasks`;
+                        toggleBtn.innerHTML = isExpandedTask ? '<span class="text-[8px]">?</span> Show Less' : `<span class="text-[8px]">?</span> +${dayTasks.length - maxVisibleTasks} More Tasks`;
                         toggleBtn.onclick = () => {
                             isExpandedTask = !isExpandedTask;
                             renderTasks();
@@ -1081,4 +1081,9 @@
     });
 
     init();
-});
+}
+
+document.addEventListener('DOMContentLoaded', appInit);
+document.addEventListener('turbo:load', appInit);
+
+

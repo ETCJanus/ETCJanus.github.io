@@ -9,6 +9,7 @@
     <script src="supabase-config.js"></script>
     <script src="theme.js"></script>
     <link rel="stylesheet" href="global-styles.css">
+<meta name="view-transition" content="same-origin" />
 </head>
 <body class="flex flex-col items-center min-h-screen pt-8 pb-16">
     <nav class="w-full flex justify-center items-center gap-10 mb-6 text-gray-500 mt-4 opacity-80 hover:opacity-100 transition-opacity">
@@ -47,8 +48,7 @@
         </div>
     </div>
 
-    <script>
-        const passcode = localStorage.getItem('habit_passcode');
+    <script> (() => { const passcode = localStorage.getItem('habit_passcode');
         if (!passcode) window.location.href = 'index.html';
 
         const client = window.supabase.createClient(window.HABIT_SUPABASE_URL, window.HABIT_SUPABASE_ANON_KEY);
@@ -247,8 +247,9 @@
             if(e.key === 'Enter') addTask();
         });
 
-        loadTasks();
-    </script>
+        loadTasks(); })(); </script>
 </body>
 </html>
+
+
 

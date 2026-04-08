@@ -22,6 +22,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
     <script src="theme.js"></script>
+<meta name="view-transition" content="same-origin" />
 </head>
 <body class="flex flex-col items-center min-h-screen pt-12 pb-20">
     <nav class="w-full flex justify-center items-center gap-10 mt-4 opacity-80 hover:opacity-100 transition-opacity text-gray-500 absolute top-0 py-6 text-xl lg:text-2xl">
@@ -141,8 +142,7 @@
         
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
+    <script> (() => { document.addEventListener('DOMContentLoaded', async () => {
             const passcode = localStorage.getItem('habit_passcode');
             if (!passcode) {
                 window.location.href = 'index.html';
@@ -404,8 +404,9 @@
             });
 
             loadHabits();
-        });
-    </script>
+        }); })(); </script>
 </body>
 </html>
+
+
 

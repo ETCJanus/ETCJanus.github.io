@@ -11,6 +11,7 @@
     <script src="script.js" defer></script>
     <link rel="stylesheet" href="global-styles.css">
     <script src="theme.js"></script>
+<meta name="view-transition" content="same-origin" />
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen pb-16 pt-8">
 
@@ -48,8 +49,7 @@
                 </div>
                 
                 <div id="live-month-preview" class="grid gap-[6px] grid-cols-7 w-full"></div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', async () => {
+                <script> (async () => { 
                         const previewContainer = document.getElementById('live-month-preview');
                         const today = new Date();
                         const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
@@ -87,8 +87,7 @@
                                 });
                             }
                         } catch(e) {}
-                    });
-                </script>
+                     })(); </script>
 
                 <div class="flex justify-between mt-6 text-[10px] uppercase font-semibold tracking-wider text-gray-500 items-center">
                     <span>Less</span>
@@ -272,4 +271,6 @@
 
 </body>
 </html>
+
+
 

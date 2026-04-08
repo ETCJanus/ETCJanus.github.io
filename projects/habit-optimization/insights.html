@@ -19,6 +19,7 @@
         .stat-card:hover { border-color: #58a6ff; }
     </style>
     <script src="theme.js"></script>
+<meta name="view-transition" content="same-origin" />
 </head>
 <body class="flex flex-col items-center min-h-screen pt-8 pb-16">
     <nav class="w-full flex justify-center items-center gap-10 mb-6 text-gray-500 mt-4 opacity-80 hover:opacity-100 transition-opacity">
@@ -94,8 +95,7 @@
         </div>
     </div>
 
-    <script>
-        const passcode = localStorage.getItem('habit_passcode');
+    <script> (() => { const passcode = localStorage.getItem('habit_passcode');
         if (!passcode) window.location.href = 'index.html';
 
         const supabaseUrl = window.HABIT_SUPABASE_URL;
@@ -559,8 +559,9 @@
             renderChart();
         });
 
-        document.addEventListener('DOMContentLoaded', loadData);
-    </script>
+        document.addEventListener('DOMContentLoaded', loadData); })(); </script>
 </body>
 </html>
+
+
 

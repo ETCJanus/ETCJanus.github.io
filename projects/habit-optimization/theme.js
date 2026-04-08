@@ -56,4 +56,6 @@
     document.head.appendChild(style);
 })();
 // Instant preloader for buttery navigation
-(function(){ const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js'; s.type = 'module'; s.defer = true; document.head.appendChild(s); })();
+(function(){ const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0.4/+esm'; s.type = 'module'; s.defer = true; document.head.appendChild(s); })();
+
+
