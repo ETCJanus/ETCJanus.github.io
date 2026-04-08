@@ -54,11 +54,16 @@
             16% { opacity: 0; left: 150%; }
             100% { left: 150%; opacity: 0; }
         }
-        .shiny-day {
+        .perfect-day {
             animation: shinyGlow 3s ease-in-out infinite !important;
             border: 1px solid rgba(234,179,8,0.8) !important;
             outline: none !important;
             z-index: 5;
+            position: relative;
+        }
+        .perfect-day:hover { outline: 2px solid #58a6ff !important; z-index: 20; }
+
+        .shiny-day {
             position: relative;
             overflow: hidden;
         }
@@ -75,7 +80,6 @@
             pointer-events: none;
             z-index: 10;
         }
-        .shiny-day:hover { outline: 2px solid #58a6ff !important; overflow: visible; z-index: 20; }
 
         input, textarea, button { background: #21262d; border: 1px solid #30363d; color: #c9d1d9; border-radius: 6px; padding: 8px; }
         input:focus, textarea:focus { outline: none; border-color: #58a6ff; }
@@ -221,23 +225,23 @@
         <!-- Grid Container dynamically fed by JS based on setting -->
         <div id="grid-container" class="w-full max-w-2xl px-2 flex flex-col gap-12"></div>
     <!-- Day Modal Structure -->
-    <div id="day-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-12 md:p-12">
-        <div class="bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[92vh] overflow-hidden relative">
+    <div id="day-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center px-4 py-20 md:p-12 z-50">
+        <div class="bg-[#0d1117] border border-[#30363d] rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh] md:max-h-[92vh] overflow-hidden relative">
 
             <!-- Sticky Header -->
-            <div class="px-6 py-4 border-b border-[#30363d] flex justify-between items-center bg-[#0d1117] z-10 sticky top-0">
-                <div class="flex items-center gap-6">
+            <div class="px-4 py-3 md:px-6 md:py-4 border-b border-[#30363d] flex justify-between items-center bg-[#0d1117] z-10 sticky top-0">
+                <div class="flex items-center gap-3 md:gap-6">
                     <div>
-                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Daily Review</p>
-                        <h2 id="modal-date" class="text-xl font-light text-white tracking-wide">...</h2>
+                        <p class="hidden md:block text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1">Daily Review</p>
+                        <h2 id="modal-date" class="text-lg md:text-xl font-light text-white tracking-wide">...</h2>
                     </div>
                     
                     <!-- Minified Sleep/Mood Stats Container (Top Header) -->
-                    <div id="compact-metrics" class="hidden flex items-center justify-center gap-4 border-l border-[#30363d] pl-6 ml-2">
-                        <button id="min-sleep-btn" title="Sleep" class="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors bg-[#161b22] px-3 py-1.5 rounded-full border border-[#30363d] hover:border-[#58a6ff]">
+                    <div id="compact-metrics" class="hidden flex items-center justify-center gap-2 md:gap-4 border-l border-[#30363d] pl-3 ml-1 md:pl-6 md:ml-2">
+                        <button id="min-sleep-btn" title="Sleep" class="flex items-center gap-1.5 md:gap-2 text-[11px] md:text-sm font-medium text-gray-300 hover:text-white transition-colors bg-[#161b22] px-2 py-1 md:px-3 md:py-1.5 rounded-full border border-[#30363d] hover:border-[#58a6ff]">
                             <span>🌙</span><span id="min-sleep-display"></span>
                         </button>
-                        <button id="min-mood-btn" title="Mood" class="flex items-center gap-2 text-sm font-medium text-gray-300 hover:text-white transition-colors bg-[#161b22] px-3 py-1.5 rounded-full border border-[#30363d] hover:border-[#58a6ff]">
+                        <button id="min-mood-btn" title="Mood" class="flex items-center gap-1.5 md:gap-2 text-[11px] md:text-sm font-medium text-gray-300 hover:text-white transition-colors bg-[#161b22] px-2 py-1 md:px-3 md:py-1.5 rounded-full border border-[#30363d] hover:border-[#58a6ff]">
                             <span>😊</span><span id="min-mood-display"></span>
                         </button>
                     </div>
@@ -247,51 +251,51 @@
             </div>
 
             <!-- Scrollable Content -->
-            <div class="p-6 md:p-8 overflow-y-auto flex flex-col gap-6 flex-grow pb-12">
+            <div class="p-3 sm:p-4 md:p-8 overflow-y-auto flex flex-col gap-3 md:gap-6 flex-grow pb-6 md:pb-12">
 
                 <!-- Quick Metrics Row (Expanded) -->
-                <div id="expanded-metrics-row" class="grid grid-cols-2 gap-3">
+                <div id="expanded-metrics-row" class="grid grid-cols-2 gap-2 md:gap-3">
                     <!-- SLEEP -->
-                    <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-3 flex flex-col justify-center transition-all hover:border-[#58a6ff]">
-                        <h3 class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1 flex items-center gap-1">
+                    <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-2.5 md:p-3 flex flex-col justify-center transition-all hover:border-[#58a6ff]">
+                        <h3 class="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1 md:mb-1.5 flex items-center gap-1">
                             <span>🌙 Sleep Time</span>
                         </h3>
                         <div id="sleep-inputs-container" class="flex items-center gap-1">
-                            <input type="time" id="sleep-start" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-1 text-[16px] md:text-xs text-center text-gray-300 focus:border-[#58a6ff] outline-none">
+                            <input type="time" id="sleep-start" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-1 text-[13px] md:text-xs text-center text-gray-300 focus:border-[#58a6ff] outline-none h-7 md:h-auto">
                             <span class="text-gray-600 text-[10px]">-</span>
-                            <input type="time" id="sleep-end" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-1 text-[16px] md:text-xs text-center text-gray-300 focus:border-[#58a6ff] outline-none">
+                            <input type="time" id="sleep-end" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-1 text-[13px] md:text-xs text-center text-gray-300 focus:border-[#58a6ff] outline-none h-7 md:h-auto">
                         </div>
                     </div>
 
                     <!-- ENERGY -->
-                    <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-3 flex flex-col justify-center transition-all hover:border-[#58a6ff]">
-                        <h3 class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1 flex items-center gap-1">
+                    <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-2.5 md:p-3 flex flex-col justify-center transition-all hover:border-[#58a6ff]">
+                        <h3 class="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-1 md:mb-1.5 flex items-center gap-1">
                             <span>😊 Mood</span>
                         </h3>
                         <div id="mood-inputs-container" class="flex items-center w-full">
-                            <input type="number" id="mood-input" min="1" max="10" placeholder="Scale 1-10" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-1 text-[16px] md:text-xs text-center text-gray-300 focus:border-[#58a6ff] outline-none">
+                            <input type="number" id="mood-input" min="1" max="10" placeholder="Scale 1-10" class="w-full bg-[#0d1117] border border-[#30363d] rounded p-1 text-[13px] md:text-xs text-center text-gray-300 focus:border-[#58a6ff] outline-none h-7 md:h-auto">
                         </div>
                     </div>
                 </div>
 
                 <!-- JOURNAL NOTE -->
                 <div class="bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden transition-all duration-300" id="note-container">
-                    <button id="note-toggle-btn" class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-[#21262d] transition-colors">
-                        <div class="flex items-center gap-3">
-                            <span class="text-gray-500">📝</span>
-                            <span class="text-sm text-gray-300 font-medium" id="note-preview">Add a journal note...</span>
+                    <button id="note-toggle-btn" class="w-full px-3 py-2 md:px-4 md:py-3 flex items-center justify-between text-left hover:bg-[#21262d] transition-colors">
+                        <div class="flex items-center gap-2 md:gap-3">
+                            <span class="text-gray-500 text-sm md:text-base">📝</span>
+                            <span class="text-[13px] md:text-sm text-gray-300 font-medium" id="note-preview">Add a journal note...</span>
                         </div>
-                        <span class="text-gray-600 text-xs transition-transform duration-200" id="note-chevron">▼</span>
+                        <span class="text-gray-600 text-[10px] md:text-xs transition-transform duration-200" id="note-chevron">▼</span>
                     </button>
                     <div id="note-editor-wrapper" class="hidden border-t border-[#30363d] bg-[#0d1117]">
-                        <textarea id="modal-note" placeholder="What's on your mind??" class="w-full min-h-[100px] resize-none text-[16px] md:text-sm p-4 leading-relaxed text-gray-300 bg-transparent border-none focus:outline-none focus:ring-0"></textarea>
+                        <textarea id="modal-note" placeholder="What's on your mind??" class="w-full min-h-[60px] md:min-h-[100px] resize-none text-[16px] md:text-sm p-3 md:p-4 leading-relaxed text-gray-300 bg-transparent border-none focus:outline-none focus:ring-0"></textarea>
                     </div>
                 </div>
 
                 <!-- HABITS -->
                 <div>
-                    <h3 class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-3 px-1">Habits & Goals</h3>
-                    <div id="modal-habits" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-4">
+                    <h3 class="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-2 md:mb-3 px-1">Habits & Goals</h3>
+                    <div id="modal-habits" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3 mb-0 md:mb-4">
                         <!-- Habit chunks injected here -->
                     </div>
                 </div>
