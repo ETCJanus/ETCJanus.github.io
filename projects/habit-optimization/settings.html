@@ -238,6 +238,8 @@
                   }
               });
 
+            const url = window.HABIT_SUPABASE_URL;
+            const key = window.HABIT_SUPABASE_ANON_KEY;
             const client = window.supabase.createClient(url, key);
             
             const listEl = document.getElementById('habits-list');

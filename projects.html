@@ -110,10 +110,63 @@
                 </div>
             </a>
 
-        </div>
+            <a href="projects/habit-optimization/index.html" class="project-card">
+                <div class="card-image" style="background: #0d1117; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                    <div id="projects-live-preview" style="transform: scale(0.65); width: 100%; display: grid; gap: 6px; grid-template-columns: repeat(7, 1fr); padding: 20px;">
+                        <script>
+                            document.addEventListener('DOMContentLoaded', async () => {
+                                const previewContainer = document.getElementById('projects-live-preview');
+                                const colors = ['#161b22', '#0e4429', '#006d32', '#26a641', '#39d353'];
+                                const defaultDays = 28;
+                                let gridHtml = '';
+                                for(let i=1; i<=defaultDays; i++) {
+                                    gridHtml += `<div id="thumb-day-${i}" style="aspect-ratio: 1; border-radius: 4px; background-color: ${colors[0]}; outline: 1px solid rgba(255,255,255,0.05);"></div>`;
+                                }
+                                previewContainer.innerHTML = gridHtml;
 
-        <div class="secret-entry-wrap" aria-label="Hidden project access">
-            <a href="projects/habit-optimization/index.html" class="secret-entry" title="Hidden project">/</a>
+                                try {
+                                    const res = await fetch('https://yitwgfeyyngnoduufhfp.supabase.co/rest/v1/habit_logs?select=log_date,current_amount', {
+                                        headers: { 'apikey': 'sb_publishable_LVLbo3UZiJx2FUUjg48mWw_tfB7VjO9' }
+                                    });
+                                    const data = await res.json();
+                                    
+                                    const today = new Date();
+                                    const currentYear = today.getFullYear();
+                                    const currentMonth = today.getMonth();
+                                    const datePrefix = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+                                    
+                                    const dayCounts = {};
+                                    data.forEach(log => {
+                                        if (log.current_amount > 0 && log.log_date.startsWith(datePrefix)) {
+                                            if(!dayCounts[log.log_date]) dayCounts[log.log_date] = 0;
+                                            dayCounts[log.log_date]++;
+                                        }
+                                    });
+
+                                    Object.keys(dayCounts).forEach(dStr => {
+                                        const dayNum = parseInt(dStr.split('-')[2]);
+                                        const count = dayCounts[dStr];
+                                        let level = 0;
+                                        if(count > 0) level = 1;
+                                        if(count > 1) level = 2;
+                                        if(count > 3) level = 3;
+                                        if(count > 5) level = 4;
+                                        
+                                        const el = document.getElementById(`thumb-day-${dayNum}`);
+                                        if (el) el.style.backgroundColor = colors[level];
+                                    });
+                                } catch(e) {}
+                            });
+                        </script>
+                    </div>
+                    <span class="tag">Web App</span>
+                </div>
+                <div class="card-info">
+                    <h3>Quantified Self Tracker</h3>
+                    <p>A custom-built personal habit tracker emphasizing a sleek GitHub-style contribution grid and self-accountability.</p>
+                </div>
+            </a>
+
         </div>
     </div>
     
