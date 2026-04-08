@@ -26,6 +26,7 @@
     const moodInput = document.getElementById('mood-input');
     const minMoodWrap = document.getElementById('min-mood-wrap');
     const minMoodDisplay = document.getElementById('min-mood-display');
+    const minNoteWrap = document.getElementById('min-note-wrap');
     const expandedMetricsRow = document.getElementById('expanded-metrics-row');
     const compactMetrics = document.getElementById('compact-metrics');
 
@@ -43,9 +44,10 @@
     /* --- App State --- */
     let client = null;
     let passcode = localStorage.getItem('habit_passcode') || '';
-    let config = { url: '', key: '', tableHabits: 'habits', tableLogs: 'habit_logs' };
+    let config = { url: '', key: '', tableHabits: 'habits', tableLogs: 'habit_logs', tableTasks: 'tasks' };
 
     let habitsCache = [];
+    let tasksCache = [];
     let logsCache = {};
     let selectedDate = null;
 
@@ -179,6 +181,17 @@
                 if (!logsCache[log.log_date]) logsCache[log.log_date] = [];
                 logsCache[log.log_date].push(log);
             });
+
+            try {
+                const { data: tData, error: tErr } = await client
+                    .from(config.tableTasks)
+                    .select('*')
+                    .eq('passcode_key', passcode)
+                    .order('created_at', { ascending: true });
+                if (!tErr) tasksCache = tData || [];
+            } catch (te) {
+                console.warn('Tasks table might not exist yet.', te);
+            }
 
             renderGrid();
         } catch (e) {
@@ -435,7 +448,7 @@
     const openDayModal = (dateKey) => {
         selectedDate = dateKey;
         const niceDateStr = new Date(dateKey + 'T12:00:00').toLocaleDateString(undefined, { 
-            weekday: 'long', month: 'short', day: 'numeric', year: 'numeric'
+            weekday: 'short', month: 'short', day: 'numeric'
         });
         modalDate.textContent = niceDateStr;
 
@@ -456,20 +469,6 @@
 
         // Populate Note
         modalNote.value = noteLog && noteLog.metadata ? noteLog.metadata.text || '' : '';
-        const notePreview = document.getElementById('note-preview');
-        const noteEditorWrapper = document.getElementById('note-editor-wrapper');
-        const noteChevron = document.getElementById('note-chevron');
-        if (modalNote.value.trim().length > 0) {
-            notePreview.classList.add('text-white');
-            notePreview.classList.remove('text-gray-500');
-            notePreview.innerText = modalNote.value.substring(0, 30) + (modalNote.value.length > 30 ? '...' : '');
-        } else {
-            notePreview.classList.add('text-gray-500');
-            notePreview.classList.remove('text-white');
-            notePreview.innerText = 'Add a journal note...';
-        }
-        noteEditorWrapper.classList.add('hidden');
-        noteChevron.classList.remove('rotate-180');
 
         // Populate Sleep
         sleepStartInput.value = '';
@@ -481,12 +480,19 @@
             minSleepDisplay.innerText = calculateSleepHours(sleepLog.metadata.start, sleepLog.metadata.end);
             hasSleep = true;
         }
+        
+        let hasNote = modalNote.value.trim().length > 0;
 
-        if (hasSleep || hasMood) {
-            expandedMetricsRow.classList.add('hidden');
+        const openMemoryLogBtnTop = document.getElementById('open-memory-log-btn');
+
+        if (hasSleep || hasMood || hasNote) {
             if (minMetricsBtn) {
                 minMetricsBtn.classList.remove('hidden');
                 minMetricsBtn.classList.add('flex');
+            }
+            if (openMemoryLogBtnTop) {
+                openMemoryLogBtnTop.classList.add('hidden');
+                openMemoryLogBtnTop.classList.remove('flex');
             }
             if (minSleepWrap) {
                 minSleepWrap.classList.toggle('hidden', !hasSleep);
@@ -496,15 +502,39 @@
                 minMoodWrap.classList.toggle('hidden', !hasMood);
                 minMoodWrap.classList.toggle('flex', hasMood);
             }
-            const metricsDivider = document.getElementById('metrics-divider');
-            if (metricsDivider) {
-                metricsDivider.classList.toggle('hidden', !(hasSleep && hasMood));
+            if (minNoteWrap) {
+                minNoteWrap.classList.toggle('hidden', !hasNote);
+                minNoteWrap.classList.toggle('flex', hasNote);
             }
+
+            const activeMet = [hasSleep, hasMood, hasNote].filter(Boolean).length;
+            const divider1 = document.getElementById('metrics-divider-1');
+            const divider2 = document.getElementById('metrics-divider-2');
+            
+            if (divider1) divider1.classList.add('hidden');
+            if (divider2) divider2.classList.add('hidden');
+
+            if (activeMet > 1) {
+               if (hasSleep && hasMood && hasNote) {
+                   if (divider1) divider1.classList.remove('hidden');
+                   if (divider2) divider2.classList.remove('hidden');
+               } else if (hasSleep && hasMood) {
+                   if (divider1) divider1.classList.remove('hidden');
+               } else if (hasSleep && hasNote) {
+                   if (divider1) divider1.classList.remove('hidden');
+               } else if (hasMood && hasNote) {
+                   if (divider2) divider2.classList.remove('hidden');
+               }
+            }
+
         } else {
-            expandedMetricsRow.classList.remove('hidden');
             if (minMetricsBtn) {
                 minMetricsBtn.classList.add('hidden');
                 minMetricsBtn.classList.remove('flex');
+            }
+            if (openMemoryLogBtnTop) {
+                openMemoryLogBtnTop.classList.remove('hidden');
+                openMemoryLogBtnTop.classList.add('flex');
             }
         }
 
@@ -522,7 +552,7 @@
 
                 const label = document.createElement('label');
 
-                let baseClass = 'relative flex flex-col items-center justify-center gap-1.5 p-2.5 sm:p-3 rounded-lg border text-center min-h-[64px] sm:min-h-[72px] select-none text-[11px] sm:text-[12px] font-medium tracking-wide leading-tight group-active:scale-[0.96] transition-all shadow-sm w-full';
+                let baseClass = 'relative flex flex-col items-center justify-center p-2 rounded-lg border text-center min-h-[44px] sm:min-h-[50px] select-none text-[11px] sm:text-[12px] font-medium tracking-wide leading-tight group-active:scale-[0.96] transition-all shadow-sm w-full';
                 let unselectedClass = '';
                 let selectedClass = '';
 
@@ -585,13 +615,16 @@
                 label.appendChild(checkbox);
 
                 const textSpan = document.createElement('div');
-                textSpan.className = 'font-semibold transition-transform w-[90%] break-words line-clamp-2 leading-tight';
+                textSpan.className = 'font-semibold transition-transform w-[95%] break-words line-clamp-2 leading-tight';
                 textSpan.innerHTML = getHabitName(habit.name);
                 label.appendChild(textSpan);
 
                 const streakSpan = document.createElement('div');
-                streakSpan.className = 'text-[10px] font-bold opacity-80 tracking-widest flex items-center justify-center gap-1 transition-transform';
-                streakSpan.innerHTML = `<span class="opacity-50 text-[10px] pb-[1px]">🔥</span> <span>${streakVal}</span>`;
+                streakSpan.className = 'absolute -top-1.5 -right-1.5 bg-[#0d1117] border border-[#30363d] rounded-full px-1.5 py-[2px] text-[9px] font-bold flex items-center justify-center gap-[2px] shadow-sm z-10 transition-colors group-hover:border-[#58a6ff]/50';
+                streakSpan.innerHTML = `<span class="opacity-70 text-[9px]">🔥</span> <span class="text-gray-300 leading-none">${streakVal}</span>`;
+                if (streakVal === 0) {
+                    streakSpan.classList.add('hidden');
+                }
                 label.appendChild(streakSpan);
 
                 const checkConfetti = () => {
@@ -610,36 +643,159 @@
                 checkbox.addEventListener('change', (e) => {
                     label.className = `group ${baseClass} ${e.target.checked ? selectedClass : unselectedClass}`;
                     const newStreak = getStreak(e.target.checked);
-                    streakSpan.innerHTML = `<span class="opacity-50">🔥</span> <span>${newStreak}</span>`;
-                    
+                    streakSpan.innerHTML = `<span class="opacity-70 text-[9px]">🔥</span> <span class="text-gray-200 leading-none">${newStreak}</span>`;
+                    if (newStreak === 0) {
+                        streakSpan.classList.add('hidden');
+                    } else {
+                        streakSpan.classList.remove('hidden');
+                    }
                     if (e.target.checked) checkConfetti();
                 });
                 modalHabits.appendChild(label);
             });
         }
 
+        // Render Tasks
+        const modalChecklist = document.getElementById('modal-checklist');
+        if (modalChecklist) {
+            modalChecklist.innerHTML = '';
+            const dayTasks = tasksCache.filter(t => {
+                if (t.completed) {
+                    return t.completed_date === dateKey || (t.target_date === dateKey && !t.completed_date);
+                } else {
+                    if (!t.target_date) return true; 
+                    return t.target_date <= dateKey; 
+                }
+            });
+
+            if (dayTasks.length === 0) {
+                modalChecklist.innerHTML = '<p class="text-xs text-gray-600 italic px-1">Checklist clear.</p>';
+            } else {
+                dayTasks.forEach(task => {
+                    const taskRow = document.createElement('div');
+                    taskRow.className = 'flex items-start gap-2.5 p-2 md:p-3 bg-[#161b22] border border-[#30363d] rounded-lg transition-colors group cursor-pointer hover:border-[#58a6ff]/50';
+                    if (task.completed) taskRow.classList.add('opacity-50');
+
+                    const btn = document.createElement('button');
+                    btn.className = `w-4 h-4 mt-0.5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${task.completed ? 'bg-green-500 border-green-500 text-black' : 'bg-transparent border-gray-500 hover:border-white'}`;
+                    btn.innerHTML = task.completed ? '✓' : '';
+                    btn.style.fontSize = '10px';
+
+                    const textDiv = document.createElement('div');
+                    textDiv.className = `text-[12px] md:text-[13px] text-gray-300 leading-snug flex-grow select-none ${task.completed ? 'line-through text-gray-500' : ''}`;
+                    textDiv.textContent = task.text;
+
+                    taskRow.addEventListener('click', async () => {
+                        const newStatus = !task.completed;
+                        task.completed = newStatus;
+                        task.completed_date = newStatus ? dateKey : null;
+
+                        btn.innerHTML = newStatus ? '✓' : '';
+                        btn.className = `w-4 h-4 mt-0.5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${newStatus ? 'bg-green-500 border-green-500 text-black' : 'bg-transparent border-gray-500 hover:border-white'}`;
+                        
+                        if (newStatus) {
+                            textDiv.classList.add('line-through', 'text-gray-500');
+                            taskRow.classList.add('opacity-50');
+                            if (window.confetti) window.confetti({ particleCount: 40, spread: 50, colors: ['#58a6ff']});
+                        } else {
+                            textDiv.classList.remove('line-through', 'text-gray-500');
+                            taskRow.classList.remove('opacity-50');
+                        }
+
+                        // Background sync
+                        await client.from(config.tableTasks).update({ completed: newStatus, completed_date: task.completed_date }).eq('id', task.id);
+                    });
+
+                    taskRow.appendChild(btn);
+                    taskRow.appendChild(textDiv);
+                    modalChecklist.appendChild(taskRow);
+                });
+            }
+        }
+
         dayModal.classList.remove('hidden');
     };
 
-    if(minMetricsBtn) minMetricsBtn.addEventListener('click', () => {
-        minMetricsBtn.classList.add('hidden');
-        minMetricsBtn.classList.remove('flex');
-        expandedMetricsRow.classList.remove('hidden');
+    const addTaskQuickBtn = document.getElementById('add-task-quick-btn');
+    const quickTaskForm = document.getElementById('quick-task-form');
+    const quickTaskInput = document.getElementById('quick-task-input');
+    const saveQuickTaskBtn = document.getElementById('save-quick-task-btn');
+
+    if (addTaskQuickBtn) addTaskQuickBtn.addEventListener('click', () => {
+        quickTaskForm.classList.toggle('hidden');
+        if (!quickTaskForm.classList.contains('hidden')) {
+            quickTaskInput.focus();
+        }
+    });
+
+    if (quickTaskInput) quickTaskInput.addEventListener('input', () => {
+        if (quickTaskInput.value.trim().length > 0) {
+            saveQuickTaskBtn.classList.remove('hidden', 'opacity-0');
+        } else {
+            saveQuickTaskBtn.classList.add('hidden', 'opacity-0');
+        }
+    });
+
+    const finishQuickTaskAdd = async () => {
+        const text = quickTaskInput.value.trim();
+        if (!text) return;
+        quickTaskForm.classList.add('hidden');
+        quickTaskInput.value = '';
+        saveQuickTaskBtn.classList.add('hidden', 'opacity-0');
+
+        const tempId = crypto.randomUUID();
+        const newTask = {
+            id: tempId,
+            passcode_key: passcode,
+            text,
+            target_date: selectedDate,
+            completed: false,
+            completed_date: null
+        };
+        tasksCache.push(newTask);
+        openDayModal(selectedDate); // Re-render modal list
+
+        try {
+            const { error: err, data } = await client.from(config.tableTasks).insert(newTask).select().single();
+            if(!err && data) {
+                const idx = tasksCache.findIndex(t => t.id === tempId);
+                if (idx !== -1) tasksCache[idx].id = data.id;
+            }
+        } catch(e) {}
+    };
+
+    if (saveQuickTaskBtn) saveQuickTaskBtn.addEventListener('click', finishQuickTaskAdd);
+    if (quickTaskInput) quickTaskInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            finishQuickTaskAdd();
+        }
+    });
+
+    const memoryLogOverlay = document.getElementById('memory-log-overlay');
+    const openMemoryLogBtn = document.getElementById('open-memory-log-btn');
+    const closeMemoryLogBtn = document.getElementById('close-memory-log-btn');
+    const saveMemoryLogBtn = document.getElementById('save-memory-log-btn');
+
+    if (minMetricsBtn) minMetricsBtn.addEventListener('click', () => {
+        memoryLogOverlay.classList.remove('hidden');
         sleepStartInput.focus();
     });
 
-    const noteToggleBtn = document.getElementById('note-toggle-btn');
-    if (noteToggleBtn) {
-        noteToggleBtn.addEventListener('click', () => {
-            const wrapper = document.getElementById('note-editor-wrapper');
-            const chevron = document.getElementById('note-chevron');
-            wrapper.classList.toggle('hidden');
-            chevron.classList.toggle('rotate-180');
-            if(!wrapper.classList.contains('hidden')) {
-                modalNote.focus();
-            }
-        });
-    }
+    if (openMemoryLogBtn) openMemoryLogBtn.addEventListener('click', () => {
+        memoryLogOverlay.classList.remove('hidden');
+        modalNote.focus();
+    });
+
+    const closeOverlay = async () => {
+        memoryLogOverlay.classList.add('hidden');
+        await autoSaveDayData();
+        // Re-render the day modal so that the metrics button updates
+        openDayModal(selectedDate);
+    };
+
+    if (closeMemoryLogBtn) closeMemoryLogBtn.addEventListener('click', closeOverlay);
+    if (saveMemoryLogBtn) saveMemoryLogBtn.addEventListener('click', closeOverlay);
 
 /* --- Saving Data --- */
     const autoSaveDayData = async () => {

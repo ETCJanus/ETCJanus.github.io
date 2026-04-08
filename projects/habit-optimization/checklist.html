@@ -1,0 +1,165 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Checklist - Self Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="theme.js"></script>
+    <style>
+        body { background-color: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        .task-card { background: #161b22; border: 1px solid #30363d; border-radius: 0.75rem; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; cursor: pointer; }
+        .task-card:hover { border-color: rgba(88, 166, 255, 0.5); }
+        .task-input { width: 100%; background: transparent; border: none; outline: none; color: white; font-size: 14px; }
+    </style>
+</head>
+<body class="flex flex-col items-center min-h-screen pt-8 pb-16">
+    <nav class="w-full flex justify-center items-center gap-10 mb-6 text-gray-500 mt-4 opacity-80 hover:opacity-100 transition-opacity">
+        <a href="index.html" title="Tracker" class="hover:text-white hover:scale-110 transition-all"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg></a>
+        <a href="insights.html" title="Insights" class="hover:text-white hover:scale-110 transition-all"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></a>
+        <a href="settings.html" title="Settings" class="hover:text-white hover:scale-110 transition-all"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></a>
+    </nav>
+    <div class="w-full max-w-2xl px-4 flex flex-col gap-6">
+        <div class="text-center mt-2 mb-2">
+            <h1 class="text-2xl tracking-widest text-white uppercase font-light mb-2">Checklist</h1>
+            <p class="text-gray-500 text-sm tracking-wide">Rolling task backlog</p>
+        </div>
+
+        <div class="flex items-center gap-2 bg-[#161b22] border border-[#30363d] p-2 rounded-xl focus-within:border-[#58a6ff] transition-colors">
+            <input type="text" id="new-task-input" placeholder="Add a new task..." class="task-input px-2 py-1">
+            <input type="date" id="new-task-date" class="bg-transparent text-xs text-gray-400 border border-[#30363d] rounded p-1.5 outline-none custom-date">
+            <button id="add-task-btn" class="bg-[#238636] hover:bg-[#2ea043] text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Add</button>
+        </div>
+
+        <div id="tasks-container" class="flex flex-col gap-3 mt-4">
+            <!-- Tasks rendered here -->
+            <p class="text-center text-gray-500 text-sm italic">Loading tasks...</p>
+        </div>
+    </div>
+
+    <script>
+        const passcode = localStorage.getItem('habit_passcode');
+        if (!passcode) window.location.href = 'index.html';
+
+        const client = window.supabase.createClient(window.HABIT_SUPABASE_URL, window.HABIT_SUPABASE_ANON_KEY);
+        let tasks = [];
+
+        const loadTasks = async () => {
+            const { data, error } = await client.from('tasks').select('*')
+                .eq('passcode_key', passcode).order('created_at', { ascending: false });
+            if (!error && data) {
+                tasks = data;
+                renderTasks();
+            }
+        };
+
+        const renderTasks = () => {
+            const container = document.getElementById('tasks-container');
+            container.innerHTML = '';
+            
+            // Sort: pending first, then completed. By target date or creation.
+            const sorted = [...tasks].sort((a,b) => {
+                if(a.completed !== b.completed) return a.completed ? 1 : -1;
+                return new Date(b.created_at) - new Date(a.created_at);
+            });
+
+            if(sorted.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 text-sm italic">Clean slate.</p>';
+                return;
+            }
+
+            sorted.forEach(t => {
+                const el = document.createElement('div');
+                el.className = 'task-card group ' + (t.completed ? 'opacity-50' : '');
+                
+                const left = document.createElement('div');
+                left.className = 'flex items-center gap-3 w-content overflow-hidden';
+                
+                const btn = document.createElement('button');
+                btn.className = 'w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ' + 
+                    (t.completed ? 'bg-green-500 border-green-500 text-black' : 'bg-[#0d1117] border-[#30363d] hover:border-gray-400');
+                btn.innerHTML = t.completed ? '✓' : '';
+                
+                const text = document.createElement('span');
+                text.className = 'text-sm text-gray-300 truncate ' + (t.completed ? 'line-through text-gray-500' : '');
+                text.textContent = t.text;
+
+                left.appendChild(btn);
+                left.appendChild(text);
+
+                const right = document.createElement('div');
+                right.className = 'flex items-center gap-3 text-xs';
+                
+                if (t.target_date) {
+                    const dSpan = document.createElement('span');
+                    dSpan.className = 'text-[#58a6ff] bg-[#58a6ff]/10 px-2 py-0.5 rounded';
+                    dSpan.textContent = new Date(t.target_date + 'T12:00:00').toLocaleDateString(undefined, {month: 'short', day: 'numeric'});
+                    right.appendChild(dSpan);
+                }
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity font-bold px-1';
+                delBtn.textContent = '✕';
+                
+                delBtn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    tasks = tasks.filter(x => x.id !== t.id);
+                    renderTasks();
+                    await client.from('tasks').delete().eq('id', t.id);
+                });
+
+                right.appendChild(delBtn);
+                
+                el.addEventListener('click', async () => {
+                    t.completed = !t.completed;
+                    t.completed_date = t.completed ? new Date().toISOString().split('T')[0] : null;
+                    renderTasks();
+                    await client.from('tasks').update({ completed: t.completed, completed_date: t.completed_date }).eq('id', t.id);
+                });
+
+                el.appendChild(left);
+                el.appendChild(right);
+                container.appendChild(el);
+            });
+        };
+
+        const addTask = async () => {
+            const input = document.getElementById('new-task-input');
+            const dateInput = document.getElementById('new-task-date');
+            if(!input.value.trim()) return;
+
+            const nTask = {
+                id: crypto.randomUUID(),
+                passcode_key: passcode,
+                text: input.value.trim(),
+                target_date: dateInput.value || null,
+                completed: false
+            };
+            
+            tasks.unshift(nTask);
+            renderTasks();
+            input.value = '';
+            dateInput.value = '';
+
+            const { data, error } = await client.from('tasks').insert(nTask).select().single();
+            if(data) {
+                const idx = tasks.findIndex(x => x.id === nTask.id);
+                if(idx > -1) tasks[idx].id = data.id;
+            }
+        };
+
+        document.getElementById('add-task-btn').addEventListener('click', addTask);
+        document.getElementById('new-task-input').addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') addTask();
+        });
+
+        loadTasks();
+    </script>
+</body>
+</html>
+
