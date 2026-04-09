@@ -224,7 +224,7 @@ function appInit() {
     const renderGrid = (append = false) => {
         let batchSize = append ? 2 : 1;
 
-        const existingBtn = document.getElementById('load-more-months-btn');
+        let existingBtn = document.getElementById('load-more-months-btn');
         if (existingBtn) existingBtn.remove();
 
 
@@ -494,7 +494,7 @@ function appInit() {
         });
 
         // Ensure button is appended after the grid loops
-        const existingBtn = document.getElementById('load-more-months-btn');
+        existingBtn = document.getElementById('load-more-months-btn');
         if (existingBtn) existingBtn.remove();
         
         const loadMoreBtn = document.createElement('button');
@@ -1059,7 +1059,6 @@ function appInit() {
     init();
 }
 
-document.addEventListener('DOMContentLoaded', appInit);
 document.addEventListener('turbo:load', appInit);
 
 
