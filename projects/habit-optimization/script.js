@@ -224,6 +224,10 @@ function appInit() {
     const renderGrid = (append = false) => {
         let batchSize = append ? 2 : 1;
 
+        const existingBtn = document.getElementById('load-more-months-btn');
+        if (existingBtn) existingBtn.remove();
+
+
         // If not appending, reset the grid and state
         if (!append) {
             gridContainer.innerHTML = '';
@@ -823,11 +827,18 @@ function appInit() {
     const quickTaskInput = document.getElementById('quick-task-input');
     const saveQuickTaskBtn = document.getElementById('save-quick-task-btn');
 
-    if (addTaskQuickBtn) addTaskQuickBtn.addEventListener('click', () => {
-        quickTaskForm.classList.toggle('hidden');
-        quickTaskForm.classList.toggle('flex');
-        if (!quickTaskForm.classList.contains('hidden')) {
+    if (addTaskQuickBtn) addTaskQuickBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (quickTaskForm.classList.contains('hidden')) {
+            quickTaskForm.classList.remove('hidden');
+            quickTaskForm.classList.add('flex');
             quickTaskInput.focus();
+        } else {
+            quickTaskForm.classList.add('hidden');
+            quickTaskForm.classList.remove('flex');
+            quickTaskInput.value = '';
+            saveQuickTaskBtn.classList.add('hidden', 'opacity-0');
         }
     });
 
