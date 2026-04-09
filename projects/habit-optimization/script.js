@@ -150,10 +150,12 @@ function appInit() {
         document.body.classList.remove('justify-center');
         
         // Setup Realtime Sync
+        let realtimeSyncTimeout = null;
         client.channel('public:habit_logs')
             .on('postgres_changes', { event: '*', schema: 'public', table: config.tableLogs }, payload => {
                 if (dayModal && dayModal.classList.contains('hidden')) {
-                    loadData();
+                    if (realtimeSyncTimeout) clearTimeout(realtimeSyncTimeout);
+                    realtimeSyncTimeout = setTimeout(() => loadData(), 500);
                 }
             })
             .subscribe();
@@ -757,25 +759,105 @@ function appInit() {
                 let isExpandedTask = false;
                 const maxVisibleTasks = 3;
 
+                let draggedTaskId = null;
                 const renderTasks = () => {
                     modalChecklist.innerHTML = '';
                     const visibleTasks = isExpandedTask ? dayTasks : dayTasks.slice(0, maxVisibleTasks);
 
-                    visibleTasks.forEach(task => {
+                    // Sort tasks by sort_order
+                    visibleTasks.sort((a,b) => {
+                        const aSort = a.metadata?.sort_order ?? ((a.completed ? 10000 : 0) + (a.created_at || '0'));
+                        const bSort = b.metadata?.sort_order ?? ((b.completed ? 10000 : 0) + (b.created_at || '0'));
+                        if (typeof aSort === 'number' && typeof bSort === 'number') return aSort - bSort;
+                        return 0; // fallback
+                    });
+
+                    visibleTasks.forEach((task, index) => {
                         const taskRow = document.createElement('div');
-                        taskRow.className = 'flex items-start gap-2.5 p-2 md:p-3 bg-[#161b22] border border-[#30363d] rounded-lg transition-colors group cursor-pointer hover:border-[#58a6ff]/50';
+                        taskRow.setAttribute('draggable', 'true');
+                        taskRow.className = 'flex items-start gap-2.5 p-2 md:p-3 bg-[#161b22] border border-[#30363d] rounded-lg transition-colors group cursor-move hover:border-[#58a6ff]/50 relative';
                         if (task.completed) taskRow.classList.add('opacity-50');
+
+                        // Drag and drop mechanics
+                        taskRow.addEventListener('dragstart', (e) => {
+                            draggedTaskId = task.id;
+                            taskRow.classList.add('opacity-40');
+                            e.dataTransfer.effectAllowed = 'move';
+                            e.dataTransfer.setData('text/plain', task.id);
+                        });
+                        taskRow.addEventListener('dragover', (e) => {
+                            e.preventDefault();
+                            e.dataTransfer.dropEffect = 'move';
+                            if (task.id !== draggedTaskId) taskRow.style.borderTop = '2px solid #58a6ff';
+                        });
+                        taskRow.addEventListener('dragleave', () => { taskRow.style.borderTop = ''; });
+                        taskRow.addEventListener('drop', async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            taskRow.style.borderTop = '';
+                            if (!draggedTaskId || draggedTaskId === task.id) return;
+                            
+                            const fromIdx = dayTasks.findIndex(t => t.id === draggedTaskId);
+                            const toIdx = dayTasks.findIndex(t => t.id === task.id);
+                            if (fromIdx > -1 && toIdx > -1) {
+                                const [moved] = dayTasks.splice(fromIdx, 1);
+                                dayTasks.splice(toIdx, 0, moved);
+                                
+                                // Send updates for new sort_orders
+                                for(let i=0; i<dayTasks.length; i++) {
+                                    dayTasks[i].metadata = { ...(dayTasks[i].metadata || {}), sort_order: i };
+                                    client.from(config.tableTasks).update({ metadata: dayTasks[i].metadata }).eq('id', dayTasks[i].id).then();
+                                }
+                                renderTasks();
+                            }
+                        });
+                        taskRow.addEventListener('dragend', () => {
+                            taskRow.classList.remove('opacity-40');
+                            taskRow.style.borderTop = '';
+                            draggedTaskId = null;
+                        });
 
                         const btn = document.createElement('button');
                         btn.className = `w-4 h-4 mt-0.5 rounded flex-shrink-0 flex items-center justify-center border transition-colors ${task.completed ? 'bg-green-500 border-green-500 text-black' : 'bg-transparent border-gray-500 hover:border-white'}`;
                         btn.innerHTML = task.completed ? '✓' : '';
                         btn.style.fontSize = '10px';
 
-                        const textDiv = document.createElement('div');
-                        textDiv.className = `text-[12px] md:text-[13px] text-gray-300 leading-snug flex-grow select-none ${task.completed ? 'line-through text-gray-500' : ''}`;
-                        textDiv.textContent = task.text;
+                        const contentWrapper = document.createElement('div');
+                        contentWrapper.className = 'flex-grow flex flex-col gap-1';
 
-                        taskRow.addEventListener('click', async () => {
+                        const textDiv = document.createElement('div');
+                        textDiv.className = `text-[12px] md:text-[13px] text-gray-300 leading-snug select-none ${task.completed ? 'line-through text-gray-500' : ''}`;
+                        textDiv.textContent = task.text;
+                        
+                        // Easy date change layout appended directly
+                        const dateForm = document.createElement('div');
+                        dateForm.className = 'flex items-center gap-2 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100 max-w-[130px]';
+                        dateForm.innerHTML = `<span class="text-[9px] text-gray-600">📅</span>`;
+                        const datePicker = document.createElement('input');
+                        datePicker.type = 'date';
+                        datePicker.className = 'text-[10px] bg-[#0d1117] border border-[#30363d] rounded px-1.5 py-0.5 text-gray-400 hover:text-gray-200 outline-none w-full cursor-pointer';
+                        datePicker.value = task.target_date || '';
+                        datePicker.addEventListener('click', e => e.stopPropagation()); // prevent triggering row click
+                        datePicker.addEventListener('change', async (e) => {
+                            e.stopPropagation();
+                            const val = datePicker.value || null;
+                            task.target_date = val;
+                            await client.from(config.tableTasks).update({ target_date: val }).eq('id', task.id);
+                            
+                            // Re-filter the current day if it moved out
+                            if (val !== dateKey) {
+                                taskRow.remove();
+                                const idx = dayTasks.indexOf(task);
+                                if (idx > -1) dayTasks.splice(idx, 1);
+                                if (dayTasks.length < 1) renderTasks(); // refresh entirely if empty
+                            }
+                        });
+                        dateForm.appendChild(datePicker);
+                        contentWrapper.appendChild(textDiv);
+                        contentWrapper.appendChild(dateForm);
+
+                        taskRow.addEventListener('click', async (e) => {
+                            if (e.target === datePicker) return; // Ignore clicks entering the date field
                             const newStatus = !task.completed;
                             task.completed = newStatus;
                             task.completed_date = newStatus ? dateKey : null;
@@ -799,7 +881,7 @@ function appInit() {
                         });
 
                         taskRow.appendChild(btn);
-                        taskRow.appendChild(textDiv);
+                        taskRow.appendChild(contentWrapper);
                         modalChecklist.appendChild(taskRow);
                     });
 

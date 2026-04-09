@@ -4,7 +4,7 @@ body { font-family: ui-sans-serif, system-ui, sans-serif; background-color: #0d1
 
         .day-cell { width: 100%; aspect-ratio: 1; border-radius: 6px; transition: transform 0.1s, outline 0.1s; background-color: #161b22; outline: 1px solid rgba(255,255,255,0.05); position: relative; }
         .day-cell.active { cursor: pointer; }
-        .day-cell.active:hover { transform: scale(1.15); outline: 2px solid #58a6ff; z-index: 10; }
+        .day-cell.active:hover { transform: scale(1.15); outline: 2px solid #58a6ff; z-index: 10; backface-visibility: hidden; }
         .day-cell.inactive { opacity: 0.15; background-color: #0d1117; outline: 1px dashed rgba(255,255,255,0.1); cursor: default; }
 
         .level-0 { background-color: #161b22; }
@@ -48,8 +48,9 @@ body { font-family: ui-sans-serif, system-ui, sans-serif; background-color: #0d1
             outline: none !important;
             z-index: 5;
             position: relative;
+            will-change: transform;
         }
-        .perfect-day:hover { outline: 2px solid #58a6ff !important; z-index: 20; }
+        .perfect-day:hover { outline: 2px solid #58a6ff !important; z-index: 20; transform: none; }
 
         .shiny-day {
             position: relative;
