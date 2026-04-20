@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Robot Design | Ewoud Janus</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Documentation of construction, failures, and rapid prototyping experiments from the Social Robot Design course at University of Twente.">
+    <meta name="keywords" content="Tinkering, Prototyping, Creative Technology, Building Blocks, Design Thinking, Coursework">
+    <meta name="author" content="Ewoud Janus">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://etcjanus.github.io/portfolio-2026/projects/social-robot-design/">
+    <meta property="og:title" content="Social Robot Design | Ewoud Janus">
+    <meta property="og:description" content="A log of prototyping experiments, building blocks, and tinkering material properties.">
+    <meta property="og:image" content="https://etcjanus.github.io/portfolio-2026/assets/images/social-robot-design/SRD%20Cover%20Image.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://etcjanus.github.io/portfolio-2026/projects/social-robot-design/">
+    <meta property="twitter:title" content="Social Robot Design | Ewoud Janus">
+    <meta property="twitter:description" content="A log of prototyping experiments, building blocks, and tinkering material properties.">
+    <meta property="twitter:image" content="https://etcjanus.github.io/portfolio-2026/assets/images/social-robot-design/SRD%20Cover%20Image.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../../favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <link rel="shortcut icon" href="../../favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../../apple-touch-icon.png" />
+    <link rel="manifest" href="../../site.webmanifest" />
+    
+    <link rel="stylesheet" href="../../css/styles.css"> 
+    
+    <link rel="stylesheet" href="styles.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <nav>
+        <div class="nav-left">
+            <div class="logo"><a href="../../index.html">EJ.</a></div>
+            
+            <div class="nav-icons">
+                <a href="mailto:etcjanus@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
+                <a href="https://www.linkedin.com/in/ewoudjanus/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                <a href="https://www.instagram.com/etc_modeling" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="https://github.com/ETCJanus" target="_blank"><i class="fab fa-github"></i></a>
+            </div>
+        </div>
+
+        <button class="burger-btn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+
+        <div class="links">
+            <a href="../../projects.html">Projects</a>
+            <a href="../../about.html">About</a>
+            <a href="#" class="contact-trigger">Contact</a>
+        </div>
+    </nav>
+
+    <canvas id="tinker-canvas" class="bg-canvas"></canvas>
+
+    
+
+    <div class="container">
+        
+        <header class="journal-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h1>Social Robot Design</h1>
+                    <p>A log of the projects I do for the course Social Robot Design</p>
+                </div>
+
+                
+            </div>
+        </header>
+
+        
+
+
+
+        <div class="gallery-grid" style="margin-top: 30px;">
+            <!-- Card 1 -->
+            <a href="about-me.html" class="tinker-card" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                <div style="height: 160px; overflow: hidden;">
+                    <img src="../../assets/images/profile_new.png" alt="About Me Cover Image" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                </div>
+                <div class="card-content" style="padding: 20px; flex-grow: 1;">
+                    <strong style="font-size: 1.2rem; display: block; margin-bottom: 10px;">About Me</strong>
+                    <div class="caption" style="opacity: 0.8; font-size: 0.95rem;">
+                        My previous study/studies, background, and relevant hobbies.
+                    </div>
+                </div>
+            </a>
+        </div>
+
+
+    </div>
+    
+    <script src="../../js/script.js"></script>
+    <script src="script.js"></script>
+
+    <div id="contact-modal" class="modal-overlay hidden" aria-hidden="true">
+        <div class="glass-card contact-terminal" role="dialog" aria-modal="true">
+            <div class="terminal-header-row">
+                <span class="terminal-id">/// TERMINAL_01</span>
+                <span class="status-badge"><span class="blink-dot"></span> ONLINE</span>
+            </div>
+            <button class="close-modal-btn" aria-label="Close contact modal">&times;</button>
+
+            <h2 class="glitch-text" style="font-size: 2.5rem; margin-bottom: 20px; margin-top: 10px;">Initialize Protocol</h2>
+            <p style="color: #9ca3af; margin-bottom: 40px; max-width: 500px; margin-left: auto; margin-right: auto;">
+                I am currently open to roles in <strong>Creative Technology</strong> and <strong>Interaction Design</strong>.
+            </p>
+
+            <div class="contact-actions">
+                <a href="../../assets/documents/cv.pdf" target="_blank" class="cyber-button">
+                    <i class="fas fa-file-download"></i> Download CV
+                </a>
+
+                <div class="social-grid">
+                    <a href="mailto:etcjanus@gmail.com" class="social-link email" title="Send Transmission">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/in/ewoudjanus/" target="_blank" class="social-link linkedin" title="Network Link">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="https://www.instagram.com/etc_modeling" target="_blank" class="social-link instagram" title="Visual Database">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="https://github.com/ETCJanus" target="_blank" class="social-link github" title="Code Repository">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="terminal-footer">
+                <span class="prompt">root@ewoud:~$</span> <span class="typing-cursor">awaiting_signal...</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

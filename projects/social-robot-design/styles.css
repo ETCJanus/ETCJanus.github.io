@@ -1,0 +1,795 @@
+/* =========================================
+   1. JOURNAL LAYOUT & NAVIGATION
+   ========================================= */
+.journal-header {
+    margin-bottom: 60px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 20px;
+}
+
+/* =========================================
+   FLOATING SIDE NAVIGATION (The Rail)
+   ========================================= */
+.toc {
+    /* 1. Fix to the Right Side */
+    position: fixed;
+    right: 30px; 
+    top: 50%;
+    transform: translateY(-50%); /* Centers it vertically */
+    z-index: 100;
+    
+    /* 2. Vertical Layout */
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Space between links */
+    align-items: flex-end; /* Aligns text to the right */
+    
+    /* 3. Glassy Pill Style */
+    background: rgba(10, 10, 10, 0.6); /* More transparent */
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px 15px;
+    
+    transition: all 0.3s ease;
+}
+
+/* Hide the "Jump to:" text on the side to keep it clean */
+.toc span {
+    display: none; 
+}
+
+/* Link Styles */
+.toc a {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.85rem;
+    line-height: 1;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 4px 16px 4px 6px; /* Compact number + room for dot */
+    min-width: 42px;
+    text-align: right;
+    letter-spacing: 0.02em;
+}
+
+/* Full title tooltip appears only on hover, keeping the rail compact */
+.toc a::before {
+    content: attr(data-full-title);
+    position: absolute;
+    right: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%) translateX(6px);
+    background: rgba(10, 10, 10, 0.95);
+    border: 1px solid rgba(167, 139, 250, 0.45);
+    color: #f3f4f6;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* The "Active/Hover" Dot indicator */
+.toc a::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background-color: #333; /* Inactive dot color */
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+/* HOVER EFFECTS */
+.toc:hover {
+    background: rgba(10, 10, 10, 0.9); /* Darkens when you mouse over */
+    border-color: rgba(167, 139, 250, 0.3);
+    box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+}
+
+.toc a:hover {
+    color: #fff; /* White text on hover */
+    transform: translateX(-5px); /* Slide text slightly left */
+}
+
+.toc a:hover::before {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}
+
+.toc a:hover::after {
+    background-color: #a78bfa; /* Dot turns purple */
+    width: 8px;
+    height: 8px;
+    box-shadow: 0 0 10px #a78bfa; /* Glowing dot */
+}
+
+/* =========================================
+   MOBILE RESPONSIVENESS
+   ========================================= */
+/* On screens smaller than 1200px, move it back to the top */
+@media (max-width: 1200px) {
+    .toc {
+        position: static; /* Put back in normal flow */
+        transform: none;
+        flex-direction: row; /* Horizontal again */
+        width: 100%;
+        justify-content: center;
+        background: #111;
+        margin-bottom: 40px;
+        padding: 15px;
+        align-items: center;
+        border-radius: 8px;
+    }
+
+    .toc span {
+        display: block; /* Show "Jump to:" again */
+        color: #555;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        margin-right: 10px;
+    }
+
+    .toc a {
+        min-width: 0;
+        text-align: left;
+        padding: 4px 8px;
+    }
+
+    .toc a::before {
+        display: none;
+    }
+
+    .toc a::after {
+        display: none; /* No dots on mobile */
+    }
+    
+    .toc:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .toc a:hover {
+        transform: none;
+    }
+}
+/* The Assignment Block */
+article.assignment {
+    margin-bottom: 80px; /* Space between assignments */
+    padding: 30px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-left: 4px solid #a78bfa; /* Lavender accent border */
+
+    /* FIX: Adds a buffer so the Fixed Nav doesn't cover the title */
+    scroll-margin-top: 100px;
+    
+    transition: all 0.3s ease;
+}
+
+article.assignment:hover {
+    border-left-color: #2dd4bf;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+article.assignment.placeholder {
+    border-left-color: #555;
+    opacity: 0.65;
+}
+
+.assignment-meta {
+    color: var(--accent-color);
+    font-family: monospace;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Subtle title accent so assignment headings stand out a bit more */
+article.assignment h2 {
+    color: #ffffff;
+    display: inline-block;
+    position: relative;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    text-shadow: 0 0 14px rgba(167, 139, 250, 0.18);
+}
+
+article.assignment h2::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 48px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #a78bfa, #2dd4bf);
+    transition: width 0.25s ease;
+}
+
+article.assignment:hover h2::after {
+    width: 72px;
+}
+
+article.assignment h3 {
+    color: #f3f4f6;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 30px 0 10px;
+    padding-left: 12px;
+    border-left: 3px solid rgba(167, 139, 250, 0.65);
+    letter-spacing: 0.01em;
+    text-shadow: 0 0 12px rgba(167, 139, 250, 0.16);
+}
+
+article.assignment h3 + p {
+    margin-top: 0;
+}
+
+/* =========================================
+   2. GALLERY & TINKER CARDS
+   ========================================= */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.tinker-card {
+    background: rgba(255, 255, 255, 0.03); /* Subtle glass background */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.tinker-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(167, 139, 250, 0.5); /* Lavender glow border */
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* Force all images to be exactly the same size */
+.tinker-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.card-content {
+    padding: 20px;
+}
+
+.card-content strong {
+    color: #a78bfa;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+}
+
+.card-content .caption {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    line-height: 1.5;
+}
+
+/* Wrapped thumbnails for Assignment 1.2 reflections */
+.reflection-space {
+    margin-bottom: 26px;
+}
+
+.reflection-space::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.reflection-thumb {
+    float: right;
+    width: 220px;
+    margin: 4px 0 12px 18px;
+}
+
+.reflection-thumb img {
+    height: 150px;
+}
+
+@media (max-width: 768px) {
+    .reflection-thumb {
+        float: none;
+        width: 100%;
+        max-width: 280px;
+        margin: 14px auto;
+    }
+}
+
+/* =========================================
+   3. DESIGNER CAROUSEL (Fixed)
+   ========================================= */
+.carousel-container {
+    position: relative;
+    max-width: 800px;
+    margin: 40px auto;
+
+    /* Glass Container */
+    background: rgba(255, 255, 255, 0.03); 
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+    height: 550px; /* Increased slightly to fit caption below image */
+    
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.carousel-slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    
+    /* NEW: Flex Column ensures Caption sits UNDER image */
+    flex-direction: column; 
+    
+    animation: fadeEffect 0.5s;
+}
+
+.carousel-slide.active {
+    display: flex; 
+}
+
+/* --- IMAGE STYLES --- */
+
+/* 1. The Image Area */
+.carousel-slide img {
+    width: 100%;
+    /* Flex-grow 1 makes image take all space NOT used by caption */
+    flex-grow: 1; 
+    object-fit: cover;
+    
+    /* Reset margins so it touches the top/sides */
+    margin: 0;
+    display: block;
+    
+    /* Ensure image doesn't overflow its flexible area */
+    min-height: 0; 
+}
+
+/* 2. The Studio/Sketch Style (Floating Hologram Effect) */
+.carousel-slide img.studio-bg {
+    object-fit: contain; 
+    padding: 20px;
+    background: transparent; 
+    
+    /* 1. Inverts colors (white paper becomes black, pencil becomes white) */
+    /* 2. Boosts brightness so the pencil lines glow */
+    filter: invert(1) brightness(1.5) contrast(1.2);
+    
+    /* 3. THE MAGIC: Makes all black pixels 100% transparent! */
+    mix-blend-mode: screen;
+}
+
+.tinker-card img.studio-bg {
+    object-fit: contain;
+    padding: 20px;
+    background: transparent;
+    filter: invert(1) brightness(1.5) contrast(1.2);
+    mix-blend-mode: screen;
+}
+
+.tinker-card.blend-card:hover {
+    transform: none;
+}
+
+/* --- CAPTION STYLES (Under the Block) --- */
+.carousel-caption-bar {
+    /* REMOVED: position: absolute; */
+    position: relative; 
+    width: 100%;
+    padding: 15px 20px;
+    
+    /* Solid background to separate from image */
+    background: #0f0f0f; 
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    
+    color: #e5e5e5;
+    font-family: 'Space Grotesk', sans-serif;
+    
+    /* Ensures caption doesn't shrink if text is long */
+    flex-shrink: 0; 
+}
+
+.carousel-caption-bar strong {
+    color: #a78bfa;
+    margin-right: 8px;
+}
+
+/* --- BUTTON STYLES --- */
+.prev, .next {
+    cursor: pointer;
+    position: absolute;
+    /* Center vertically based on the CONTAINER, not just the image */
+    top: 45%; 
+    transform: translateY(-50%);
+    padding: 16px;
+    color: rgba(255,255,255,0.4); /* Subtle until hover */
+    font-weight: bold;
+    font-size: 24px;
+    border: none;
+    background: transparent;
+    z-index: 20;
+    transition: 0.2s;
+}
+
+.next { right: 5px; }
+.prev { left: 5px; }
+
+.prev:hover, .next:hover {
+    color: #a78bfa;
+    transform: translateY(-50%) scale(1.2);
+}
+
+/* Placeholder Styles */
+.assignment.placeholder h2 {
+    color: #555; /* Dimmer title */
+}
+
+.placeholder-box {
+    width: 100%;
+    height: 100px; /* Short empty box */
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.03),
+        rgba(255,255,255,0.03) 10px,
+        rgba(255,255,255,0.05) 10px,
+        rgba(255,255,255,0.05) 20px
+    );
+    border: 1px dashed #333;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+/* =========================================
+   STATUS TAGS (The Badge Look)
+   ========================================= */
+.assignment-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+/* The Assignment Number (e.g. Assignment 0.1) */
+.assignment-id {
+    color: #fff;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background: rgba(167, 139, 250, 0.2);
+    border: 1px solid rgba(167, 139, 250, 0.4);
+    padding: 6px 12px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* The Base Tag Style */
+.status-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    backdrop-filter: blur(4px);
+}
+
+/* COMPLETED: Green/Teal Glow */
+.status-completed {
+    background: rgba(45, 212, 191, 0.1); 
+    color: #2dd4bf; 
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    box-shadow: 0 0 10px rgba(45, 212, 191, 0.1);
+}
+
+/* COMING UP: Gray/Dim */
+.status-coming {
+    background: rgba(255, 255, 255, 0.05); 
+    color: #666; 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* =========================================
+   4. MODE SWITCH BUTTON (The "Portal")
+   ========================================= */
+.mode-switch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 24px;
+    background: rgba(45, 212, 191, 0.1); /* Teal Tint */
+    border: 1px solid #2dd4bf;
+    border-radius: 50px;
+    color: #2dd4bf;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.mode-switch-btn:hover {
+    background: #2dd4bf;
+    color: #050507; /* Dark text on hover */
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.4);
+    transform: translateY(-2px);
+}
+
+/* THE PULSE ANIMATION */
+.pulse-animation {
+    animation: glowPulse 3s infinite;
+}
+
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(45, 212, 191, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(45, 212, 191, 0);
+    }
+}
+
+/* Mobile Tweak: Stack them nicely */
+@media (max-width: 768px) {
+    .journal-header div {
+        width: 100%;
+    }
+    .mode-switch-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* =========================================
+   FLOATING MODE-SWITCH BUTTON (Sticky)
+   ========================================= */
+.floating-mode-btn {
+    position: fixed;
+    right: 30px;
+    z-index: 101;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: rgba(45, 212, 191, 0.15);
+    border: 1px solid #2dd4bf;
+    border-radius: 50px;
+    color: #2dd4bf;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.75rem;
+    backdrop-filter: blur(10px);
+    white-space: nowrap;
+}
+
+.floating-mode-btn.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+}
+
+.floating-mode-btn:hover {
+    background: #2dd4bf;
+    color: #050507;
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.4);
+}
+
+@media (max-width: 1200px) {
+    .floating-mode-btn {
+        right: 20px;
+        top: 80px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .floating-mode-btn {
+        right: 15px;
+        font-size: 0.7rem;
+        padding: 8px 14px;
+    }
+}
+
+/* =========================================
+   5. TINKER TABLE STYLES
+   ========================================= */
+.tinker-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    font-size: 0.9rem;
+    font-family: var(--font-body);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    overflow: hidden; /* Keeps rounded corners */
+}
+
+.tinker-table thead tr {
+    background: rgba(45, 212, 191, 0.1);
+    color: #2dd4bf;
+    text-align: left;
+    border-bottom: 2px solid rgba(45, 212, 191, 0.3);
+}
+
+.tinker-table th, 
+.tinker-table td {
+    padding: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    vertical-align: top;
+    line-height: 1.5;
+}
+
+.tinker-table th {
+    font-family: var(--font-heading);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.tinker-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tinker-table td strong {
+    color: #a78bfa; /* Purple highlight for the Kit names */
+    font-size: 1rem;
+}
+
+/* Ensure the table scrolls horizontally on small phones */
+@media (max-width: 768px) {
+    .tinker-table th, .tinker-table td {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+
+    .tinker-table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    article.assignment {
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .toc {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .toc a {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+
+    article.assignment {
+        padding: 15px;
+    }
+
+    .assignment-id {
+        font-size: 0.75rem;
+    }
+}/* --- Course Content Headings Styling --- */
+.course-content-block h3 {
+    font-size: 1.5rem;
+    color: #f3f4f6;
+    margin: 2rem 0 1rem 0;
+    position: relative;
+    padding-left: 14px;
+    font-weight: 600;
+}
+
+.course-content-block h3::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 70%;
+    width: 4px;
+    background: linear-gradient(180deg, #a78bfa, #2dd4bf);
+    border-radius: 2px;
+}
+
+.course-content-block h4 {
+    font-size: 1.25rem;
+    color: #e5e7eb;
+    margin: 1.5rem 0 0.75rem 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.course-content-block h4::before {
+    content: '';
+    width: 12px;
+    height: 2px;
+    background-color: #a78bfa;
+    border-radius: 1px;
+}
+/* --- Course Content Headings Styling --- */
+.course-content-block h3 {
+    font-size: 1.5rem;
+    color: #f3f4f6;
+    margin: 2rem 0 1rem 0;
+    position: relative;
+    padding-left: 14px;
+    font-weight: 600;
+}
+
+.course-content-block h3::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 70%;
+    width: 4px;
+    background: linear-gradient(180deg, #a78bfa, #2dd4bf);
+    border-radius: 2px;
+}
+
+.course-content-block h4 {
+    font-size: 1.25rem;
+    color: #e5e7eb;
+    margin: 1.5rem 0 0.75rem 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.course-content-block h4::before {
+    content: '';
+    width: 12px;
+    height: 2px;
+    background-color: #a78bfa;
+    border-radius: 1px;
+}
