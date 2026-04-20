@@ -4,7 +4,7 @@ const projectData = [
         id: 'pomodoro-pet',
         title: 'Pomodoro Pet',
         description: 'A Flutter mobile app combining Pomodoro focus timers with Tamagotchi-style pet care mechanics.',
-        image: 'assets/images/pomodoro-thumb.jpg',
+        image: 'assets/images/pomodoro-pet/pomodoro-thumb.jpg',
         tag: 'Mobile App',
         link: 'projects/pomodoro-pet/index.html',
         featured: true
@@ -13,7 +13,7 @@ const projectData = [
         id: 'hospital-at-home',
         title: 'Hospital at Home Toolkit',
         description: 'A user-centered redesign of medical take-home kits to improve patient accessibility and usability.',
-        image: 'assets/images/HaH-thumb.png',
+        image: 'assets/images/hospital-at-home/HaH-thumb.png',
         tag: 'UX/UI Design',
         link: 'projects/hospital-at-home/index.html',
         featured: true
@@ -22,7 +22,7 @@ const projectData = [
         id: 'mastering-tinkering',
         title: 'Mastering Tinkering',
         description: 'Documentation of construction, failures, and rapid prototyping experiments.',
-        image: 'assets/images/tinkering-thumb.jpg',
+        image: 'assets/images/mastering-tinkering/tinkering-thumb.jpg',
         tag: 'Coursework',
         link: 'projects/mastering-tinkering/index.html',
         featured: false
@@ -31,7 +31,7 @@ const projectData = [
         id: 'portfolio-2026',
         title: 'Portfolio 2026',
         description: 'A custom-built scrollytelling experience using HTML5 Canvas and Blender.',
-        image: 'assets/images/portfolio-thumb.jpg',
+        image: 'assets/images/portfolio-2026/portfolio-thumb.jpg',
         tag: 'Web Dev',
         link: 'projects/portfolio-2026/index.html',
         featured: false
