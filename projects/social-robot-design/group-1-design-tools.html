@@ -1,0 +1,203 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group 1: Pet Anxiety Toolkit | Social Robot Design</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Group 1 design project: Pet Anxiety Toolkit. Case description, design tools, mind map, and functional breakdown.">
+    <meta name="keywords" content="Social Robot Design, Pet Anxiety, Modular Toolkit, Design Tools, Social Robotics">
+    <meta name="author" content="Ewoud Janus">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://etcjanus.github.io/portfolio-2026/projects/social-robot-design/group-1-design-tools.html">
+    <meta property="og:title" content="Group 1: Pet Anxiety Toolkit | Ewoud Janus">
+    <meta property="og:description" content="Modular robotic toolkit for reducing pet anxiety - case description, design tools, and functional breakdown.">
+    <meta property="og:image" content="https://etcjanus.github.io/portfolio-2026/assets/images/social-robot-design/SRD%20Cover%20Image.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://etcjanus.github.io/portfolio-2026/projects/social-robot-design/group-1-design-tools.html">
+    <meta property="twitter:title" content="Group 1: Pet Anxiety Toolkit | Ewoud Janus">
+    <meta property="twitter:description" content="Modular robotic toolkit for reducing pet anxiety.">
+    <meta property="twitter:image" content="https://etcjanus.github.io/portfolio-2026/assets/images/social-robot-design/SRD%20Cover%20Image.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../../favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <link rel="shortcut icon" href="../../favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../../apple-touch-icon.png" />
+    <link rel="manifest" href="../../site.webmanifest" />
+    
+    <link rel="stylesheet" href="../../css/styles.css"> 
+    
+    <link rel="stylesheet" href="styles.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <nav>
+        <div class="nav-left">
+            <div class="logo"><a href="../../index.html">EJ.</a></div>
+            
+            <div class="nav-icons">
+                <a href="mailto:etcjanus@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
+                <a href="https://www.linkedin.com/in/ewoudjanus/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                <a href="https://www.instagram.com/etc_modeling" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="https://github.com/ETCJanus" target="_blank"><i class="fab fa-github"></i></a>
+            </div>
+        </div>
+
+        <button class="burger-btn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+
+        <div class="links">
+            <a href="../../projects.html">Projects</a>
+            <a href="../../about.html">About</a>
+            <a href="#" class="contact-trigger">Contact</a>
+        </div>
+    </nav>
+
+    <canvas id="tinker-canvas" class="bg-canvas"></canvas>
+
+    <div class="container">
+        
+        <header class="journal-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h1>Group 1: Pet Anxiety Toolkit</h1>
+                    <p>Case description, design tools, and functional breakdown for modular robotic companion.</p>
+                </div>
+
+                <a href="index.html" class="mode-switch-btn pulse-animation" style="text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Back to course page
+                </a>
+            </div>
+        </header>
+
+        <div class="course-content-block" style="padding: 2rem 0; max-width: 900px; margin: 0 auto;">
+            
+            <div style="color: #d1d5db; line-height: 1.8; font-size: 1.1rem;">
+                
+                <h3>Case Description</h3>
+                <p style="margin-bottom: 1.5rem;">
+                    Domestic pets (e.g., cats &amp; dogs) often experience stress and separation anxiety when left alone. While interactive toys exist, the effectiveness of these solutions varies per individual animal; a motion that is engaging for one might be terrifying for another. This makes designing an effective robot companion challenging. 
+                </p>
+                <p style="margin-bottom: 1.5rem;">
+                    To solve this design gap, this project tries to focus on developing a modular pet companion toolkit. Rather than a single, static robot, we design a hardware and software setup that allows designers and pet owners to rapidly prototype, test and change according to the preferences of each individual pet. Swapping physical modules, like a treat dispenser, a laser pointer, or a mechanical arm to throw balls, facilitates iterative testing. The goal is to discover the best combination of play and mechanics to effectively reduce pet anxiety. 
+                </p>
+                
+                <div style="padding: 1.5rem; background: rgba(167, 139, 250, 0.05); border-left: 4px solid #a78bfa; border-radius: 4px; margin-bottom: 2rem;">
+                    <p style="margin: 0; font-weight: 500; color: #f3f4f6;">
+                        <strong>Research Question:</strong> How can a modular robotic design toolkit enable designers and pet owners to rapidly prototype interactions to help alleviate anxiety behaviours for domestic pets?
+                    </p>
+                </div>
+
+                <h3>Design Tools</h3>
+                
+                <h4 style="margin-top: 2rem; color: #f3f4f6;">Puppeteering</h4>
+                <p style="margin-bottom: 1rem;">
+                    <strong>The Method:</strong> Testing a product's behaviour by simulating it manually.
+                </p>
+                <p style="margin-bottom: 1rem;">
+                    <strong>Application to problem:</strong> Before actually making the toolkit and having to decide on speed and the best module applications, construct a low-fidelity version of our robot, attach the modules, and try it out. This allows for quick iteration and is easy to edit.
+                </p>
+                <p style="margin-bottom: 1.5rem;">
+                    <strong>What we might learn:</strong> This part of the design process can help us identify which modules are exciting for the animals and are perceived as play, while other modules could be used to reduce anxiety or loneliness. Certain jerky movements, smells, or shapes can scare the animals. This design method can help find the sweet spot in interactions and engagement, defining the parameters and specifications of the final hardware and software. It also reduces the research time needed and lowers costs. Play methods are translated into actual mechanical design.
+                </p>
+
+                <h4 style="margin-top: 2rem; color: #f3f4f6;">Hackathon</h4>
+                <p style="margin-bottom: 1rem;">
+                    <strong>The Method:</strong> An intensive, timed collaborative event where multidisciplinary research teams rapidly ideate and prototype solutions to our challenge.
+                </p>
+                <p style="margin-bottom: 1rem;">
+                    <strong>Application to problem:</strong> Organise a short, one-day event focused on designing a product for animal anxiety reduction and entertainment. Invite peers at the University of Twente, such as design experts and other animal enthusiasts who want to participate, and provide them with all the tools and sensors they need to create a toolkit, challenging them to prototype a module that helps animals feel safe or relaxed.
+                </p>
+                <p style="margin-bottom: 1.5rem;">
+                    <strong>What we might learn:</strong> By observing how other designers and experts tackle this issue and build solutions, we can identify the obvious physical and technical pitfalls in designing for pets, such as issues with durability, scale, and movement. It may also generate a wide range of ideas for our modules that we might not have considered on our own. Furthermore, it allows us to test the toolkit itself and see how intuitive it is and what is missing.
+                </p>
+
+                <h4 style="margin-top: 2rem; color: #f3f4f6;">(Online) Cohort Analysis</h4>
+                <p style="margin-bottom: 1rem;">
+                    <strong>The Method:</strong> A qualitative and quantitative research approach that groups subjects based on shared characteristics to identify patterns.
+                </p>
+                <p style="margin-bottom: 1rem;">
+                    <strong>Application to problem:</strong> Engage with and research subsets of pet owners through online forums, networks, or surveys who actively deal with issues like separation anxiety. Segment these cohorts based on variables such as pet background and context (e.g., rescue or raised from birth) or the type of anxiety the animal shows, and analyse how owners currently cope with this issue.
+                </p>
+                <p style="margin-bottom: 2rem;">
+                    <strong>What we might learn:</strong> This method helps support our assumptions with data and real experiences from owners. We can learn exactly how owners currently support their anxious pets and what triggers their distress. Mapping observed behaviours to specific interventions we can deploy helps determine the foundations of our modules.
+                </p>
+
+                <h3>Mind Map</h3>
+                <div style="margin: 2rem 0; display: flex; justify-content: center;">
+                    <img src="../../assets/images/social-robot-design/mindmap.jpg" alt="Mind map of the problem space" style="width: 100%; max-width: 700px; height: auto; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.3);" onclick="event.stopPropagation();">
+                </div>
+                <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-top: 0.5rem; margin-bottom: 2.5rem;">Mind map of the problem space, exploring how we can design for pet interaction.</p>
+
+                <h3>Building Blocks &amp; Functional Breakdown</h3>
+                
+                <h4 style="margin-top: 1.5rem; color: #f3f4f6;">Main Platform</h4>
+                <ul style="margin-bottom: 1.5rem; padding-left: 1.5rem;">
+                    <li style="margin-bottom: 0.5rem;"><strong>Controlled base from class robot:</strong> A sturdy chassis with lights and speakers</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Microcontroller:</strong> Arduino/Raspberry Pi to control the modular attachments</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Actuators:</strong> Servos and maybe an open-source arm structure (SO-ARM100) to manipulate object and toys</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Power supply:</strong> High-capacity battery pack safely enclosed (No chewing in batteries!)</li>
+                </ul>
+
+                <h4 style="margin-top: 1.5rem; color: #f3f4f6;">Module Examples</h4>
+                <ul style="margin-bottom: 1.5rem; padding-left: 1.5rem;">
+                    <li style="margin-bottom: 0.5rem;">Arm/Kinetic movement (or just something simple for the tail or a laser pointer)</li>
+                    <li style="margin-bottom: 0.5rem;">Audio/Visual modules for entertainment or copying/mirroring the pet</li>
+                    <li style="margin-bottom: 0.5rem;">Reward module: Automatic controllable treat-dispenser</li>
+                </ul>
+
+                <h4 style="margin-top: 1.5rem; color: #f3f4f6;">Sensor Input</h4>
+                <ul style="margin-bottom: 2rem; padding-left: 1.5rem;">
+                    <li style="margin-bottom: 0.5rem;"><strong>Microphone:</strong> To detect interactions (e.g., barking and/or purring)</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Proximity sensor:</strong> To detect when an animal approaches the robot</li>
+                    <li style="margin-bottom: 0.5rem;"><strong>Vision:</strong> A camera to detect the animal, toys or other objects</li>
+                </ul>
+
+                <h3>Experimental Approach</h3>
+                <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap; margin-bottom: 2rem;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <p style="margin-bottom: 1.5rem;">
+                            To help actualise and map the encounter between the animal and the robot/technology, we will conduct a live play session using a domestic cat (played by Maurits) and a robot (played by Gijs). The team members will use a physical proxy (e.g., a cardboard cutout of a robot and a cat onesie) to intentionally restrict movement or speed, creating a more accurate representation of the interaction by simulating behaviour closer to the physical limitations. The rest of the team will support this play session using live music, camerawork for later research, and a live audience.
+                        </p>
+                        <p style="margin-bottom: 0;">
+                            Figure 1 is an example of how our actor would portray a seal.
+                        </p>
+                    </div>
+                    <img src="../../assets/images/social-robot-design/maurits-seal.jpg" alt="Seal (left), Maurits (right)" style="width: 300px; height: auto; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); flex-shrink: 0;" onclick="event.stopPropagation();">
+                </div>
+                <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-top: 0;">Figure 1: Seal (left), Maurits (right), showing his best acting skills as a physical proxy for the seal (award-winning).</p>
+
+            </div>
+        </div>
+    </div>
+    
+    <script src="../../js/script.js"></script>
+    <script src="script.js"></script>
+
+    <div id="contact-modal" class="modal-overlay hidden" aria-hidden="true">
+        <div class="glass-card contact-terminal" role="dialog" aria-modal="true">
+            <div class="terminal-header-row">
+                <span class="terminal-id">/// TERMINAL_01</span>
+                <button class="terminal-close" onclick="document.getElementById('contact-modal').classList.add('hidden')">×</button>
+            </div>
+            <div class="terminal-body">
+                <p><span class="terminal-prompt">→</span> <strong>Get in touch:</strong></p>
+                <p><span class="terminal-prompt">→</span> Email: <a href="mailto:etcjanus@gmail.com">etcjanus@gmail.com</a></p>
+                <p><span class="terminal-prompt">→</span> LinkedIn: <a href="https://www.linkedin.com/in/ewoudjanus/" target="_blank">ewoudjanus</a></p>
+                <p><span class="terminal-prompt">→</span> GitHub: <a href="https://github.com/ETCJanus" target="_blank">ETCJanus</a></p>
+                <p><span class="terminal-prompt">→</span> Instagram: <a href="https://www.instagram.com/etc_modeling" target="_blank">etc_modeling</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

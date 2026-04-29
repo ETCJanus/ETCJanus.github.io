@@ -30,15 +30,12 @@ function showSlides(n) {
 }
 
 /* =========================================
-   2. INTERACTIVE BACKGROUND (Momentum Physics)
+   2. SMOOTH GRADIENT ORBS BACKGROUND
    ========================================= */
 
 document.addEventListener("DOMContentLoaded", function() {
-    // 1. Start Background Animation
-    const canvas = document.getElementById('tinker-canvas');
-    if (canvas) {
-        initTinkerEffect(canvas);
-    }
+    // 1. Start SRD Background Animation
+    initSRDBackground();
 
     // 2. Generate Navigation Menu
     generateTOC();
@@ -46,6 +43,91 @@ document.addEventListener("DOMContentLoaded", function() {
     // 3. Floating Mode-Switch Button
     initFloatingModeBtn();
 });
+
+function initSRDBackground() {
+    const canvas = document.getElementById('tinker-canvas');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let time = 0;
+    let mouseX = width / 2;
+    let mouseY = height / 2;
+    let scrollY = 0;
+
+    const resize = () => {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+    };
+
+    // Track mouse movement
+    window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+
+    // Track scroll
+    window.addEventListener('scroll', () => {
+        scrollY = window.scrollY;
+    });
+
+    const animate = () => {
+        // Clear with dark background
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, width, height);
+
+        time += 1;
+
+        // Draw flowing wave lines
+        const numWaves = 6;
+        for (let wave = 0; wave < numWaves; wave++) {
+            ctx.beginPath();
+            
+            const waveOffset = (scrollY * 0.3 + time * 0.5) + wave * 40;
+            const mouseInfluence = Math.sin((mouseX / width) * Math.PI) * 30;
+            
+            let firstPoint = true;
+            
+            for (let x = -width; x < width * 2; x += 8) {
+                // Base wave pattern
+                const baseY = height / 2 + 
+                             Math.sin(x * 0.005 + time * 0.003) * 60 +
+                             Math.sin(x * 0.002 + waveOffset * 0.002) * 80;
+                
+                // Mouse interaction
+                const distToMouse = Math.sqrt(Math.pow(x - mouseX, 2) + Math.pow(baseY - mouseY, 2));
+                const mouseWarp = Math.max(0, 150 - distToMouse) * 0.3;
+                
+                // Scroll creates vertical shifts
+                const scrollWave = Math.sin((scrollY + x) * 0.02) * 20;
+                
+                const y = baseY + mouseWarp + scrollWave;
+                
+                if (firstPoint) {
+                    ctx.moveTo(x, y);
+                    firstPoint = false;
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            
+            // Color - alternating teal and purple with transparency
+            const hue = wave % 2 === 0 ? '#a78bfa' : '#2dd4bf';
+            ctx.strokeStyle = hue + (Math.floor(20 + wave * 8)).toString(16).padStart(2, '0');
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+        }
+
+        requestAnimationFrame(animate);
+    };
+
+    window.addEventListener('resize', resize);
+    resize();
+    animate();
+}
 
 function initTinkerEffect(canvas) {
     const ctx = canvas.getContext('2d');
