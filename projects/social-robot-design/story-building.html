@@ -32,13 +32,85 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        .page-header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .main-content {
+            padding: 2rem 0;
+            max-width: 960px;
+            margin: 0 auto;
+            color: #d1d5db;
+            line-height: 1.8;
+            font-size: 1.08rem;
+        }
+        .section-title {
+            color: #f3f4f6;
+            margin-top: 1.75rem;
+        }
+        .content-card {
+            border-radius: 10px;
+            border: 1px dashed rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.2rem;
+        }
+        .content-card.large-margin {
+            margin-bottom: 2rem;
+        }
+        .content-card p {
+            margin: 0 0 0.5rem 0;
+        }
+        .content-card p:last-child {
+            margin-bottom: 0;
+        }
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 2rem;
+        }
+        .scenario-article {
+            padding: 1.4rem;
+            border-radius: 12px;
+        }
+        .scenario-article.dark {
+            border: 1px solid rgba(239, 68, 68, 0.22);
+            background: rgba(239, 68, 68, 0.05);
+        }
+        .scenario-article.light {
+            border: 1px solid rgba(34, 197, 94, 0.22);
+            background: rgba(34, 197, 94, 0.05);
+        }
+        .scenario-label {
+            margin: 0 0 0.6rem 0;
+            font-size: 0.82rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+        .scenario-label.dark { color: #fca5a5; }
+        .scenario-label.light { color: #86efac; }
+        .scenario-title {
+            margin-top: 0;
+            color: #fff;
+        }
+        .reference-divider {
+            border: 0;
+            border-top: 1px dashed rgba(255,255,255,0.14);
+            margin: 1rem 0;
+        }
+    </style>
 </head>
 <body>
 
     <nav>
         <div class="nav-left">
             <div class="logo"><a href="../../index.html">EJ.</a></div>
-
             <div class="nav-icons">
                 <a href="mailto:etcjanus@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
                 <a href="https://www.linkedin.com/in/ewoudjanus/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
@@ -62,94 +134,116 @@
 
     <div class="container">
         <header class="journal-header">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+            <div class="page-header-container">
                 <div>
                     <h1>Story Building</h1>
                     <p>Scenario-based design work for the portfolio story-building assignment in Social Robot Design.</p>
                 </div>
-
                 <a href="index.html" class="mode-switch-btn pulse-animation" style="text-decoration: none;">
                     <i class="fas fa-arrow-left"></i> Back to course page
                 </a>
             </div>
         </header>
 
-        <div class="course-content-block" style="padding: 2rem 0; max-width: 960px; margin: 0 auto;">
-            <div style="color: #d1d5db; line-height: 1.8; font-size: 1.08rem;">
+        <main class="course-content-block main-content">
+            
+            <section>
+                <h3>Project Collaborators</h3>
+                <div class="content-card large-margin">
+                    <p>Ewoud Janus, Maurits Dijkman, Bianca Filip, Emilia Pavel, Rebecca van der Lee, and Gijs Vis.</p>
+                </div>
+            </section>
 
+            <section>
                 <h3>Design Tool</h3>
                 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Description</h4>
-                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem; padding: 1rem 1.2rem;">
-                    <p style="margin-top: 0;">This concept was developed during the second Social Robot Design session with Group 1. The focus was scenario-based design and a specific tool for Human-Robot Interaction (HRI). Instead of writing standard text scenarios, I proposed integrating Virtual Reality (VR) to modernize the improvisation theatre approach. During the execution, my role involved setting up the VR environment and acting as the technical operator and observer. I tracked the interactions from an outside perspective to identify design flaws.</p>
-
-                    <p><strong>Design Tool: Embodied Perspective Theatre (EPT)</strong> is a VR-assisted scenario-based design tool. Improvisation theatre is an established simulation tool for HRI design. Simulating an animal's experience introduces physical limitations because human actors possess human height and proportions. EPT solves this by placing actors in a VR environment where scale, eye-level, and physical presence are altered. One user embodies a small pet avatar, while another embodies the robot or human.</p>
-
-                    <p style="margin-bottom: 0;">VR is primarily visual and lacks full tactile feedback. It does serve a critical function by forcing the designer into the exact viewpoint and mindset of the end-user. This mirrors the approach of industrial designer Patricia Moore, who wore restrictive bindings and altered glasses for years to experience product design through the perspective of an 80-year-old. EPT does this digitally. By adopting the pet's scale, the design team can identify spatial issues, threatening approach speeds, and blocked escape routes that standard written scenarios miss.</p>
+                <h4 class="section-title">Description</h4>
+                <div class="content-card">
+                    <p>This concept was created during an early morning meeting at the university library during a brainstorm where the focus was on designing a tool for scenario-based design. While we already had our focus on designing for pets, we thought it would be especially important for this userbase to immerse yourself in their perspective. During these early morning hours an idea landed on me: during my Research Topics I am doing research on using VR for making the training for first-responders more realistic. We could use this wonderful technology here too! Use VR to put yourself in the shoes of your user to get a better understanding of their experience.</p>
+                    <p><strong>Design Tool: Embodied Perspective Theatre (EPT)</strong> is a VR-assisted scenario-based design tool. Improvisation theatre is an established simulation tool for HRI design. Usually it is hard to simulate the experience of an animal because human actors are limited to their humanly heights and proportions. EPT solves this by placing actors or designers directly in a VR environment where scale, sight and proportions are altered. One user can embody a pet while another can be the robot. Although VR is mostly visual and lacks actual tactile feedback, it does help force a designer to look through the exact viewpoint and mindset of the end-user.</p>
                 </div>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Design files & pictures</h4>
-                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem; padding: 1rem 1.2rem;">
-                    <p style="margin: 0;">Documentation and VR setup images from session 2.</p>
+                <h4 class="section-title">Design Files & Pictures</h4>
+                <div class="content-card">
+                    <p>Documentation and VR setup images from session 2.</p>
                 </div>
+            </section>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Resources & literature references</h4>
-                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem; padding: 1rem 1.2rem;">
-                    <p style="margin: 0;">Patricia Moore's long-term empathy work (age-simulation through restrictive bindings and altered vision) informed the perspective-taking approach used in EPT.</p>
-                </div>
-
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">References to collaborators</h4>
-                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 2rem; padding: 1rem 1.2rem;">
-                    <p style="margin: 0;">Group 1 (Social Robot Design session 2).</p>
-                </div>
-
+            <section>
                 <h3>Results: Tool in Action</h3>
-                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 2rem; padding: 1rem 1.2rem;">
-                    <p style="margin-top: 0;">We used the tool to generate two distinct scenarios to map the boundaries of our pet companion robot. The VR perspective shifted the focus from what the robot does to how its actions are perceived. A slow approach for a human can feel like a rapid, trapping maneuver to a small animal.</p>
-
-                    <p style="margin-bottom: 0;">This ties directly into my current thesis work, which uses VR to make training environments for first-responders more realistic. In both cases, the value of the tool lies in immersion. A robot does not need to be fully functional to test its social impact. Low-fidelity VR prototypes and acted scenarios are sufficient to expose critical constraints regarding movement speed, safety, and spatial awareness early in the design process.</p>
+                <div class="content-card large-margin">
+                    <p>We used the tool to generate two distinct scenarios to map the boundaries of our pet companion robot. The VR perspective shifted the focus from what the robot does to how its actions are perceived. A slow approach for a human can feel like a rapid, trapping maneuver to a small animal.</p>
+                    <p>This ties directly into my current thesis work, which uses VR to make training environments for first-responders more realistic. In both cases, the value of the tool lies in immersion. A robot does not need to be fully functional to test its social impact. Low-fidelity VR prototypes and acted scenarios are sufficient to expose critical constraints regarding movement speed, safety, and spatial awareness early in the design process.</p>
                 </div>
+            </section>
 
+            <section>
                 <h3>Two Scenarios</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 2rem;">
-                    <article style="padding: 1.4rem; border-radius: 12px; border: 1px solid rgba(239, 68, 68, 0.22); background: rgba(239, 68, 68, 0.05);">
-                        <p style="margin: 0 0 0.6rem 0; font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; color: #fca5a5;">Dark scenario</p>
-                        <h4 style="margin-top: 0; color: #fff;">Misread Anxiety</h4>
-                        <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); padding: 1rem 1.1rem;">
-                            <p style="margin: 0;">The owner leaves, and the anxious dog paces near the front door. The robot's sensors detect the movement and incorrectly classify it as an invitation to play. The robot approaches, playing a sound and moving a toy module. From the dog's perspective, a large object is suddenly blocking its only exit. The dog backs away, which the robot misinterprets as a continuation of play, tracking it further. The dog eventually freezes by the couch in distress. The robot logs the lack of movement as a resting state and notifies the owner that the dog is calm.</p>
+                <div class="scenario-grid">
+                    <article class="scenario-article dark">
+                        <p class="scenario-label dark">Dark scenario</p>
+                        <h4 class="scenario-title">Misread Anxiety</h4>
+                        <div class="content-card">
+                            <p>The owner leaves, and the anxious dog paces near the front door. The robot's sensors detect the movement and incorrectly classify it as an invitation to play. The robot approaches, playing a sound and moving a toy module. From the dog's perspective, a large object is suddenly blocking its only exit. The dog backs away, which the robot misinterprets as a continuation of play, tracking it further. The dog eventually freezes by the couch in distress. The robot logs the lack of movement as a resting state and notifies the owner that the dog is calm.</p>
                         </div>
                     </article>
 
-                    <article style="padding: 1.4rem; border-radius: 12px; border: 1px solid rgba(34, 197, 94, 0.22); background: rgba(34, 197, 94, 0.05);">
-                        <p style="margin: 0 0 0.6rem 0; font-size: 0.82rem; letter-spacing: 0.08em; text-transform: uppercase; color: #86efac;">Light scenario</p>
-                        <h4 style="margin-top: 0; color: #fff;">Optional Engagement</h4>
-                        <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); padding: 1rem 1.1rem;">
-                            <p style="margin: 0;">The owner leaves for work, leaving the dog unsettled. Instead of initiating an interaction, the robot remains stationary at its charging base and uses a soft light to indicate it is active. The dog paces and eventually investigates a toy. The robot responds by nudging the toy slightly and stopping. The dog initiates play voluntarily. When the owner checks the companion app, the robot reports the duration of the physical interaction rather than making an unverified claim about the dog's emotional state.</p>
+                    <article class="scenario-article light">
+                        <p class="scenario-label light">Light scenario</p>
+                        <h4 class="scenario-title">Optional Engagement</h4>
+                        <div class="content-card">
+                            <p>The owner leaves for work, leaving the dog unsettled. Instead of initiating an interaction, the robot remains stationary at its charging base and uses a soft light to indicate it is active. The dog paces and eventually investigates a toy. The robot responds by nudging the toy slightly and stopping. The dog initiates play voluntarily. When the owner checks the companion app, the robot reports the duration of the physical interaction rather than making an unverified claim about the dog's emotional state.</p>
                         </div>
                     </article>
                 </div>
+            </section>
 
+            <section>
                 <h3 id="reflective-questions">Reflective Questions</h3>
                 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Sci-fi prototyping</h4>
-                <div style="min-height: 60px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
+                <h4 class="section-title">Sci-fi prototyping</h4>
+                <div class="content-card">
+                    <p>This is a form of prototyping where we try to put a project or technology in the daily life of the future. Placing it in this context allows designers to identify pain points, unforeseen consequences, ethical issues and more [1]. Johnson also outlines a framework for sci-fi prototyping which involves picking a technology and the world around it, identify when it would change the world, consider ramifications, identify human inflection points and finally you reflect and adjust [1]. Design tools like these (e.g. future workshop, brainstorming/dumping, etc..) often rely on the creativity of the participators, which could results in amazingly unsurprising results. However, having the wrong group or focussing on the wrong aspects could give clouded results. Our current design tool also utilizes this aspect of placing yourself into the perspective of the user, however our design tool is based on the current tense. Focussing on how our pet robot would be used in the future where it is a staple in everybody’s house would mean the robot would need more autonomy than it currently has. Pets are a notoriously hard to design for, there are many methodological challenges in the use of robots in research because animals are so different from each other [2].</p>
+                </div>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">21st century robot project</h4>
-                <div style="min-height: 60px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
+                <h4 class="section-title">21st century robot project</h4>
+                <div class="content-card">
+                    <p>Originally from Brian Johnson from the 21st Century Robot Project which is an open-source effort to democratize robotics. Instead only for industrial use, the project wants everyone to be able to design, program, and 3D-print their own robots [3]. For our project where we have the Alan robot which is also highly customizable, it can be very helpful to make it easier for others to also create their own props (e.g. treat dispenser, ball thrower) and attach it without issues, creating a toolkit which is more collaborative.</p>
+                </div>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Rosy consumer stories</h4>
-                <div style="min-height: 60px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
+                <h4 class="section-title">Rosy consumer stories</h4>
+                <div class="content-card">
+                    <p>As used in the course, rosy consumer stories are great to find in which ways your current product can outshine or fail. What are the edge cases that make it special and thrive and what are the worst-case scenarios that can happen. Although these are nice ways to pitch your idea or get a greater understanding, it often leaves out the chaos of the real production and environment the product could land on [4]. For our design tool, it already helped us find the previously mentioned issue of the difference in pets, catching this issue early prevented our group of a lot of headaches later.</p>
+                </div>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Importance of storytelling for HRI specifically</h4>
-                <div style="min-height: 60px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
+                <h4 class="section-title">Importance of storytelling for HRI specifically</h4>
+                <div class="content-card">
+                    <p>Everything in human interaction is about the social aspect and the expectations that go along with it, we learned this in Creative Technology and also now during the master Interaction Technology. Writing stories helps us map out these interactions and understand them on a deeper level. It also forces us, as humans, to put more effort into the expected interaction before even writing code. This helps us find issues but think of the interaction flow beforehand. We used this idea for our toolkit a lot, acting out the interaction between the robot and the animal is essentially creating a story in real time, although it is messy, it can lead to honest and new insights.</p>
+                </div>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Evidence-based work (health) vs robot stories and perceived competence</h4>
-                <div style="min-height: 60px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 2rem;"></div>
+                <h4 class="section-title">Evidence-based work (health) vs robot stories and perceived competence</h4>
+                <div class="content-card large-margin">
+                    <p>It is very important, as we also learn during our course Human Robot Communication, that there is not a mismatch between the expected capabilities of the robot and what it can manage to do. If a robot’s story and perceived competence signal high intelligence, users will expect more of a robot, if this expectation is not met it introduces frustration and other issues. For our toolkit, it is important that we do not overpromise on the capabilities and that the form om the robot follows the function it can provide. Do not include a face and eyes if it is not meant to communicate.</p>
+                </div>
+            </section>
 
+            <section>
                 <h3>References & Sources</h3>
-                <div style="min-height: 90px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 2rem;"></div>
-            </div>
-        </div>
+                <div class="content-card large-margin">
+                    <p><strong>Design Choices & Framework Context:</strong></p>
+                    <p>Patricia Moore's long-term empathy work (age-simulation through restrictive bindings and altered vision) informed the perspective-taking approach used in EPT.</p>
+                    
+                    <hr class="reference-divider">
+                    
+                    <p><strong>Literature Cited:</strong></p>
+                    <p>[1] Johnson, B. D. (2011). Science Fiction Prototyping: Designing the Future with Science Fiction. Morgan & Claypool Publishers.</p>
+                    <p>[2] Abdai, J., Korcsok, B., Korondi, P., & Miklósi, Á. (2018). Methodological challenges of the use of robots in ethological research. Animal Behavior and Cognition, 5, 326–340. https://doi.org/10.26451/abc.05.04.02.2018</p>
+                    <p>[3] Johnson, B. D. (2014). 21st Century Robot: The Dr. Robot Project. Maker Media.</p>
+                    <p>[4] Dourish, P., & Bell, G. (2011). Divining a digital future: Mess and mythology in ubiquitous computing. MIT Press.</p>
+                </div>
+            </section>
+
+        </main>
     </div>
 
     <script src="../../js/script.js"></script>
