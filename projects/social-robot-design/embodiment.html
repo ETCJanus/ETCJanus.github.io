@@ -80,20 +80,114 @@
 
                 <h3>Overview</h3>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Context &amp; Goal</h4>
-                <div style="min-height: 80px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
+                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Generic Robot Dominance</h4>
+                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem; padding: 1.5rem;">
+                    <p style="margin-bottom: 1rem;">Overall, humanoid robots like Pepper and NAO are still dominant in the field of social robotics. Even though SoftBank officially pulled the plug on the production of the Pepper robot in 2020 due to weak commercial demand, they are still widely used in ongoing research [1]. Their familiarity, capabilities such as multimodal expressiveness, and a huge backlog of comparative studies allow them to remain widely researched. However, since then, other robots have been included in social robotics research. Common examples are Romeo, Zenbo, Robios, Lynx, Misty II, and Buddy [2, 3, 4, 5].</p>
+                    <p style="margin-bottom: 1rem;">Pet-like robots are also widely used, mainly in applications where therapy or companionship is important. The best-known examples are PARO and AIBO, which are useful when animal-like interactions are needed without using actual animals [3].</p>
+                    <p>Overall, the shift away from Nao and Pepper is quite beneficial, transitioning from generic humanoid forms to more context-specific embodiments [6 &amp; slides]. Designers would build hardware optimized for specific environments. As explained in the lecture, it is important to design according to affordances. This would hopefully lead to robots whose physicality naturally communicates their intended purpose, rather than relying on a screen or tablet to convey information.</p>
+                </div>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Morphological Overview (Matrix)</h4>
-                <div style="min-height: 140px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
+                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Morphological Overview</h4>
+                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem; padding: 1.5rem; overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                                <th style="padding: 0.5rem;">Design Dimensions</th>
+                                <th style="padding: 0.5rem;">NAO</th>
+                                <th style="padding: 0.5rem;">Miro-e</th>
+                                <th style="padding: 0.5rem;">Cat / Seal</th>
+                                <th style="padding: 0.5rem;">iDo</th>
+                                <th style="padding: 0.5rem;">Alan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td style="padding: 0.5rem; font-weight: bold;">Size</td>
+                                <td style="padding: 0.5rem;">About 60cm, stands on the floor or desk.</td>
+                                <td style="padding: 0.5rem;">Small, size of a small pet.</td>
+                                <td style="padding: 0.5rem;">Small enough to sit on your lap.</td>
+                                <td style="padding: 0.5rem;">Large and heavy, rolls on the floor.</td>
+                                <td style="padding: 0.5rem;">Medium size, either on a desk or floor.</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td style="padding: 0.5rem; font-weight: bold;">Shape &amp; Materials</td>
+                                <td style="padding: 0.5rem;">Humanoid shape, made of hard white plastic.</td>
+                                <td style="padding: 0.5rem;">Looks like a dog or rabbit, smooth plastic.</td>
+                                <td style="padding: 0.5rem;">Animal shape covered in soft fur.</td>
+                                <td style="padding: 0.5rem;">Looks like a machine, metal base.</td>
+                                <td style="padding: 0.5rem;">Made from aluminum parts and has a LED matrix for a head.</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td style="padding: 0.5rem; font-weight: bold;">Technical Features</td>
+                                <td style="padding: 0.5rem;">Programmed in Choregraphe, does gestures and speaks.</td>
+                                <td style="padding: 0.5rem;">Uses ROS or Microcode, reacts to toys like a carrot.</td>
+                                <td style="padding: 0.5rem;">Touch sensors, reacts when you pet it.</td>
+                                <td style="padding: 0.5rem;">Drives around using ROS but has no social features.</td>
+                                <td style="padding: 0.5rem;">Drives around, has a phone mount, controlled by a Wii Nunchuck.</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td style="padding: 0.5rem; font-weight: bold;">Form vs Function</td>
+                                <td style="padding: 0.5rem;">Human-like movements to teach and show things.</td>
+                                <td style="padding: 0.5rem;">Acts like a pet to measure pain or make kids feel better.</td>
+                                <td style="padding: 0.5rem;">Made for holding and cuddling.</td>
+                                <td style="padding: 0.5rem;">Made to carry things, like bringing a cup of coffee.</td>
+                                <td style="padding: 0.5rem;">Meant to be playful and ask people to interact with it.</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <td style="padding: 0.5rem; font-weight: bold;">Context / Use Case</td>
+                                <td style="padding: 0.5rem;">Used for education, teaching kids or healthcare worker.</td>
+                                <td style="padding: 0.5rem;">Hospital use, mostly for kids.</td>
+                                <td style="padding: 0.5rem;">Used in Dutch healthcare, like for elderly or dementia patients.</td>
+                                <td style="padding: 0.5rem;">Office or lab environments.</td>
+                                <td style="padding: 0.5rem;">Office desk assistant.</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 0.5rem; font-weight: bold;">Expectations</td>
+                                <td style="padding: 0.5rem;">People expect a smart, walking robot helper.</td>
+                                <td style="padding: 0.5rem;">People expect a cute, friendly robotic pet.</td>
+                                <td style="padding: 0.5rem;">Expected to act like a calm cat or a stuffed animal.</td>
+                                <td style="padding: 0.5rem;">Looks like a factory robot, so people dont expect it to talk.</td>
+                                <td style="padding: 0.5rem;">Looks like a DIY project so expectations are low.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Embodiment Analysis</h4>
-                <div style="min-height: 120px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
+                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Case Studies</h4>
+                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem; padding: 1.5rem;">
+                    <h5 style="color: #ffffff; margin-bottom: 0.5rem;">Case 1: Tactus Addiction Care</h5>
+                    <p style="margin-bottom: 1rem;">This use case focuses on calming anxiety, managing withdrawal symptoms or providing emotional support in a Tactus addiction treatment centre.</p>
+                    <ul style="margin-bottom: 1.5rem; padding-left: 1.5rem;">
+                        <li style="margin-bottom: 0.5rem;"><strong>Cat / Seal:</strong> These robots would be a good fit for therapy, their material is soft and comforting. Addicts deal with stress and holding a pet can reduce those feelings without being judged by a Nao robot. Using a Nao or Pepper for this case could even hurt the interaction because the addicts would think the robot could help them out more than they actually can.</li>
+                        <li><strong>NAO &amp; iDo:</strong> Would be a lesser fit for this case, the hard plastic and humanoid body would feel too much like you are being monitored. People dealing with paranoia or withdrawal might not like the Nao or iDo staring at them.</li>
+                    </ul>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Design Tool Development</h4>
-                <div style="min-height: 120px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
+                    <h5 style="color: #ffffff; margin-bottom: 0.5rem;">Case 2: Students clean up reminder</h5>
+                    <p style="margin-bottom: 1rem;">This case is about a public or shared space (e.g. DesignLab) where a robot needs to grab attention and change student behaviour.</p>
+                    <ul style="padding-left: 1.5rem;">
+                        <li style="margin-bottom: 0.5rem;"><strong>NAO:</strong> Would be an amazing fit. Since it can speak and do human-like gestures, it can stand near a busy cafeteria or a trash area and tell students to throw their trash away. Its size and shape makes sure it grabs attention.</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>iDo:</strong> Although this robot could work and has potential, it needs some work to be done. It can already navigate and drive around the university rooms and could theoretically be used to collect dirty coffee cups.</li>
+                        <li><strong>Alan:</strong> It works well as long as it does not have to drive around as much. As long as it is on the floor it does not attract attention and would likely result in just being ignored. However, putting it on a desk near a trash bin, it could still use the lights to draw attention to trash and tell students they should clean up. On the floor it is too small.</li>
+                    </ul>
+                </div>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Documentation &amp; Artifacts</h4>
-                <div style="min-height: 120px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 2rem;"></div>
+                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Design Tool: VR Sandbox</h4>
+                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem; padding: 1.5rem;">
+                    <p style="margin-bottom: 1rem;">The tool I envision for other designers is a digital prototyping environment where designers create and evaluate robot morphologies in real-time using virtual reality. The core problem it tries to solve is the fact that building physical prototypes is time and money consuming, while simple sketches usually do not give the actual feeling the embodiment of the robot would give in a social situation.</p>
+                    <p>The tool would have different sections of morphology selections; instead of building with the real hardware, designers have a library of 3D parts in VR, snapping these together with different sensors, joints, wheels and other morphological elements. The VR space also allows for an overlay of visualizing Hall’s proxemic zones, helping to understand in what ways a robot would appropriately respect different zones. Also, how the size changes of the robot could influence this, which could be easily done with a slider in VR. It is similar in a sense to bodystorming because the designers can physically walk around their 3D design to spot problems that drawings cannot. In 3D we can also easily test which affordances these different shapes and sizes communicate; if the shape does not communicate what it is supposed to do, we can change the shape before manufacturing anything.</p>
+                </div>
+
+                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">References</h4>
+                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 2rem; padding: 1.5rem; font-size: 0.9rem;">
+                    <ol style="padding-left: 1.5rem; margin: 0;">
+                        <li style="margin-bottom: 0.5rem;">Thunberg, Sofia &amp; Thellman, Sam &amp; Ziemke, Tom. (2017). Don't Judge a Book by its Cover: A Study of the Social Acceptance of NAO vs. Pepper. 443-446. 10.1145/3125739.3132583.</li>
+                        <li style="margin-bottom: 0.5rem;">Mahdi, H., Akgun, S., Saleh, S., &amp; Dautenhahn, K. (2022). A survey on the design and evolution of social robots - Past, present and future. Robotics Auton. Syst., 156, 104193. https://doi.org/10.1016/j.robot.2022.104193</li>
+                        <li style="margin-bottom: 0.5rem;">Ragno, L., Borboni, A., Vannetti, F., Amici, C., &amp; Cusano, N. (2023). Application of Social Robots in Healthcare: Review on Characteristics, Requirements, Technical Solutions. Sensors (Basel, Switzerland), 23. https://doi.org/10.3390/s23156820</li>
+                        <li style="margin-bottom: 0.5rem;">Ramírez, V., Deuff, D., Indurkhya, X., &amp; Venture, G. (2022). Design Space Survey on Social Robotics in the Market. Journal of Intelligent &amp; Robotic Systems, 105. https://doi.org/10.1007/s10846-022-01624-1</li>
+                        <li style="margin-bottom: 0.5rem;">Said, S., Youssef, K., Prasad, B., Alasfour, G., Alkork, S., &amp; Beyrouthy, T. (2024). Design and Implementation of Adam: A Humanoid Robotic Head with Social Interaction Capabilities. Applied System Innovation. https://doi.org/10.3390/asi7030042</li>
+                        <li>Kamino, W., Jung, M. F., &amp; Šabanović, S. (2024). Constructing a Social Life with Robots: Shifting Away From Design Patterns Towards Interaction Ritual Chains. 2024 19th ACM/IEEE International Conference on Human-Robot Interaction (HRI), 343-351. https://doi.org/10.1145/3610977.3634994</li>
+                    </ol>
+                </div>
             </div>
         </div>
     </div>
