@@ -3,23 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio: Behaviour Design Tool | Social Robot Design</title>
+    <title>Behaviour | Social Robot Design</title>
 
-    <meta name="description" content="Group assignment for the behaviour design tool: gap, framework, documentation, and evaluation.">
-    <meta name="keywords" content="Social Robot Design, Behaviour Design Tool, HRI, Portfolio">
+    <meta name="description" content="Portfolio assignment on behaviour prototyping, cognitive walkthroughs, and design tools.">
+    <meta name="keywords" content="Social Robot Design, Behaviour Prototyping, Cognitive Walkthrough, Node Trees, Generative AI">
     <meta name="author" content="Ewoud Janus">
 
     <meta property="og:type" content="article">
-    <meta property="og:url" content="https://etcjanus.github.io/portfolio-2026/projects/social-robot-design/behaviour-design-tool.html">
-    <meta property="og:title" content="Portfolio: Behaviour Design Tool | Social Robot Design">
-    <meta property="og:description" content="Group assignment for the behaviour design tool: gap, framework, documentation, and evaluation.">
+    <meta property="og:url" content="https://etcjanus.github.io/portfolio-2026/projects/social-robot-design/behaviour.html">
+    <meta property="og:title" content="Behaviour | Social Robot Design">
+    <meta property="og:description" content="Portfolio assignment on behaviour prototyping, cognitive walkthroughs, and design tools.">
     <meta property="og:image" content="https://etcjanus.github.io/portfolio-2026/assets/images/social-robot-design/SRD%20Cover%20Image.png">
-
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://etcjanus.github.io/portfolio-2026/projects/social-robot-design/behaviour-design-tool.html">
-    <meta property="twitter:title" content="Portfolio: Behaviour Design Tool | Social Robot Design">
-    <meta property="twitter:description" content="Group assignment for the behaviour design tool: gap, framework, documentation, and evaluation.">
-    <meta property="twitter:image" content="https://etcjanus.github.io/portfolio-2026/assets/images/social-robot-design/SRD%20Cover%20Image.png">
 
     <link rel="icon" type="image/png" href="../../favicon-96x96.png" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
@@ -64,9 +58,8 @@
         <header class="journal-header">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
                 <div>
-                    <h1>Portfolio: Behaviour Design Tool</h1>
-                    <p>Group submission for the final design tool and evaluation.</p>
-                    <p style="margin-top: 0.4rem; color: rgba(255,255,255,0.7);">Due: 2 Jun</p>
+                    <h1>Behaviour</h1>
+                    <p>Assignment on behaviour prototyping, cognitive walkthroughs, and design tools.</p>
                 </div>
 
                 <a href="index.html" class="mode-switch-btn pulse-animation" style="text-decoration: none;">
@@ -78,22 +71,34 @@
         <div class="course-content-block" style="padding: 2rem 0; max-width: 960px; margin: 0 auto;">
             <div style="color: #d1d5db; line-height: 1.8; font-size: 1.08rem;">
 
-                <h3>Overview</h3>
+                <h3>Low Fidelity Prototyping</h3>
+                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem; padding: 1.5rem;">
+                    <p style="margin-bottom: 1rem;">A tool I prefer when prototyping robot behaviour and which has been helpful throughout this and other courses is the Cognitive Walkthrough. Traditionally used for graphical interfaces, it can be modified for social robots to allow designers to go through the Sense-Think-Act cycle before actually developing any software. Research like Rosenthal et al shows that using cognitive walkthroughs for robot behaviour makes sure users correctly interpret the robot’s dialogue. Using lo-fi methods early helps create functionality without the full burden of creating full autonomy.</p>
+                    <p style="margin-bottom: 1rem;">My suggestion for a design tool is a walkthrough node tree, which maps the physical and social interaction using a node tree grid, like the Touch Designer software we used during the expression lecture. The node tree visualizes the interaction step-by-step. Where each node represents a specific state with properties like: Trigger, Input, Action and more. Applying this to a previous case I used of the NAO robot reminding students to clean up in DesignLab:</p>
+                    <ul style="padding-left: 1.5rem; margin-bottom: 1rem;">
+                        <li><strong>Trigger:</strong> A student leaves a dirty cup on a desk and walks away.</li>
+                        <li><strong>Sense:</strong> Camera/vision detects the cup and tracks the person walking away.</li>
+                        <li><strong>Act:</strong> NAO rotates head, points at cup and says: “Please throw your cup in the bin”</li>
+                    </ul>
+                    <p>The initial lo-fi tool would use multi-colour post it notes on a big A2 paper, which would allow designers to simply draw lines in between the nodes to create connections.</p>
+                </div>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Context &amp; Goal</h4>
-                <div style="min-height: 80px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
+                <h3>Bridging Low-Fi to Mid-fi</h3>
+                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem; padding: 1.5rem;">
+                    <p>Using node trees is not a novice thought in software design; Blender, Touch Designer and many more use node trees to visualize interactions and connections. Moving from a paper-based node tree to mid-fi software is a logical next step. For basic scripted behaviours, designers can recreate their paper nodes directly in visual programming environments like Choregraphe or MyRobotLab. For more complex interactions, an architecture like ROS (Robot Operating System) is utilized to manage the messaging between the robot's vision sensors and its actuators.</p>
+                </div>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Gap Identification</h4>
-                <div style="min-height: 120px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
+                <h3>Generative AI</h3>
+                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem; padding: 1.5rem;">
+                    <p>Transitioning to LLMs will help move away from the predefined and rigid script to more dynamic interactions. Iolanda Leite described it well during her presentation about the paper: <em>Toward Autonomous Social Robots in the Wild</em>, you cannot define every interaction the robot would have as an individual or even as a team, the range is too broad and this gap can be filled with the power of LLMs. This would mean that an API would also have to move the servos, the model would have to output action commands along with dialogue. Software could read these commands and trigger the necessary movements.</p>
+                </div>
 
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Theoretical Grounding</h4>
-                <div style="min-height: 120px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
-
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Documentation</h4>
-                <div style="min-height: 120px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem;"></div>
-
-                <h4 style="margin-top: 1.75rem; color: #f3f4f6;">Evaluation &amp; Outcomes</h4>
-                <div style="min-height: 140px; border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 2rem;"></div>
+                <h3>References</h3>
+                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 2rem; padding: 1.5rem; font-size: 0.9rem;">
+                    <p>[1] Rosenthal, Stephanie & Veloso, Manuela. (2009). How Robots' Questions Affect the Accuracy of the Human Responses. Proceedings - IEEE International Workshop on Robot and Human Interactive Communication. 1137 - 1142. 10.1109/ROMAN.2009.5326291.</p>
+                    <p>[2] Winkle, K., Senft, E., & Lemaignan, S. (2021). LEADOR: A Method for End-To-End Participatory Design of Autonomous Social Robots. Frontiers in Robotics and AI, 8. https://doi.org/10.3389/frobt.2021.704119</p>
+                    <p>[3] https://www.youtube.com/watch?v=LDwlrj7CvWw</p>
+                </div>
             </div>
         </div>
     </div>
