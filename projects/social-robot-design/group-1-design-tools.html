@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -86,11 +86,29 @@
                 
                 <h3>Case Description</h3>
                 <p style="margin-bottom: 1.5rem;">
-                    Domestic pets (e.g., cats &amp; dogs) often experience stress and separation anxiety when left alone. While interactive toys exist, the effectiveness of these solutions varies per individual animal; a motion that is engaging for one might be terrifying for another. This makes designing an effective robot companion challenging. 
+                    Domestic pets (e.g., cats &amp; dogs) often experience stress and separation anxiety when left alone [1]. While interactive toys exist, the effectiveness of these solutions varies per individual animal; a motion that is engaging for one might be terrifying for another [2]. This makes designing an effective robot companion challenging. 
                 </p>
+
+                <p style="margin-bottom: 1.5rem;">
+                    The problem is also close to home for me. My own dog Kato had separation anxiety, so I have seen first hand how real this issue is and what it does to a dog and the people around it (Figure 1).
+                </p>
+
+                <div style="text-align: center; margin: 1.5rem 0 0.5rem 0;">
+                    <img src="../../assets/images/social-robot-design/me_and_Kato.png" alt="Me and my dog Kato" style="width: 100%; max-width: 420px; height: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 20px rgba(0,0,0,0.4);" onclick="event.stopPropagation();">
+                </div>
+                <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-top: 0.4rem; margin-bottom: 1.5rem;">Figure 1: Me and Kato (with a hat I crochet for her). She deals often with seperation anxiety. </p>
                 <p style="margin-bottom: 1.5rem;">
                     To solve this design gap, this project tries to focus on developing a modular pet companion toolkit. Rather than a single, static robot, we design a hardware and software setup that allows designers and pet owners to rapidly prototype, test and change according to the preferences of each individual pet. Swapping physical modules, like a treat dispenser, a laser pointer, or a mechanical arm to throw balls, facilitates iterative testing. The goal is to discover the best combination of play and mechanics to effectively reduce pet anxiety. 
                 </p>
+
+                <p style="margin-bottom: 1.5rem;">
+                    To make it concrete we pictured a specific situation: a young rescue dog in a normal Dutch family home, left alone in the living room for about six hours on office days. The owners come home to chewed furniture and notes from the neighbours about barking. Toys and a food puzzle did not fix it, and a dog sitter every day is too expensive. That is the point where something like our toolkit becomes interesting. Figure 2 shows who is involved in this case.
+                </p>
+
+                <div style="text-align: center; margin: 1.5rem 0 0.5rem 0;">
+                    <img src="../../assets/images/social-robot-design/stakeholder-diagram.svg" alt="Stakeholder diagram of the case" style="width: 100%; max-width: 780px; height: auto; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.02); padding: 10px;" onclick="event.stopPropagation();">
+                </div>
+                <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-top: 0.4rem; margin-bottom: 1.5rem;">Figure 2: The stakeholders around the case. The dog is the direct user, the owner and household are indirect users, and the design team works with the system rather than in the home itself.</p>
                 
                 <div style="padding: 1.5rem; background: rgba(167, 139, 250, 0.05); border-left: 4px solid #a78bfa; border-radius: 4px; margin-bottom: 2rem;">
                     <p style="margin: 0; font-weight: 500; color: #f3f4f6;">
@@ -134,10 +152,11 @@
                 </p>
 
                 <h3>Mind Map</h3>
+                <p style="margin-bottom: 1rem;">To map out the problem space we made a mind map (Figure 3), covering possible stimuli, play forms, sensing options and risks around the anxious pet.</p>
                 <div style="margin: 2rem 0; display: flex; justify-content: center;">
                     <img src="../../assets/images/social-robot-design/mindmap.jpg" alt="Mind map of the problem space" style="width: 100%; max-width: 700px; height: auto; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.3);" onclick="event.stopPropagation();">
                 </div>
-                <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-top: 0.5rem; margin-bottom: 2.5rem;">Mind map of the problem space, exploring how we can design for pet interaction.</p>
+                <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-top: 0.5rem; margin-bottom: 2.5rem;">Figure 3: Mind map of the problem space, exploring how we can design for pet interaction.</p>
 
                 <h3>Building Blocks &amp; Functional Breakdown</h3>
                 
@@ -170,16 +189,50 @@
                             To help actualise and map the encounter between the animal and the robot/technology, we will conduct a live play session using a domestic cat (played by Maurits) and a robot (played by Gijs). The team members will use a physical proxy (e.g., a cardboard cutout of a robot and a cat onesie) to intentionally restrict movement or speed, creating a more accurate representation of the interaction by simulating behaviour closer to the physical limitations. The rest of the team will support this play session using live music, camerawork for later research, and a live audience.
                         </p>
                         <p style="margin-bottom: 0;">
-                            Figure 1 is an example of how our actor would portray a seal.
+                            Figure 4 is an example of how our actor would portray a seal.
                         </p>
                     </div>
                     <img src="../../assets/images/social-robot-design/maurits-seal.jpg" alt="Seal (left), Maurits (right)" style="width: 300px; height: auto; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); flex-shrink: 0;" onclick="event.stopPropagation();">
                 </div>
-                <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-top: 0;">Figure 1: Seal (left), Maurits (right), showing his best acting skills as a physical proxy for the seal (award-winning).</p>
+                <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-top: 0;">Figure 4: Seal (left), Maurits (right), showing his best acting skills as a physical proxy for the seal (award-winning).</p>
 
                 <h3 style="margin-top: 2.5rem;">Design Slide: PETs Framework</h3>
+                <p style="margin-bottom: 1rem;">Figure 5 is the design slide we made to summarise the case.</p>
                 <div style="margin: 2rem 0; display: flex; justify-content: center;">
                     <img src="../../assets/images/social-robot-design/PETs.png" alt="PETs Design Framework Slide" style="width: 100%; max-width: 800px; height: auto; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.3);" onclick="event.stopPropagation();">
+                </div>
+                <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-top: 0.5rem;">Figure 5: Design slide with the PETs framing of the case.</p>
+
+                <h3 style="margin-top: 2.5rem;">Background Reading</h3>
+                <p style="margin-bottom: 1.5rem;">
+                    For the case we also collected literature to back up our assumptions. Most of this reading happened later in the course during the in-depth assignment, but it fits best here with the case.
+                </p>
+                <p style="margin-bottom: 1.5rem;">
+                    Ogata [1] gives an overview of what we actually know about separation anxiety in dogs. It is one of the most common behaviour problems, the causes are not fully understood, and treatment is usually a combination of behaviour therapy, changes at home and sometimes medication. There is no standard fix that works for every dog, which supports our idea of a toolkit instead of one fixed robot. Lenkei et al. [2] looked at where the behaviour comes from and found that it links to different underlying emotions, one dog is genuinely afraid while another is mostly frustrated or panicking. That matters for us because a robot response that calms a scared dog is not automatically the right response for a frustrated one, so the robot needs more than one strategy. Sargisson [3] reviews the actual treatments, mostly gradual desensitisation and counterconditioning, and makes clear the owner does the work over weeks. So the robot should support that process and not pretend to replace it.
+                </p>
+                <p style="margin-bottom: 1.5rem;">
+                    On the ACI side Mancini [4] wrote the manifesto that basically started the field, arguing animals are real users of technology and should be designed for as users, not as objects the technology happens to point at. For us that means the dog's experience comes first and not what the owner wants. Her later paper [5] works this out into ethics: interactions should be worth it for the animal itself and it should always be able to walk away. This is where our thinking about stop conditions and escape routes comes from. Hirskyj-Douglas et al. [6] reviewed seven years of ACI work and show the whole range of technology already used with animals, screens, wearables, tangibles, haptics. Useful as a catalogue for our modules, and it fits the modular approach in general. The DogPhone project [7] built a ball that lets a dog literally call its owner via video. Half of the calls were probably accidental, but it is a nice example of giving the animal control instead of only receiving technology. Cat Royale [8] put a robot arm in a designed environment with three cats for twelve days, and their main lesson is that you design the whole world around the robot, hiding spots, viewing spots, choices, not just the robot. Zamansky et al. [9] measured how anxious dogs move around a robot compared to relaxed dogs, more erratic movement, keeping distance. That tells us movement is the thing to watch once we start testing. And Fong et al. [10] is the classic survey of socially interactive robots, useful as general grounding for what makes a robot read as social at all.
+                </p>
+
+                <h3 style="margin-top: 2.5rem;">Reflection</h3>
+                <p style="margin-bottom: 1.5rem;">
+                    This first session was a great experience to get to know each other and discuss this topic from people with many different backgrounds and ideas. We landed on a case and idea that we could all appreciate and have fun with, designing the slide and the mindmap. During this session I was generally busy with writing the agenda, the notes, and wrote out the entire document the group used. The tools from the later sessions all get applied to this case, starting with the <a href="story-building.html" style="color: #a78bfa;">scenario design session</a>.
+                </p>
+
+                <h3 style="margin-top: 2.5rem;">References</h3>
+                <div style="border-radius: 10px; border: 1px dashed rgba(255,255,255,0.14); background: rgba(255,255,255,0.02); margin-bottom: 1.5rem; padding: 1.5rem; font-size: 0.92rem;">
+                    <ol style="margin: 0; padding-left: 1.4rem; color: #9ca3af;">
+                        <li style="margin-bottom: 0.6rem;">Ogata, N. (2016). Separation anxiety in dogs: What progress has been made in our understanding of the most common behavioral problems in dogs? <em>Journal of Veterinary Behavior, 16</em>, 28-35.</li>
+                        <li style="margin-bottom: 0.6rem;">Lenkei, R., Farag&oacute;, T., Bakos, V., &amp; Pongr&aacute;cz, P. (2021). Separation-related behavior of dogs shows association with their reactions to everyday situations that may elicit frustration or fear. <em>Scientific Reports, 11</em>, Article 19207.</li>
+                        <li style="margin-bottom: 0.6rem;">Sargisson, R. J. (2014). Canine separation anxiety: Strategies for treatment and management. <em>Veterinary Medicine: Research and Reports, 5</em>, 143-151.</li>
+                        <li style="margin-bottom: 0.6rem;">Mancini, C. (2011). Animal-computer interaction: A manifesto. <em>Interactions, 18</em>(4), 69-73.</li>
+                        <li style="margin-bottom: 0.6rem;">Mancini, C. (2017). Towards an animal-centred ethics for Animal-Computer Interaction. <em>International Journal of Human-Computer Studies, 98</em>, 221-233.</li>
+                        <li style="margin-bottom: 0.6rem;">Hirskyj-Douglas, I., Pons, P., Read, J. C., &amp; Jaen, J. (2018). Seven years after the manifesto: Literature review and research directions for technologies in Animal-Computer Interaction. <em>Multimodal Technologies and Interaction, 2</em>(2), Article 30.</li>
+                        <li style="margin-bottom: 0.6rem;">Hirskyj-Douglas, I., Piitulainen, R., &amp; Lucero, A. (2021). Forming the Dog Internet: Prototyping a dog-to-human video call device. <em>Proceedings of the ACM on Human-Computer Interaction, 5</em>(ISS), Article 494.</li>
+                        <li style="margin-bottom: 0.6rem;">Schneiders, E., Benford, S., Chamberlain, A., Mancini, C., et al. (2024). Designing multispecies worlds for robots, cats, and humans. In <em>Proceedings of the 2024 CHI Conference on Human Factors in Computing Systems</em>. ACM.</li>
+                        <li style="margin-bottom: 0.6rem;">Zamansky, A., Bleuer-Elsner, S., Masson, S., Amir, S., Magen, O., &amp; Van der Linden, D. (2018). Effects of anxiety on canine movement in dog-robot interactions. <em>Animal Behavior and Cognition, 5</em>(4), 380-387.</li>
+                        <li style="margin-bottom: 0;">Fong, T., Nourbakhsh, I., &amp; Dautenhahn, K. (2003). A survey of socially interactive robots. <em>Robotics and Autonomous Systems, 42</em>(3-4), 143-166.</li>
+                    </ol>
                 </div>
 
             </div>

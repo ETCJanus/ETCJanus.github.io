@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="'Space Grotesk', Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9ca3af"/>
+    </marker>
+  </defs>
+
+  <!-- context frame: the home -->
+  <rect x="30" y="30" width="560" height="460" rx="18" fill="rgba(167,139,250,0.06)" stroke="#a78bfa" stroke-dasharray="6 6"/>
+  <text x="52" y="62" fill="#a78bfa" font-size="20" font-weight="700">THE HOME (deployment context)</text>
+  <text x="52" y="86" fill="#9ca3af" font-size="14">Living room, dog left alone for several hours on working days</text>
+
+  <!-- direct user -->
+  <rect x="80" y="150" width="210" height="120" rx="14" fill="rgba(45,212,191,0.12)" stroke="#2dd4bf" stroke-width="2"/>
+  <text x="185" y="185" fill="#2dd4bf" font-size="13" text-anchor="middle" letter-spacing="2">DIRECT USER</text>
+  <text x="185" y="215" fill="#f3f4f6" font-size="22" font-weight="700" text-anchor="middle">The dog</text>
+  <text x="185" y="245" fill="#d1d5db" font-size="13" text-anchor="middle">separation-related behaviour</text>
+
+  <!-- the robot -->
+  <rect x="360" y="150" width="190" height="120" rx="14" fill="rgba(255,255,255,0.05)" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="455" y="185" fill="#9ca3af" font-size="13" text-anchor="middle" letter-spacing="2">SYSTEM</text>
+  <text x="455" y="215" fill="#f3f4f6" font-size="22" font-weight="700" text-anchor="middle">Allan</text>
+  <text x="455" y="245" fill="#d1d5db" font-size="13" text-anchor="middle">play, ball, treats</text>
+
+  <!-- interaction arrows dog <-> robot -->
+  <line x1="295" y1="195" x2="355" y2="195" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="355" y1="230" x2="295" y2="230" stroke="#9ca3af" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="325" y="180" fill="#9ca3af" font-size="12" text-anchor="middle">approach / retreat</text>
+  <text x="325" y="258" fill="#9ca3af" font-size="12" text-anchor="middle">behaviour</text>
+
+  <!-- owner -->
+  <rect x="150" y="340" width="330" height="110" rx="14" fill="rgba(250,204,21,0.08)" stroke="#facc15" stroke-width="1.5"/>
+  <text x="315" y="373" fill="#facc15" font-size="13" text-anchor="middle" letter-spacing="2">INDIRECT USER</text>
+  <text x="315" y="402" fill="#f3f4f6" font-size="20" font-weight="700" text-anchor="middle">Owner / household</text>
+  <text x="315" y="430" fill="#d1d5db" font-size="13" text-anchor="middle">configures the system, responsible for welfare</text>
+
+  <!-- owner arrows -->
+  <line x1="250" y1="335" x2="200" y2="277" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="400" y1="335" x2="445" y2="277" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="190" y="315" fill="#9ca3af" font-size="12" text-anchor="middle">cares for</text>
+  <text x="465" y="315" fill="#9ca3af" font-size="12" text-anchor="middle">configures</text>
+
+  <!-- outside the home -->
+  <rect x="630" y="30" width="240" height="460" rx="18" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.2)" stroke-dasharray="4 6"/>
+  <text x="652" y="62" fill="#e5e7eb" font-size="16" font-weight="700">OUTSIDE THE HOME</text>
+
+  <rect x="655" y="95" width="190" height="105" rx="12" fill="rgba(244,114,182,0.08)" stroke="#f472b6" stroke-width="1.5"/>
+  <text x="750" y="125" fill="#f472b6" font-size="12" text-anchor="middle" letter-spacing="2">SECONDARY</text>
+  <text x="750" y="152" fill="#f3f4f6" font-size="17" font-weight="700" text-anchor="middle">Design team</text>
+  <text x="750" y="178" fill="#d1d5db" font-size="12" text-anchor="middle">uses PAT to test safely</text>
+
+  <rect x="655" y="225" width="190" height="105" rx="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.3)"/>
+  <text x="750" y="255" fill="#9ca3af" font-size="12" text-anchor="middle" letter-spacing="2">SECONDARY</text>
+  <text x="750" y="282" fill="#f3f4f6" font-size="17" font-weight="700" text-anchor="middle">Vet / behaviourist</text>
+  <text x="750" y="308" fill="#d1d5db" font-size="12" text-anchor="middle">advises on treatment</text>
+
+  <rect x="655" y="355" width="190" height="105" rx="12" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.3)"/>
+  <text x="750" y="385" fill="#9ca3af" font-size="12" text-anchor="middle" letter-spacing="2">AFFECTED</text>
+  <text x="750" y="412" fill="#f3f4f6" font-size="17" font-weight="700" text-anchor="middle">Neighbours</text>
+  <text x="750" y="438" fill="#d1d5db" font-size="12" text-anchor="middle">experience barking, whining</text>
+
+  <!-- design team arrow to PAT/system -->
+  <line x1="650" y1="147" x2="557" y2="180" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="612" y="140" fill="#9ca3af" font-size="12" text-anchor="middle">PAT</text>
+</svg>
