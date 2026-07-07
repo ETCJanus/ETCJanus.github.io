@@ -1,3 +1,17 @@
+document.addEventListener("DOMContentLoaded", function() {
+    // 1. Start SRD Background Animation
+    initSRDBackground();
+
+    // 2. Generate Navigation Menu
+    generateTOC();
+
+    // 3. Floating Mode-Switch Button
+    initFloatingModeBtn();
+
+    // 4. Initialize 3D Card Animation
+    initCardTilt(); 
+});
+
 /* =========================================
    1. CAROUSEL LOGIC
    ========================================= */
@@ -320,4 +334,42 @@ function initFloatingModeBtn() {
     observer.observe(originalBtn);
     window.addEventListener('resize', positionAboveToc);
     positionAboveToc();
+}
+
+/* =========================================
+   5. 3D CARD TILT & SHINE EFFECT
+   ========================================= */
+function initCardTilt() {
+    const cards = document.querySelectorAll('.tinker-card');
+    
+    cards.forEach(card => {
+        card.addEventListener('mousemove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left; 
+            const y = e.clientY - rect.top;  
+            
+            // Update CSS variables for the shine location
+            card.style.setProperty('--mouse-x', `${x}px`);
+            card.style.setProperty('--mouse-y', `${y}px`);
+            
+            // Calculate 3D rotation (max 4 degrees to keep it subtle)
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -4;
+            const rotateY = ((x - centerX) / centerX) * 4;
+            
+            card.style.transform = `perspective(1000px) scale(1.02) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            // Reapply smooth transition and reset transform
+            card.style.transition = 'transform 0.5s ease, box-shadow 0.3s ease, border-color 0.3s ease';
+            card.style.transform = `perspective(1000px) scale(1) rotateX(0deg) rotateY(0deg)`;
+        });
+        
+        card.addEventListener('mouseenter', () => {
+            // Remove transform transition for instant 1:1 mouse tracking
+            card.style.transition = 'box-shadow 0.3s ease, border-color 0.3s ease';
+        });
+    });
 }
