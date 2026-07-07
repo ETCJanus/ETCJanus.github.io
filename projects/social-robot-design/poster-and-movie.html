@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poster & Movie | Social Robot Design</title>
+
+    <meta name="description" content="The PAT (Pet Anxiety Toolkit) group poster and movie, with a short individual reflection.">
+    <meta name="keywords" content="Social Robot Design, PAT, Pet Anxiety Toolkit, Poster, Movie, HRI">
+    <meta name="author" content="Ewoud Janus">
+
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://etcjanus.github.io/portfolio-2026/projects/social-robot-design/poster-and-movie.html">
+    <meta property="og:title" content="Poster & Movie | Social Robot Design">
+    <meta property="og:description" content="The PAT group poster and movie, with a short individual reflection.">
+    <meta property="og:image" content="https://etcjanus.github.io/portfolio-2026/assets/images/social-robot-design/SRD%20Cover%20Image.png">
+
+    <link rel="icon" type="image/png" href="../../favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <link rel="shortcut icon" href="../../favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../../apple-touch-icon.png" />
+    <link rel="manifest" href="../../site.webmanifest" />
+
+    <link rel="stylesheet" href="../../css/styles.css">
+    <link rel="stylesheet" href="styles.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+
+    <nav>
+        <div class="nav-left">
+            <div class="logo"><a href="../../index.html">EJ.</a></div>
+            <div class="nav-icons">
+                <a href="mailto:etcjanus@gmail.com" title="Email"><i class="fas fa-envelope"></i></a>
+                <a href="https://www.linkedin.com/in/ewoudjanus/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                <a href="https://www.instagram.com/etc_modeling" target="_blank"><i class="fab fa-instagram"></i></a>
+                <a href="https://github.com/ETCJanus" target="_blank"><i class="fab fa-github"></i></a>
+            </div>
+        </div>
+
+        <button class="burger-btn" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+
+        <div class="links">
+            <a href="../../projects.html">Projects</a>
+            <a href="../../about.html">About</a>
+            <a href="#" class="contact-trigger">Contact</a>
+        </div>
+    </nav>
+
+    <canvas id="tinker-canvas" class="bg-canvas"></canvas>
+
+    <div class="container">
+        <header class="journal-header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <h1>Poster &amp; Movie</h1>
+                    <p>The group poster and movie for PAT, the Pet Anxiety Toolkit.</p>
+                </div>
+                <a href="index.html" class="mode-switch-btn pulse-animation" style="text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Back to course page
+                </a>
+            </div>
+        </header>
+
+        <main class="course-content-block" style="padding: 2rem 0; max-width: 860px; margin: 0 auto; color: #d1d5db; line-height: 1.8; font-size: 1.08rem;">
+
+            <p style="margin-bottom: 2rem; font-size: 0.98rem; color: #9ca3af;">
+                Group deliverables, made with Bianca Filip, Emilia Pavel, Gijs Vis and Maurits Dijkman. The toolkit itself is documented in the <a href="in-depth-tool-design.html" style="color: #a78bfa;">in-depth assignment</a>.
+            </p>
+
+            <h3>Poster</h3>
+            <div style="text-align: center; margin: 1.5rem 0 0.4rem 0;">
+                <img src="../../assets/images/social-robot-design/pat_poster.png" alt="PAT Pet Anxiety Toolkit poster" style="width: 100%; max-width: 620px; height: auto; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.3);" onclick="event.stopPropagation();">
+            </div>
+            <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin: 0 0 2.5rem 0;">Figure 1: The PAT poster, made by Bianca. I only gave a bit of feedback on it.</p>
+
+            <h3>Movie</h3>
+            <div style="text-align: center; margin: 1.5rem 0 0.4rem 0;">
+                <video controls preload="metadata" style="width: 100%; max-width: 760px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                    <source src="../../assets/images/social-robot-design/pat_movie.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6); margin: 0 0 2.5rem 0;">Figure 2: The PAT movie, showing the toolkit and a test with the Allan robot.</p>
+
+            <h3>Reflection</h3>
+            <p style="margin-bottom: 1.5rem;">
+                I was the facilitator for the movie and made the script beforehand, this helped structure while filming. Although we deviated from it a bit afterwards, it helped understand what we wanted, like a scene where we describe the problem first. What I would change about the video is putting more time in more professional shots or a better way to shoot the scenes. It was more an impromptu moment where we just did it, and I would rather have a reconstruction we acted out a bit better, showcasing how the toolkit would work more clearly.
+            </p>
+
+        </main>
+    </div>
+
+    <script src="../../js/script.js"></script>
+    <script src="script.js"></script>
+
+    <div id="contact-modal" class="modal-overlay hidden" aria-hidden="true">
+        <div class="glass-card contact-terminal" role="dialog" aria-modal="true">
+            <div class="terminal-header-row">
+                <span class="terminal-id">/// TERMINAL_01</span>
+                <button class="terminal-close" onclick="document.getElementById('contact-modal').classList.add('hidden')">&times;</button>
+            </div>
+            <div class="terminal-body">
+                <p><span class="terminal-prompt">&rarr;</span> <strong>Get in touch:</strong></p>
+                <p><span class="terminal-prompt">&rarr;</span> Email: <a href="mailto:etcjanus@gmail.com">etcjanus@gmail.com</a></p>
+                <p><span class="terminal-prompt">&rarr;</span> LinkedIn: <a href="https://www.linkedin.com/in/ewoudjanus/" target="_blank">ewoudjanus</a></p>
+                <p><span class="terminal-prompt">&rarr;</span> GitHub: <a href="https://github.com/ETCJanus" target="_blank">ETCJanus</a></p>
+                <p><span class="terminal-prompt">&rarr;</span> Instagram: <a href="https://www.instagram.com/etc_modeling" target="_blank">etc_modeling</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
