@@ -27,6 +27,13 @@
   
   <!-- Individual Projects -->
   <url>
+    <loc>https://etcjanus.github.io/portfolio-2026/projects/hard-things/index.html</loc>
+    <lastmod>2026-07-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>https://etcjanus.github.io/portfolio-2026/projects/pomodoro-pet/index.html</loc>
     <lastmod>2026-02-13</lastmod>
     <changefreq>monthly</changefreq>

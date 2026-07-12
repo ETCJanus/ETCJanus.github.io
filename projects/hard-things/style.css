@@ -1,0 +1,921 @@
+/* ============================================================
+   FIELD LOG — expedition logbook stylesheet
+   Aged paper, typewriter ink, rubber stamps, tape.
+   ============================================================ */
+
+:root {
+    --paper: #f2ecdd;
+    --paper-dark: #e9e1cd;
+    --ink: #2b2a26;
+    --ink-faded: #57544b;
+    --ink-faint: #8a857a;
+    --rule: rgba(43, 42, 38, 0.14);
+    --stamp-red: #b23a2b;
+    --stamp-blue: #2f4a7a;
+    --stamp-green: #3d6b4f;
+    --tape: rgba(226, 210, 165, 0.55);
+
+    --font-type: 'Special Elite', 'Courier New', monospace;
+    --font-body: 'Lora', Georgia, serif;
+    --font-hand: 'Caveat', cursive;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    margin: 0;
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.65;
+    overflow-x: hidden;
+    /* faint vertical paper fibre shading */
+    background-image:
+        radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.5), transparent 60%),
+        linear-gradient(90deg, rgba(43, 42, 38, 0.03) 0%, transparent 8%, transparent 92%, rgba(43, 42, 38, 0.05) 100%);
+    background-attachment: fixed;
+}
+
+/* Paper grain — SVG noise overlay across everything */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Soft vignette so the page reads as a physical object */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    pointer-events: none;
+    box-shadow: inset 0 0 140px rgba(60, 50, 30, 0.18);
+}
+
+::selection { background: rgba(178, 58, 43, 0.25); }
+
+/* ---------- top bar ---------- */
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 18px 28px;
+    font-family: var(--font-type);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-faded);
+    border-bottom: 1px dashed var(--rule);
+}
+
+.topbar a {
+    color: var(--ink-faded);
+    text-decoration: none;
+    transition: color 0.25s ease;
+}
+
+.topbar a:hover { color: var(--stamp-red); }
+
+.topbar .doc-ref { color: var(--ink-faint); }
+
+/* ---------- layout ---------- */
+
+.sheet {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 56px 28px 90px;
+    position: relative;
+}
+
+/* ---------- header / cover ---------- */
+
+.log-header {
+    text-align: center;
+    padding-bottom: 44px;
+    margin-bottom: 48px;
+    border-bottom: 3px double var(--rule);
+    position: relative;
+}
+
+.log-kicker {
+    font-family: var(--font-type);
+    font-size: 0.85rem;
+    letter-spacing: 0.35em;
+    color: var(--ink-faded);
+    margin: 0 0 18px;
+}
+
+.log-title {
+    font-family: var(--font-type);
+    font-size: clamp(2.1rem, 6.5vw, 3.6rem);
+    line-height: 1.1;
+    margin: 0 0 22px;
+    letter-spacing: 0.02em;
+    text-shadow: 1px 1px 0 rgba(43, 42, 38, 0.08);
+}
+
+.log-subject {
+    font-family: var(--font-type);
+    font-size: 0.9rem;
+    color: var(--ink-faded);
+    letter-spacing: 0.06em;
+    min-height: 1.4em;
+    margin: 0 0 8px;
+}
+
+.log-subject .caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    background: var(--ink-faded);
+    vertical-align: text-bottom;
+    margin-left: 2px;
+    animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+.log-epigraph {
+    font-family: var(--font-hand);
+    font-size: 1.5rem;
+    color: var(--ink-faded);
+    transform: rotate(-1.2deg);
+    margin: 18px 0 0;
+}
+
+/* Rubber stamp, tilted, on the header */
+.stamp {
+    position: absolute;
+    top: -8px;
+    right: -6px;
+    font-family: var(--font-type);
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
+    color: var(--stamp-red);
+    border: 3px double var(--stamp-red);
+    border-radius: 6px;
+    padding: 8px 14px;
+    transform: rotate(8deg) scale(1);
+    opacity: 0.82;
+    cursor: pointer;
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.35' numOctaves='3'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0.4 0.7 1 1 1 1 0.85 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
+    mask-size: 120px 120px;
+}
+
+.stamp.stamp-in {
+    animation: stampIn 0.45s cubic-bezier(0.2, 2.4, 0.4, 1) both;
+    animation-delay: 0.7s;
+}
+
+@keyframes stampIn {
+    0% { transform: rotate(8deg) scale(2.4); opacity: 0; }
+    100% { transform: rotate(8deg) scale(1); opacity: 0.82; }
+}
+
+/* ---------- briefing ---------- */
+
+.briefing {
+    max-width: 560px;
+    margin: 0 auto 56px;
+    font-size: 1.06rem;
+    color: var(--ink-faded);
+}
+
+.briefing .lead-word {
+    font-family: var(--font-type);
+    color: var(--ink);
+    letter-spacing: 0.15em;
+    font-size: 0.85rem;
+}
+
+/* ---------- stats ledger ---------- */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 64px;
+}
+
+.stat {
+    border: 1px dashed rgba(43, 42, 38, 0.35);
+    border-radius: 3px;
+    padding: 18px 10px 14px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.25);
+    position: relative;
+}
+
+.stat .num {
+    font-family: var(--font-type);
+    font-size: 2.4rem;
+    line-height: 1;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.stat .label {
+    font-family: var(--font-type);
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+}
+
+.stat:nth-child(2) .num { color: var(--stamp-blue); }
+.stat:nth-child(3) .num { color: var(--stamp-green); }
+.stat:nth-child(4) .num { color: var(--stamp-red); }
+
+/* ---------- section headings ---------- */
+
+.section-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 0 26px;
+    font-family: var(--font-type);
+    font-size: 0.85rem;
+    letter-spacing: 0.3em;
+    color: var(--ink-faded);
+    text-transform: uppercase;
+}
+
+.section-head::before,
+.section-head::after {
+    content: "";
+    flex: 1;
+    border-top: 1px dashed var(--rule);
+}
+
+/* ---------- ink tally (month grid) ---------- */
+
+.tally {
+    margin-bottom: 72px;
+}
+
+.tally-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    max-width: 460px;
+    margin: 0 auto;
+}
+
+.tally-cell {
+    aspect-ratio: 1;
+    border: 1px solid rgba(43, 42, 38, 0.22);
+    border-radius: 2px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.tally-cell .daynum {
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-family: var(--font-type);
+    font-size: 0.55rem;
+    color: var(--ink-faint);
+}
+
+.tally-cell.future {
+    border-style: dashed;
+    opacity: 0.45;
+}
+
+/* days with entries are clickable — they jump to that day's card */
+.tally-cell.logged {
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.tally-cell.logged:hover {
+    background: rgba(255, 255, 255, 0.6);
+    border-color: rgba(178, 58, 43, 0.6);
+    transform: scale(1.12);
+}
+
+.tally-cell.logged:active { transform: scale(0.92); }
+
+.tally-cell.logged:focus-visible {
+    outline: 2px dashed var(--stamp-red);
+    outline-offset: 3px;
+}
+
+.tally-cell svg {
+    position: absolute;
+    inset: 12%;
+    width: 76%;
+    height: 76%;
+    overflow: visible;
+}
+
+.tally-cell svg path {
+    stroke: var(--ink);
+    stroke-width: 2.6;
+    stroke-linecap: round;
+    fill: none;
+    stroke-dasharray: 30;
+    stroke-dashoffset: 30;
+    opacity: 0.85;
+}
+
+.revealed .tally-cell svg path { animation: inkStroke 0.35s ease-out forwards; }
+.revealed .tally-cell svg path:nth-child(2) { animation-delay: calc(var(--d) + 0.18s); }
+.revealed .tally-cell svg path:nth-child(1) { animation-delay: var(--d); }
+
+@keyframes inkStroke { to { stroke-dashoffset: 0; } }
+
+.tally-caption {
+    text-align: center;
+    font-family: var(--font-hand);
+    font-size: 1.25rem;
+    color: var(--ink-faint);
+    margin-top: 16px;
+    transform: rotate(-0.8deg);
+}
+
+/* ---------- filter stamps ---------- */
+
+.filter-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.filter-stamp {
+    font-family: var(--font-type);
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    padding: 6px 13px 5px;
+    background: transparent;
+    border: 2px solid currentColor;
+    border-radius: 4px;
+    color: var(--ink-faded);
+    cursor: pointer;
+    opacity: 0.5;
+    transform: rotate(-1.6deg);
+    transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.filter-stamp:nth-child(even) { transform: rotate(1.4deg); }
+
+.filter-stamp:hover {
+    opacity: 0.9;
+    transform: rotate(0deg) scale(1.06);
+}
+
+.filter-stamp:active { transform: scale(0.9); }
+
+.filter-stamp.active {
+    opacity: 1;
+    border-style: double;
+    border-width: 4px;
+    padding: 4px 11px 3px;
+    transform: rotate(0deg);
+}
+
+.filter-stamp:focus-visible {
+    outline: 2px dashed var(--stamp-red);
+    outline-offset: 4px;
+}
+
+.filter-count {
+    text-align: center;
+    font-family: var(--font-type);
+    font-size: 0.62rem;
+    letter-spacing: 0.28em;
+    color: var(--ink-faint);
+    margin: 0 0 30px;
+    min-height: 1em;
+}
+
+/* ---------- log entries ---------- */
+
+.entries {
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+    position: relative;
+}
+
+/* spine — a dotted ink line down the left */
+.entries::before {
+    content: "";
+    position: absolute;
+    left: -18px;
+    top: 10px;
+    bottom: 10px;
+    border-left: 2px dotted rgba(43, 42, 38, 0.25);
+}
+
+.entry {
+    position: relative;
+    transform: rotate(var(--tilt, -0.5deg)) translateY(24px);
+    opacity: 0;
+    transition:
+        transform 0.35s ease,
+        opacity 0.5s ease;
+    perspective: 1400px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.entry:focus-visible {
+    outline: 2px dashed var(--stamp-red);
+    outline-offset: 8px;
+}
+
+.entry.hidden { display: none; }
+
+.entry.revealed {
+    opacity: 1;
+    transform: rotate(var(--tilt, -0.5deg)) translateY(0);
+}
+
+.entry:hover {
+    transform: rotate(0deg) translateY(-3px);
+}
+
+/* the card itself — flips over when clicked */
+.entry-flip {
+    position: relative;
+    z-index: 1;
+    transform-style: preserve-3d;
+    transition: transform 0.65s cubic-bezier(0.35, 0.9, 0.3, 1);
+}
+
+.entry.flipped .entry-flip { transform: rotateX(180deg); }
+
+.entry-face {
+    background-color: #f8f2e3;
+    border: 1px solid rgba(43, 42, 38, 0.15);
+    box-shadow:
+        0 1px 2px rgba(60, 50, 30, 0.12),
+        0 6px 18px rgba(60, 50, 30, 0.1);
+    padding: 26px 30px 24px;
+    position: relative;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transition: box-shadow 0.35s ease;
+    /* ruled lines like an index card */
+    background-image:
+        linear-gradient(transparent calc(100% - 1px), rgba(47, 74, 122, 0.08) 0);
+    background-size: 100% 1.65em;
+    background-position: 0 5.2em;
+}
+
+.entry:hover .entry-face {
+    box-shadow:
+        0 2px 4px rgba(60, 50, 30, 0.14),
+        0 14px 30px rgba(60, 50, 30, 0.16);
+}
+
+.entry-back {
+    position: absolute;
+    inset: 0;
+    transform: rotateX(180deg);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    font-family: var(--font-type);
+    font-size: 0.76rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-faded);
+    background-position: 0 1.1em;
+    overflow: hidden;
+}
+
+.entry-back .back-line b {
+    color: var(--ink);
+    font-weight: normal;
+}
+
+/* big faded LOGGED stamp on the back */
+.entry-back .logged-stamp {
+    position: absolute;
+    top: 50%;
+    right: 8%;
+    transform: translateY(-50%) rotate(-13deg);
+    font-size: 1.9rem;
+    letter-spacing: 0.3em;
+    color: var(--stamp-red);
+    border: 4px double var(--stamp-red);
+    border-radius: 8px;
+    padding: 8px 16px 6px;
+    opacity: 0.14;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* "turn over" hint in the corner */
+.flip-hint {
+    position: absolute;
+    bottom: 7px;
+    right: 12px;
+    font-family: var(--font-type);
+    font-size: 0.58rem;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.entry:hover .flip-hint,
+.entry:focus-visible .flip-hint { opacity: 0.8; }
+
+/* flash highlight when jumped to from the tally */
+.entry.flash .entry-flip { animation: flashRing 1.5s ease-out; }
+
+@keyframes flashRing {
+    0%, 25% { box-shadow: 0 0 0 3px rgba(178, 58, 43, 0.7); }
+    100% { box-shadow: 0 0 0 3px rgba(178, 58, 43, 0); }
+}
+
+/* re-settle animation when the filter changes */
+.entry.resettle {
+    animation: resettle 0.4s ease both;
+    animation-delay: var(--rd, 0s);
+}
+
+@keyframes resettle {
+    from { opacity: 0; transform: rotate(var(--tilt, -0.5deg)) translateY(14px); }
+    to { opacity: 1; transform: rotate(var(--tilt, -0.5deg)) translateY(0); }
+}
+
+/* tape strip on top — stays put while the card flips beneath it */
+.entry::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    top: -12px;
+    left: 50%;
+    width: 96px;
+    height: 24px;
+    transform: translateX(-50%) rotate(var(--tape-tilt, -2deg));
+    background: linear-gradient(105deg, var(--tape), rgba(238, 226, 190, 0.7) 50%, var(--tape));
+    border-left: 1px dashed rgba(150, 130, 80, 0.4);
+    border-right: 1px dashed rgba(150, 130, 80, 0.4);
+    box-shadow: 0 1px 3px rgba(60, 50, 30, 0.15);
+    opacity: 0.9;
+}
+
+.entry-meta {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    font-family: var(--font-type);
+}
+
+.entry-date {
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    color: var(--ink-faded);
+}
+
+.entry-cat {
+    font-size: 0.66rem;
+    letter-spacing: 0.2em;
+    padding: 4px 10px 3px;
+    border: 2px solid currentColor;
+    border-radius: 4px;
+    transform: rotate(-2deg);
+    opacity: 0.8;
+}
+
+.cat-mind { color: var(--stamp-blue); }
+.cat-body { color: var(--stamp-green); }
+.cat-discipline { color: var(--stamp-red); }
+.cat-other { color: var(--ink-faded); }
+
+.entry-grade {
+    margin-left: auto;
+    font-size: 0.85rem;
+    letter-spacing: 0.25em;
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+.entry-grade .dim { opacity: 0.18; }
+
+.entry h3 {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 1.35rem;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+}
+
+.entry p.note {
+    margin: 0;
+    color: var(--ink-faded);
+    font-size: 1rem;
+    max-width: 56ch;
+}
+
+.entry .margin-note {
+    position: absolute;
+    right: 18px;
+    bottom: -14px;
+    font-family: var(--font-hand);
+    font-size: 1.25rem;
+    color: var(--stamp-red);
+    transform: rotate(-3deg);
+    opacity: 0.85;
+    max-width: 45%;
+    text-align: right;
+    line-height: 1.15;
+    pointer-events: none;
+}
+
+/* summit badge for grade-5 entries */
+.entry.summit::after {
+    content: "SUMMIT";
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+    top: 14px;
+    right: -10px;
+    font-family: var(--font-type);
+    font-size: 0.6rem;
+    letter-spacing: 0.28em;
+    color: var(--stamp-red);
+    border: 2px solid var(--stamp-red);
+    border-radius: 4px;
+    padding: 5px 9px 4px;
+    transform: rotate(12deg);
+    opacity: 0.75;
+}
+
+/* ---------- stamp-when-done spot ---------- */
+
+.entry-front { padding-right: 118px; padding-bottom: 30px; min-height: 118px; }
+
+.stamp-spot {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%) rotate(6deg);
+    width: 84px;
+    height: 84px;
+    border-radius: 50%;
+    border: 2px dashed rgba(43, 42, 38, 0.3);
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--font-type);
+    font-size: 0.52rem;
+    letter-spacing: 0.16em;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    transition: border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    z-index: 1;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.stamp-spot:hover {
+    border-color: var(--stamp-red);
+    color: var(--stamp-red);
+    transform: translateY(-50%) rotate(0deg) scale(1.06);
+}
+
+.stamp-spot:active { transform: translateY(-50%) scale(0.88); }
+
+.stamp-spot:focus-visible {
+    outline: 2px dashed var(--stamp-red);
+    outline-offset: 4px;
+}
+
+/* stamped state — DONE today */
+.entry.done-today .stamp-spot {
+    border: 3px double var(--stamp-red);
+    color: var(--stamp-red);
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    font-weight: bold;
+    opacity: 0.9;
+    transform: translateY(-50%) rotate(-11deg);
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.35' numOctaves='3'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='discrete' tableValues='0.4 0.7 1 1 1 1 0.85 1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23r)'/%3E%3C/svg%3E");
+    mask-size: 120px 120px;
+    animation: stampThunk 0.4s cubic-bezier(0.2, 2.2, 0.4, 1);
+}
+
+.entry.done-today .stamp-spot:hover { transform: translateY(-50%) rotate(-11deg) scale(1.05); }
+
+/* committed to the permanent record — can't be un-stamped from here */
+.entry.done-today .stamp-spot.locked { cursor: default; }
+
+@keyframes stampThunk {
+    0% { transform: translateY(-50%) rotate(-11deg) scale(2.1); opacity: 0; }
+    100% { transform: translateY(-50%) rotate(-11deg) scale(1); opacity: 0.9; }
+}
+
+/* ---------- the record (ledger) ---------- */
+
+.record-section { margin-top: 76px; }
+
+.ledger {
+    max-width: 620px;
+    margin: 0 auto;
+    font-family: var(--font-type);
+}
+
+.ledger-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 6px 8px;
+    border-bottom: 1px dotted rgba(43, 42, 38, 0.28);
+}
+
+.ledger-date {
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    white-space: nowrap;
+}
+
+.ledger-title {
+    font-size: 0.82rem;
+    color: var(--ink);
+    flex: 1;
+}
+
+.ledger-title::before {
+    content: "✓ ";
+    color: var(--stamp-green);
+}
+
+.ledger-meta {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    white-space: nowrap;
+}
+
+.pending-mark {
+    font-size: 0.52rem;
+    letter-spacing: 0.18em;
+    color: var(--stamp-red);
+    border: 1px solid var(--stamp-red);
+    border-radius: 3px;
+    padding: 2px 6px 1px;
+    transform: rotate(-1.5deg);
+    opacity: 0.85;
+    white-space: nowrap;
+}
+
+.ledger-note {
+    width: 100%;
+    font-family: var(--font-hand);
+    font-size: 1.15rem;
+    color: var(--ink-faded);
+    line-height: 1.2;
+    transform: rotate(-0.4deg);
+}
+
+.ledger-more {
+    text-align: center;
+    font-size: 0.62rem;
+    letter-spacing: 0.24em;
+    color: var(--ink-faint);
+    padding: 14px 0 0;
+}
+
+.ledger-row.flash { animation: ledgerFlash 1.6s ease-out; }
+
+@keyframes ledgerFlash {
+    0%, 30% { background: rgba(178, 58, 43, 0.13); }
+    100% { background: transparent; }
+}
+
+/* ---------- pending transcription box ---------- */
+
+.transcribe {
+    max-width: 620px;
+    margin: 30px auto 0;
+    border: 2px dashed rgba(178, 58, 43, 0.55);
+    border-radius: 5px;
+    padding: 20px 22px 18px;
+    font-family: var(--font-type);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    line-height: 1.9;
+    color: var(--ink-faded);
+    text-align: center;
+    transform: rotate(-0.3deg);
+}
+
+.transcribe .t-head {
+    color: var(--stamp-red);
+    letter-spacing: 0.26em;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.copy-btn {
+    font-family: var(--font-type);
+    font-size: 0.66rem;
+    letter-spacing: 0.2em;
+    margin-top: 12px;
+    padding: 7px 16px 6px;
+    background: transparent;
+    border: 2px solid var(--stamp-red);
+    border-radius: 4px;
+    color: var(--stamp-red);
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.2s ease;
+    opacity: 0.85;
+}
+
+.copy-btn:hover { opacity: 1; transform: scale(1.05); }
+.copy-btn:active { transform: scale(0.92); }
+
+/* ---------- coffee stain ---------- */
+
+.coffee-stain {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    right: -30px;
+    bottom: 320px;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.6;
+    background:
+        radial-gradient(circle, transparent 58%, rgba(122, 84, 40, 0.16) 60%, rgba(122, 84, 40, 0.05) 64%, transparent 67%),
+        radial-gradient(circle at 40% 45%, transparent 63%, rgba(122, 84, 40, 0.1) 66%, transparent 70%);
+    transform: rotate(24deg);
+}
+
+/* ---------- footer ---------- */
+
+.log-footer {
+    margin-top: 80px;
+    padding-top: 36px;
+    border-top: 3px double var(--rule);
+    text-align: center;
+    font-family: var(--font-type);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    color: var(--ink-faint);
+}
+
+.log-footer .signature {
+    font-family: var(--font-hand);
+    font-size: 2.1rem;
+    color: var(--ink-faded);
+    letter-spacing: 0;
+    display: block;
+    margin: 22px 0 6px;
+    transform: rotate(-2deg);
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 640px) {
+    .sheet { padding: 40px 18px 70px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .entries::before { display: none; }
+    .entry-face { padding: 22px 20px 20px; }
+    .entry-front { padding-right: 104px; }
+    .stamp-spot { width: 74px; height: 74px; right: 12px; }
+    .entry-grade { margin-left: 0; width: 100%; }
+    .stamp { position: static; display: inline-block; margin-top: 18px; }
+    .coffee-stain { display: none; }
+    .ledger-row { gap: 8px; }
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .entry { opacity: 1; transform: rotate(var(--tilt, -0.5deg)); transition: none; }
+    .entry-flip { transition: none; }
+    .entry.resettle { animation: none; }
+    .entry.flash .entry-flip { animation: none; }
+    .entry.done-today .stamp-spot { animation: none; }
+    .ledger-row.flash { animation: none; }
+    .stamp.stamp-in { animation: none; }
+    .tally-cell svg path { stroke-dashoffset: 0; animation: none !important; }
+    .log-subject .caret { animation: none; }
+}

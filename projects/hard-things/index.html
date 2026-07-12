@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Field Log — Hard Things | Ewoud Janus</title>
+
+    <meta name="description" content="An expedition logbook of hard things done on purpose — reading in one sitting, phone-free mornings, cold showers. Rewiring dopamine one entry at a time.">
+    <meta name="author" content="Ewoud Janus">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://etcjanus.github.io/projects/hard-things/">
+    <meta property="og:title" content="Field Log — Hard Things | Ewoud Janus">
+    <meta property="og:description" content="An expedition logbook of hard things done on purpose. Rewiring dopamine one entry at a time.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="../../favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+    <link rel="shortcut icon" href="../../favicon.ico" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Lora:ital,wght@0,400;0,700;1,400&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="topbar">
+        <a href="../../projects.html">&larr; BACK TO PROJECTS</a>
+        <span class="doc-ref">DOC. REF: EJ/FL-001 &mdash; PERSONAL</span>
+    </nav>
+
+    <main class="sheet">
+
+        <header class="log-header">
+            <span class="stamp" id="header-stamp">DO&nbsp;HARD&nbsp;THINGS</span>
+            <p class="log-kicker">FIELD LOG &mdash; &numero; 001</p>
+            <h1 class="log-title">THE HARD THINGS<br>EXPEDITION</h1>
+            <p class="log-subject" id="typed-subject" aria-label="Subject: E. Janus — Operation: Reclaim the reward system"><span class="caret"></span></p>
+            <p class="log-epigraph">&ldquo;Comfort is a fine servant and a terrible master.&rdquo;</p>
+        </header>
+
+        <section class="briefing">
+            <p>
+                <span class="lead-word">BRIEFING &mdash;</span>
+                Below is a deck of standing challenges: things done the hard way, on
+                purpose. Books read in one sitting, mornings without a phone, kilometres
+                run before the world wakes up. Do one, stamp its card. At midnight every
+                stamp resets and the deck is fresh again &mdash; the only thing that
+                accumulates is the record. Nothing worth having arrives by scroll.
+            </p>
+        </section>
+
+        <section class="stats reveal" aria-label="Expedition statistics">
+            <div class="stat">
+                <span class="num" data-count id="stat-total">0</span>
+                <span class="label">Completions</span>
+            </div>
+            <div class="stat">
+                <span class="num" data-count id="stat-month">0</span>
+                <span class="label">This month</span>
+            </div>
+            <div class="stat">
+                <span class="num" data-count id="stat-streak">0</span>
+                <span class="label">Day streak</span>
+            </div>
+            <div class="stat">
+                <span class="num" data-count id="stat-summits">0</span>
+                <span class="label">Summits (gr. 5)</span>
+            </div>
+        </section>
+
+        <section class="tally reveal">
+            <h2 class="section-head">Ink Tally &mdash; <span id="tally-month">this month</span></h2>
+            <div class="tally-grid" id="tally-grid" role="img" aria-label="Calendar of days with logged entries this month"></div>
+            <p class="tally-caption">one ✕ per day something hard got done</p>
+        </section>
+
+        <section>
+            <h2 class="section-head">The Deck &mdash; <span id="deck-date">today</span></h2>
+            <div class="filter-bar" id="filter-bar" role="group" aria-label="Filter challenges by category"></div>
+            <p class="filter-count" id="filter-count" aria-live="polite"></p>
+            <div class="entries" id="entries"></div>
+        </section>
+
+        <section class="record-section">
+            <h2 class="section-head">The Record</h2>
+            <div class="ledger" id="ledger"></div>
+            <div id="transcribe-slot"></div>
+        </section>
+
+        <div class="coffee-stain" aria-hidden="true"></div>
+
+        <footer class="log-footer">
+            <p>END OF LOG &mdash; FURTHER EXPEDITIONS PENDING</p>
+            <span class="signature">&mdash; Ewoud</span>
+            <p>LOGGED BY HAND. AS IT SHOULD BE.</p>
+        </footer>
+
+    </main>
+
+    <script src="entries.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
