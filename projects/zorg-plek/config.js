@@ -5,4 +5,4 @@ window.ZORGPLEK_SUPABASE_KEY = "sb_publishable_LVLbo3UZiJx2FUUjg48mWw_tfB7VjO9";
 
 // Teksten bovenaan de pagina — pas gerust aan.
 window.ZORGPLEK_TITEL = "Zorg Plek";
-window.ZORGPLEK_ONDERTITEL = "Samen zorgen we voor Wim en Willie";
+window.ZORGPLEK_ONDERTITEL = "Planning voor Wim en Willie";
