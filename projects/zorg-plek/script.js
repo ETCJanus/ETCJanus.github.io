@@ -254,8 +254,7 @@
 
         const tabs = [
             ["rooster", "📅", "Rooster"],
-            ["beschikbaar", "✋", "Wanneer kan ik?"],
-            ["taken", "📋", "Taken"],
+            ["beschikbaar", "✋", "Beschikbaarheid"],
             ["boodschappen", "🛒", "Boodschappen"],
         ];
         if (state.ik.is_beheerder) tabs.push(["beheer", "⚙️", "Beheer"]);
@@ -747,7 +746,7 @@
         const rijen = state.personen.map((p) => `
             <div class="beheer-rij">
                 <span class="naam">${esc(p.naam)}${p.id === state.ik.id ? " (jij)" : ""}</span>
-                <label><input type="checkbox" data-beheerder="${p.id}" ${p.is_beheerder ? "checked" : ""}> mag rooster maken</label>
+                <label><input type="checkbox" data-beheerder="${p.id}" ${p.is_beheerder ? "checked" : ""}> beheerder</label>
                 ${p.id !== state.ik.id ? `<button class="mini-knop" data-verwijder="${p.id}">Verwijder</button>` : ""}
             </div>`).join("");
 
