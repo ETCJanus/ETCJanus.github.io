@@ -254,6 +254,7 @@ header .ondertitel {
 .cel:hover { border-color: var(--groen); }
 .cel.leeg-cel { visibility: hidden; }
 .cel.vol { background: var(--groen-licht); border-color: #bcd9bd; }
+.cel.kan-dag { background: var(--oranje-licht); border-color: #edd2bb; }
 .cel.vandaag { border-color: var(--groen); border-width: 3px; }
 .cel.verleden { opacity: 0.45; }
 .cel-nr {
@@ -274,12 +275,22 @@ header .ondertitel {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+.cel-item.kan { color: var(--oranje); }
 .cel-item.meer { color: var(--ink-soft); background: none; }
 .legenda {
     color: var(--ink-soft);
     font-size: 0.95rem;
     margin: 0 4px 14px;
 }
+.legenda-blok {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    vertical-align: -2px;
+}
+.legenda-blok.groen { background: var(--groen-licht); border: 1px solid #bcd9bd; }
+.legenda-blok.oranje { background: var(--oranje-licht); border: 1px solid #edd2bb; }
 
 /* ---------- Dag-venster ---------- */
 .paneel-achtergrond {
@@ -436,16 +447,13 @@ header .ondertitel {
     flex-wrap: wrap;
 }
 .taak-rij:last-child { border-bottom: none; }
-.taak-nr {
-    flex: 0 0 34px;
-    height: 34px;
-    border-radius: 50%;
+.taak-tijd {
+    flex: 0 0 auto;
     background: var(--groen-licht);
     color: var(--groen);
     font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border-radius: 8px;
+    padding: 4px 12px;
 }
 .taak-tekst {
     flex: 1;

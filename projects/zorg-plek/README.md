@@ -11,23 +11,25 @@ wie gaat wanneer (rooster in kalendervorm), en een gezamenlijke boodschappenlijs
 2. Nieuwe installatie: plak [`SETUP.sql`](SETUP.sql) in de **SQL Editor** en klik **Run**.
    Bestaande installatie met dagdelen (van vóór 2026-07-12): draai [`MIGRATIE-tijden.sql`](MIGRATIE-tijden.sql)
    — bestaande dagdelen worden omgezet naar tijden (ochtend 09:00–12:00, middag 12:00–17:00, avond 17:00–21:00).
-   Bestaande installatie zonder takenlijst: draai daarna ook [`UPDATE-taken.sql`](UPDATE-taken.sql).
+   Bestaande installatie zonder dagschema: draai daarna ook [`UPDATE-taken.sql`](UPDATE-taken.sql).
 3. Open de pagina, kies "Ewoud" (staat al klaar als beheerder).
 4. Laat je moeder zichzelf toevoegen via "Voeg mij toe", en vink haar daarna in het
-   **⚙️ Beheer**-tabblad aan als "mag rooster maken".
+   **⚙️ Beheer**-tabblad aan als "beheerder".
 
 ## Hoe het werkt
 
 - **Geen wachtwoorden.** Bij het eerste bezoek kies je wie je bent; een cookie onthoudt dat.
   Nieuwe familieleden voegen zichzelf toe met de knop "Voeg mij toe".
 - **📅 Rooster** — een maandkalender: groene dagen zijn (deels) gevuld, met de namen in de vakjes.
-  Klik op een dag voor de tijden. Beheerders kunnen in dat dagvenster mensen inplannen;
-  wie beschikbaar is staat bovenaan de lijst met ✋ en hun tijden worden alvast ingevuld.
-- **✋ Wanneer kan ik?** — zelfde kalender; klik op een dag en geef door van hoe laat tot hoe laat
+  Klik op een dag voor de tijden. Beheerders zien bovendien direct in de kalender wie er
+  ✋ beschikbaar is (oranje) maar nog niet is ingepland, en kunnen in het dagvenster mensen
+  inplannen; wie beschikbaar is staat bovenaan de lijst met ✋ en hun tijden worden alvast ingevuld.
+- **✋ Beschikbaarheid** — zelfde kalender; klik op een dag en geef door van hoe laat tot hoe laat
   je kunt (meerdere tijdvakken per dag mag).
-- **📋 Taken** — vaste takenlijst voor bij een bezoek. Iedereen kan hem bekijken;
-  beheerders kunnen taken toevoegen, bewerken, verwijderen en met ▲▼ op volgorde zetten.
 - **🛒 Boodschappen** — gedeelde lijst; aanklikken = gekocht.
+- **📋 Dagschema** (alleen beheerders) — het vaste dagritme van Wim en Willie
+  (bijv. "09:00 wakker worden en aankleden"). Taak toevoegen met tijd + omschrijving;
+  de lijst sorteert zichzelf op tijd. Bewerken met ✏️, verwijderen met ✕.
 - **⚙️ Beheer** (alleen beheerders) — beheerdersrechten geven/afnemen en personen verwijderen.
 
 ## Aanpassen
