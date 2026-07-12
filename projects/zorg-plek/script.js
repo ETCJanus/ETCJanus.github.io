@@ -155,7 +155,7 @@
     }
 
     async function laadTaken() {
-        state.taken = await sb("zorgplek_taken?select=*&order=tijd.asc,created_at.asc");
+        state.taken = await sb("zorgplek_taken?select=*&order=sort_order.asc,created_at.asc");
     }
 
     // ---------- Identiteit ----------
@@ -252,15 +252,12 @@
             toonIdentiteitskeuze();
         });
 
-        if (!state.ik.is_beheerder && (state.tab === "taken" || state.tab === "beheer")) {
-            state.tab = "rooster";
-        }
         const tabs = [
             ["rooster", "📅", "Rooster"],
             ["beschikbaar", "✋", "Beschikbaarheid"],
             ["boodschappen", "🛒", "Boodschappen"],
         ];
-        if (state.ik.is_beheerder) tabs.push(["taken", "📋", "Dagschema"], ["beheer", "⚙️", "Beheer"]);
+        if (state.ik.is_beheerder) tabs.push(["beheer", "⚙️", "Beheer"]);
 
         tabsEl.style.display = "flex";
         tabsEl.innerHTML = tabs.map(([id, icoon, label]) =>
@@ -589,35 +586,39 @@
     // ---------- Taken ----------
 
     function toonTaken() {
-        // Alleen beheerders zien dit tabblad (zie toonApp).
-        const rijen = state.taken.map((t) => {
-            if (state.bewerkTaak === t.id) {
+        const beheer = state.ik.is_beheerder;
+
+        const rijen = state.taken.map((t, i) => {
+            if (beheer && state.bewerkTaak === t.id) {
                 return `<div class="taak-rij">
-                    <select class="tijd-select" id="taak-bewerk-tijd">${tijdOpties(tijd(t.tijd))}</select>
+                    <span class="taak-nr">${i + 1}</span>
                     <input class="taak-invoer" id="taak-bewerk-invoer" value="${esc(t.tekst)}" maxlength="200">
                     <button class="knop" data-taak-opslaan="${t.id}">Opslaan</button>
                 </div>`;
             }
             return `<div class="taak-rij">
-                <span class="taak-tijd">${tijd(t.tijd)}</span>
+                <span class="taak-nr">${i + 1}</span>
                 <span class="taak-tekst">${esc(t.tekst)}</span>
-                <span class="taak-acties">
+                ${beheer ? `<span class="taak-acties">
+                    <button class="taak-knopje" data-taak-schuif="${t.id}" data-richting="-1" ${i === 0 ? "disabled" : ""} aria-label="Omhoog">▲</button>
+                    <button class="taak-knopje" data-taak-schuif="${t.id}" data-richting="1" ${i === state.taken.length - 1 ? "disabled" : ""} aria-label="Omlaag">▼</button>
                     <button class="taak-knopje" data-taak-bewerk="${t.id}" aria-label="Bewerken">✏️</button>
                     <button class="taak-knopje rood" data-taak-weg="${t.id}" aria-label="Verwijderen">✕</button>
-                </span>
+                </span>` : ""}
             </div>`;
-        }).join("") || `<p class="leeg" style="padding:6px 4px;">Het dagschema is nog leeg.</p>`;
+        }).join("") || `<p class="leeg" style="padding:6px 4px;">Er staan nog geen taken op de lijst.</p>`;
 
         app.innerHTML = `
-            <div class="uitleg">Het dagschema voor Wim en Willie: wat er op welk moment van de dag
-                moet gebeuren. Alleen beheerders zien deze pagina — hier kunnen jullie het schema
-                samen opbouwen en uitproberen. De lijst sorteert zichzelf op tijd.</div>
-            <div class="plan-form" style="margin-bottom:18px;">
-                <select class="tijd-select" id="taak-tijd">${tijdOpties("09:00")}</select>
-                <input type="text" class="taak-invoer" id="taak-invoer" placeholder="Bijvoorbeeld: boterham maken voor Wim en Willie" maxlength="200">
+            <div class="uitleg">${beheer
+                ? "De takenlijst voor bij Wim en Willie. Jij kunt hem bewerken; iedereen kan hem bekijken."
+                : "Deze taken horen bij een bezoek aan Wim en Willie."}</div>
+            ${beheer ? `<div class="boodschap-form">
+                <input type="text" id="taak-invoer" placeholder="Nieuwe taak, bijvoorbeeld: medicijnen klaarzetten" maxlength="200">
                 <button class="knop" id="taak-toevoegen">+ Zet erbij</button>
-            </div>
+            </div>` : ""}
             <div class="kaart">${rijen}</div>`;
+
+        if (!beheer) return;
 
         const invoer = document.getElementById("taak-invoer");
         const toevoegKnop = document.getElementById("taak-toevoegen");
@@ -625,10 +626,11 @@
             const tekst = invoer.value.trim();
             if (!tekst) { invoer.focus(); return; }
             toevoegKnop.disabled = true;
+            const hoogste = state.taken.reduce((m, t) => Math.max(m, t.sort_order), 0);
             try {
                 await sb("zorgplek_taken", {
                     method: "POST",
-                    body: { tijd: document.getElementById("taak-tijd").value, tekst },
+                    body: { tekst, sort_order: hoogste + 1 },
                 });
                 await laadTaken();
                 toonTaken();
@@ -636,6 +638,25 @@
         }
         toevoegKnop.addEventListener("click", toevoegen);
         invoer.addEventListener("keydown", (e) => { if (e.key === "Enter") toevoegen(); });
+
+        app.querySelectorAll("[data-taak-schuif]").forEach((k) => {
+            k.addEventListener("click", async () => {
+                const richting = Number(k.dataset.richting);
+                const index = state.taken.findIndex((t) => t.id === k.dataset.taakSchuif);
+                const taak = state.taken[index];
+                const buur = state.taken[index + richting];
+                if (!taak || !buur) return;
+                let nieuwTaak = buur.sort_order;
+                let nieuwBuur = taak.sort_order;
+                if (nieuwTaak === nieuwBuur) nieuwTaak = buur.sort_order + richting;
+                try {
+                    await sb(`zorgplek_taken?id=eq.${taak.id}`, { method: "PATCH", body: { sort_order: nieuwTaak } });
+                    await sb(`zorgplek_taken?id=eq.${buur.id}`, { method: "PATCH", body: { sort_order: nieuwBuur } });
+                    await laadTaken();
+                    toonTaken();
+                } catch (fout) { foutmelding(fout); }
+            });
+        });
 
         app.querySelectorAll("[data-taak-bewerk]").forEach((k) => {
             k.addEventListener("click", () => {
@@ -651,10 +672,7 @@
             const tekst = veld.value.trim();
             if (!tekst) { veld.focus(); return; }
             try {
-                await sb(`zorgplek_taken?id=eq.${id}`, {
-                    method: "PATCH",
-                    body: { tijd: document.getElementById("taak-bewerk-tijd").value, tekst },
-                });
+                await sb(`zorgplek_taken?id=eq.${id}`, { method: "PATCH", body: { tekst } });
                 state.bewerkTaak = null;
                 await laadTaken();
                 toonTaken();
@@ -671,7 +689,7 @@
         app.querySelectorAll("[data-taak-weg]").forEach((k) => {
             k.addEventListener("click", async () => {
                 const taak = state.taken.find((t) => t.id === k.dataset.taakWeg);
-                if (!confirm(`"${taak ? taak.tekst : "deze taak"}" uit het dagschema halen?`)) return;
+                if (!confirm(`"${taak ? taak.tekst : "deze taak"}" van de lijst halen?`)) return;
                 try {
                     await sb(`zorgplek_taken?id=eq.${k.dataset.taakWeg}`, { method: "DELETE" });
                     await laadTaken();
@@ -758,8 +776,8 @@
             </div>`).join("");
 
         app.innerHTML = `
-            <div class="uitleg">Alleen beheerders zien dit tabblad. Een beheerder kan het rooster
-                bewerken, het dagschema maken en dit beheerscherm zien.</div>
+            <div class="uitleg">Alleen beheerders zien dit tabblad. "Mag rooster maken" geeft iemand
+                de mogelijkheid om het rooster te bewerken en dit beheerscherm te zien.</div>
             <div class="kaart">${rijen}</div>`;
 
         app.querySelectorAll("[data-beheerder]").forEach((vak) => {

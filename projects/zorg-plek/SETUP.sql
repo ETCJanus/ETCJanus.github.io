@@ -44,11 +44,11 @@ create table if not exists public.zorgplek_boodschappen (
     created_at timestamptz not null default timezone('utc', now())
 );
 
--- Dagschema voor Wim en Willie (alleen zichtbaar voor beheerders).
+-- Takenlijst voor bij Wim en Willie (beheerders bewerken, iedereen kijkt).
 create table if not exists public.zorgplek_taken (
     id uuid primary key default gen_random_uuid(),
-    tijd time not null default '09:00',
     tekst text not null,
+    sort_order integer not null default 0,
     created_at timestamptz not null default timezone('utc', now())
 );
 

@@ -447,13 +447,16 @@ header .ondertitel {
     flex-wrap: wrap;
 }
 .taak-rij:last-child { border-bottom: none; }
-.taak-tijd {
-    flex: 0 0 auto;
+.taak-nr {
+    flex: 0 0 34px;
+    height: 34px;
+    border-radius: 50%;
     background: var(--groen-licht);
     color: var(--groen);
     font-weight: 800;
-    border-radius: 8px;
-    padding: 4px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .taak-tekst {
     flex: 1;
