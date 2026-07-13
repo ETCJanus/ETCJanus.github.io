@@ -19,6 +19,7 @@
         boodschappen: [],
         taken: [],
         bewerkTaak: null,               // id van de taak die in bewerking is
+        toonVoorbeeld: false,           // voorbeeldlijstje open/dicht
     };
 
     const app = document.getElementById("app");
@@ -711,8 +712,37 @@
             <span class="door">${esc(persoonNaam(b.toegevoegd_door))}</span>
         </div>`;
 
+        // Voorbeeldlijstje (van Jan Willem): artikelen die je met één klik op de lijst zet.
+        const voorbeeld = window.ZORGPLEK_VOORBEELDLIJST || [];
+        const opLijst = new Set(open.map((b) => b.tekst.trim().toLowerCase()));
+        let voorbeeldHtml = "";
+        if (voorbeeld.length) {
+            const rijen = voorbeeld.map((tekst, i) => {
+                const staatErop = opLijst.has(tekst.trim().toLowerCase());
+                return `<div class="voorbeeld-rij">
+                    <span class="tekst">${esc(tekst)}</span>
+                    ${staatErop
+                        ? `<span class="voorbeeld-al">staat erop ✓</span>`
+                        : `<button class="taak-knopje" data-voorbeeld="${i}" aria-label="Zet op de lijst">+</button>`}
+                </div>`;
+            }).join("");
+            voorbeeldHtml = `
+                <div class="voorbeeld-blok">
+                    <button class="voorbeeld-toggle ${state.toonVoorbeeld ? "open" : ""}" id="voorbeeld-toggle">
+                        💡 Voorbeeldlijstje
+                        <span class="voorbeeld-pijl">${state.toonVoorbeeld ? "▲" : "▼"}</span>
+                    </button>
+                    ${state.toonVoorbeeld ? `<div class="voorbeeld-paneel">
+                        <p class="voorbeeld-intro">Vraag bij Wim zelf na wat er echt nodig is.
+                            Klik op <strong>+</strong> om iets op de boodschappenlijst te zetten.</p>
+                        ${rijen}
+                    </div>` : ""}
+                </div>`;
+        }
+
         app.innerHTML = `
             <div class="uitleg">Zet hier wat er nodig is voor Wim en Willie. Klik op een boodschap als je hem hebt gekocht.</div>
+            ${voorbeeldHtml}
             <div class="boodschap-form">
                 <input type="text" id="boodschap-invoer" placeholder="Bijvoorbeeld: melk, brood…" maxlength="120">
                 <button class="knop" id="boodschap-toevoegen">+ Zet erbij</button>
@@ -762,6 +792,26 @@
                 await laadBoodschappen();
                 toonBoodschappen();
             } catch (fout) { foutmelding(fout); }
+        });
+
+        const voorbeeldToggle = document.getElementById("voorbeeld-toggle");
+        if (voorbeeldToggle) voorbeeldToggle.addEventListener("click", () => {
+            state.toonVoorbeeld = !state.toonVoorbeeld;
+            toonBoodschappen();
+        });
+
+        app.querySelectorAll("[data-voorbeeld]").forEach((k) => {
+            k.addEventListener("click", async () => {
+                k.disabled = true;
+                try {
+                    await sb("zorgplek_boodschappen", {
+                        method: "POST",
+                        body: { tekst: voorbeeld[Number(k.dataset.voorbeeld)], toegevoegd_door: state.ik.id },
+                    });
+                    await laadBoodschappen();
+                    toonBoodschappen();
+                } catch (fout) { k.disabled = false; foutmelding(fout); }
+            });
         });
     }
 

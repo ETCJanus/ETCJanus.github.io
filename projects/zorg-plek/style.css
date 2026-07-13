@@ -492,6 +492,57 @@ header .ondertitel {
 }
 .taak-invoer:focus { outline: 2px solid var(--groen); }
 
+/* ---------- Voorbeeldlijstje ---------- */
+.voorbeeld-blok { margin-bottom: 18px; }
+.voorbeeld-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    font: inherit;
+    font-size: 1.02rem;
+    font-weight: 700;
+    text-align: left;
+    padding: 13px 18px;
+    border: 2px solid #edd9a3;
+    background: #fdf6e0;
+    color: #7a5d16;
+    border-radius: var(--radius);
+    cursor: pointer;
+    box-shadow: var(--schaduw);
+}
+.voorbeeld-toggle:hover { border-color: #d9bd6e; }
+.voorbeeld-toggle.open { border-radius: var(--radius) var(--radius) 0 0; }
+.voorbeeld-pijl { font-size: 0.85rem; }
+.voorbeeld-paneel {
+    background: var(--card);
+    border: 2px solid #edd9a3;
+    border-top: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    padding: 14px 18px;
+}
+.voorbeeld-intro {
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+}
+.voorbeeld-rij {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 4px;
+    border-bottom: 1px solid var(--line);
+}
+.voorbeeld-rij:last-child { border-bottom: none; }
+.voorbeeld-rij .tekst { flex: 1; font-weight: 600; }
+.voorbeeld-al {
+    color: var(--groen);
+    font-size: 0.9rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
 /* ---------- Beheer ---------- */
 .beheer-rij {
     display: flex;
