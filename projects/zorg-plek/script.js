@@ -111,6 +111,35 @@
         toast._t = setTimeout(() => el.classList.remove("zichtbaar"), 3200);
     }
 
+    // Eigen bevestigingsvenster in de stijl van de pagina (i.p.v. de kale browser-popup).
+    function vraagBevestiging(vraag, bevestigLabel = "Ja") {
+        return new Promise((resolve) => {
+            const el = document.createElement("div");
+            el.className = "bevestig-overlay";
+            el.innerHTML = `
+                <div class="bevestig-achtergrond"></div>
+                <div class="bevestig-kaart">
+                    <p class="bevestig-vraag">${vraag}</p>
+                    <div class="bevestig-knoppen">
+                        <button class="knop rustig" data-nee>Nee, terug</button>
+                        <button class="knop rood" data-ja>${esc(bevestigLabel)}</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(el);
+            const klaar = (uitkomst) => {
+                document.removeEventListener("keydown", opEscape);
+                el.remove();
+                resolve(uitkomst);
+            };
+            const opEscape = (e) => { if (e.key === "Escape") klaar(false); };
+            document.addEventListener("keydown", opEscape);
+            el.querySelector("[data-ja]").addEventListener("click", () => klaar(true));
+            el.querySelector("[data-nee]").addEventListener("click", () => klaar(false));
+            el.querySelector(".bevestig-achtergrond").addEventListener("click", () => klaar(false));
+            el.querySelector("[data-nee]").focus();
+        });
+    }
+
     function foutmelding(fout, vervangScherm = false) {
         console.error(fout);
         if (fout && (fout.status === 404 || /does not exist|relation/i.test(fout.message || ""))) {
@@ -279,15 +308,22 @@
         verversTab();
     }
 
-    async function verversTab() {
-        app.innerHTML = `<div class="laden">Even laden…</div>`;
+    async function verversTab(stil = false) {
+        if (!stil) app.innerHTML = `<div class="laden">Even laden…</div>`;
         try {
             if (state.tab === "rooster") { await Promise.all([laadPlanning(), laadPersonen()]); toonRooster(); }
             else if (state.tab === "beschikbaar") { await laadPlanning(); toonBeschikbaarheid(); }
             else if (state.tab === "taken") { await laadTaken(); toonTaken(); }
             else if (state.tab === "boodschappen") { await laadBoodschappen(); toonBoodschappen(); }
             else if (state.tab === "beheer") { await laadPersonen(); toonBeheer(); }
-        } catch (fout) { foutmelding(fout, true); }
+        } catch (fout) { if (!stil) foutmelding(fout, true); }
+    }
+
+    // Stil verversen kan alleen als de gebruiker nergens middenin zit.
+    function kanStilVerversen() {
+        if (!state.ik || state.openDag || state.bewerkTaak) return false;
+        const actief = document.activeElement;
+        return !(actief && (actief.tagName === "INPUT" || actief.tagName === "SELECT" || actief.tagName === "TEXTAREA"));
     }
 
     // ---------- Kalender (gedeeld door rooster en beschikbaarheid) ----------
@@ -366,6 +402,21 @@
 
         let html = `<div class="uitleg">Hier zie je wie er wanneer naar Wim en Willie gaat.
             Op <strong>groene dagen</strong> gaat er iemand. Klik op een dag voor de tijden${beheer ? " of om iemand in te plannen" : ""}.</div>`;
+
+        // Jouw eigen momenten in deze maand, vanaf vandaag.
+        const vandaagIso = isoDatum(new Date());
+        const mijnMomenten = state.rooster
+            .filter((r) => r.persoon_id === state.ik.id && r.datum >= vandaagIso)
+            .sort((a, b) => (a.datum + a.van_tijd).localeCompare(b.datum + b.van_tijd));
+        if (mijnMomenten.length) {
+            const regels = mijnMomenten.slice(0, 3).map((r) =>
+                `<li>${dagTitel(r.datum)} · ${tijd(r.van_tijd)} – ${tijd(r.tot_tijd)}</li>`).join("");
+            const meer = mijnMomenten.length > 3 ? `<li class="mijn-meer">en nog ${mijnMomenten.length - 3} keer deze maand</li>` : "";
+            html += `<div class="mijn-momenten">
+                <strong>⭐ Jij staat ingepland op:</strong>
+                <ul>${regels}${meer}</ul>
+            </div>`;
+        }
 
         html += kalenderHtml((datum) => {
             const rijen = state.rooster.filter((r) => r.datum === datum);
@@ -455,11 +506,13 @@
     function koppelRoosterDag() {
         app.querySelectorAll("[data-verwijder-rooster]").forEach((k) => {
             k.addEventListener("click", async () => {
+                k.disabled = true;
                 try {
                     await sb(`zorgplek_rooster?id=eq.${k.dataset.verwijderRooster}`, { method: "DELETE" });
                     await laadPlanning();
                     toonRooster();
-                } catch (fout) { foutmelding(fout); }
+                    toast("Uit het rooster gehaald ✓");
+                } catch (fout) { k.disabled = false; foutmelding(fout); }
             });
         });
 
@@ -490,6 +543,7 @@
                 });
                 await laadPlanning();
                 toonRooster();
+                toast("Ingepland ✓");
             } catch (fout) {
                 toevoegKnop.disabled = false;
                 if (fout.status === 409) toast("Deze persoon staat al precies zo in het rooster.");
@@ -554,11 +608,13 @@
     function koppelBeschikbaarDag() {
         app.querySelectorAll("[data-verwijder-beschikbaar]").forEach((k) => {
             k.addEventListener("click", async () => {
+                k.disabled = true;
                 try {
                     await sb(`zorgplek_beschikbaarheid?id=eq.${k.dataset.verwijderBeschikbaar}`, { method: "DELETE" });
                     await laadPlanning();
                     toonBeschikbaarheid();
-                } catch (fout) { foutmelding(fout); }
+                    toast("Weggehaald ✓");
+                } catch (fout) { k.disabled = false; foutmelding(fout); }
             });
         });
 
@@ -576,6 +632,7 @@
                 });
                 await laadPlanning();
                 toonBeschikbaarheid();
+                toast("Doorgegeven ✓");
             } catch (fout) {
                 toevoegKnop.disabled = false;
                 if (fout.status === 409) toast("Dit tijdvak had je al doorgegeven.");
@@ -690,7 +747,7 @@
         app.querySelectorAll("[data-taak-weg]").forEach((k) => {
             k.addEventListener("click", async () => {
                 const taak = state.taken.find((t) => t.id === k.dataset.taakWeg);
-                if (!confirm(`"${taak ? taak.tekst : "deze taak"}" van de lijst halen?`)) return;
+                if (!(await vraagBevestiging(`"${esc(taak ? taak.tekst : "deze taak")}" van de lijst halen?`, "Ja, verwijder"))) return;
                 try {
                     await sb(`zorgplek_taken?id=eq.${k.dataset.taakWeg}`, { method: "DELETE" });
                     await laadTaken();
@@ -765,6 +822,7 @@
                 });
                 await laadBoodschappen();
                 toonBoodschappen();
+                toast("Op de lijst gezet ✓");
             } catch (fout) { toevoegKnop.disabled = false; foutmelding(fout); }
         }
         toevoegKnop.addEventListener("click", toevoegen);
@@ -773,6 +831,7 @@
         app.querySelectorAll("[data-boodschap]").forEach((el) => {
             el.addEventListener("click", async () => {
                 const item = state.boodschappen.find((b) => b.id === el.dataset.boodschap);
+                el.classList.add("bezig");
                 try {
                     await sb(`zorgplek_boodschappen?id=eq.${item.id}`, {
                         method: "PATCH",
@@ -780,18 +839,20 @@
                     });
                     await laadBoodschappen();
                     toonBoodschappen();
-                } catch (fout) { foutmelding(fout); }
+                } catch (fout) { el.classList.remove("bezig"); foutmelding(fout); }
             });
         });
 
         const opruimen = document.getElementById("opruimen");
         if (opruimen) opruimen.addEventListener("click", async () => {
-            if (!confirm("Alles wat al gekocht is van de lijst halen?")) return;
+            if (!(await vraagBevestiging("Alles wat al gekocht is van de lijst halen?", "Ja, opruimen"))) return;
+            opruimen.disabled = true;
             try {
                 await sb("zorgplek_boodschappen?afgevinkt=eq.true", { method: "DELETE" });
                 await laadBoodschappen();
                 toonBoodschappen();
-            } catch (fout) { foutmelding(fout); }
+                toast("Opgeruimd ✓");
+            } catch (fout) { opruimen.disabled = false; foutmelding(fout); }
         });
 
         const voorbeeldToggle = document.getElementById("voorbeeld-toggle");
@@ -810,6 +871,7 @@
                     });
                     await laadBoodschappen();
                     toonBoodschappen();
+                    toast("Op de lijst gezet ✓");
                 } catch (fout) { k.disabled = false; foutmelding(fout); }
             });
         });
@@ -847,12 +909,14 @@
         app.querySelectorAll("[data-verwijder]").forEach((k) => {
             k.addEventListener("click", async () => {
                 const naam = persoonNaam(k.dataset.verwijder);
-                if (!confirm(`${naam} verwijderen? Ook hun beschikbaarheid en roostermomenten verdwijnen.`)) return;
+                if (!(await vraagBevestiging(`${esc(naam)} verwijderen? Ook hun beschikbaarheid en roostermomenten verdwijnen.`, "Ja, verwijder"))) return;
+                k.disabled = true;
                 try {
                     await sb(`zorgplek_personen?id=eq.${k.dataset.verwijder}`, { method: "DELETE" });
                     await laadPersonen();
                     toonBeheer();
-                } catch (fout) { foutmelding(fout); }
+                    toast("Verwijderd ✓");
+                } catch (fout) { k.disabled = false; foutmelding(fout); }
             });
         });
     }
@@ -882,6 +946,20 @@
     // Ververs de gegevens als iemand terugkeert naar de pagina (bv. telefoon uit slaapstand).
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible" && state.ik) verversTab();
+    });
+
+    // Ververs elke minuut stil op de achtergrond, zodat iedereen elkaars
+    // wijzigingen ziet zonder de pagina te hoeven herladen.
+    setInterval(() => {
+        if (document.visibilityState === "visible" && kanStilVerversen()) verversTab(true);
+    }, 60000);
+
+    // Escape sluit het dagvenster.
+    document.addEventListener("keydown", (e) => {
+        if (e.key !== "Escape" || !state.openDag) return;
+        state.openDag = null;
+        if (state.tab === "rooster") toonRooster();
+        else if (state.tab === "beschikbaar") toonBeschikbaarheid();
     });
 
     start();

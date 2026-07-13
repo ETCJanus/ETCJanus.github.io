@@ -7,12 +7,19 @@
     <meta name="description" content="Familiepagina om samen de zorg voor Wim en Willie te regelen.">
     <meta name="robots" content="noindex, nofollow">
 
-    <link rel="icon" type="image/png" href="../../favicon-96x96.png" sizes="96x96" />
-    <link rel="shortcut icon" href="../../favicon.ico" />
+    <!-- Eigen icoon + app-instellingen: familie kan de pagina als app op het beginscherm zetten. -->
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#2e7d32">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Zorg Plek">
+    <link rel="icon" type="image/png" href="icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <!-- Hoog de ?v= op bij elke wijziging aan style.css/config.js/script.js, dan krijgt iedereen direct de nieuwste versie. -->
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
@@ -35,7 +42,7 @@
 
     <div id="toast"></div>
 
-    <script src="config.js"></script>
-    <script src="script.js"></script>
+    <script src="config.js?v=6"></script>
+    <script src="script.js?v=6"></script>
 </body>
 </html>

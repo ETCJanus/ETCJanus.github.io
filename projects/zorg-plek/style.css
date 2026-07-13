@@ -298,6 +298,7 @@ header .ondertitel {
     inset: 0;
     background: rgba(40, 34, 22, 0.45);
     z-index: 30;
+    animation: fade-in 0.2s ease-out;
 }
 .paneel {
     position: fixed;
@@ -312,6 +313,34 @@ header .ondertitel {
     box-shadow: 0 12px 50px rgba(0,0,0,0.3);
     padding: 24px;
     z-index: 40;
+    animation: paneel-in 0.22s ease-out;
+}
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes paneel-in {
+    from { opacity: 0; transform: translate(-50%, calc(-50% + 18px)); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+/* Op de telefoon schuift het dagvenster als een paneel van onderen omhoog. */
+@media (max-width: 560px) {
+    .paneel {
+        left: 0;
+        right: 0;
+        top: auto;
+        bottom: 0;
+        transform: none;
+        width: 100%;
+        max-height: 88vh;
+        border-radius: var(--radius) var(--radius) 0 0;
+        padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
+        animation: paneel-omhoog 0.25s ease-out;
+    }
+    @keyframes paneel-omhoog {
+        from { transform: translateY(40px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
 }
 .paneel-sluit {
     position: absolute;
@@ -567,6 +596,62 @@ header .ondertitel {
     color: var(--rood);
     cursor: pointer;
 }
+
+/* ---------- Bevestigingsvenster ---------- */
+.bevestig-overlay { position: fixed; inset: 0; z-index: 60; }
+.bevestig-achtergrond {
+    position: absolute;
+    inset: 0;
+    background: rgba(40, 34, 22, 0.5);
+    animation: fade-in 0.15s ease-out;
+}
+.bevestig-kaart {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: min(420px, calc(100vw - 32px));
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 50px rgba(0,0,0,0.35);
+    padding: 26px 24px;
+    text-align: center;
+    animation: paneel-in 0.18s ease-out;
+}
+.bevestig-vraag {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+.bevestig-knoppen {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.bevestig-knoppen .knop { flex: 1; min-width: 130px; }
+
+/* ---------- Jouw momenten ---------- */
+.mijn-momenten {
+    background: var(--groen-licht);
+    border: 1px solid #bcd9bd;
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    color: #1e5623;
+}
+.mijn-momenten ul {
+    list-style: none;
+    margin-top: 6px;
+}
+.mijn-momenten li {
+    font-weight: 700;
+    padding: 2px 0;
+}
+.mijn-momenten li.mijn-meer { font-weight: 600; color: var(--ink-soft); }
+
+/* Rij die even wacht op de server */
+.bezig { opacity: 0.45; pointer-events: none; }
 
 /* ---------- Overig ---------- */
 .sectie-titel { font-size: 1.35rem; font-weight: 800; margin: 6px 0 14px; }

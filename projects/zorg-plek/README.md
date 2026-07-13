@@ -34,6 +34,14 @@ wie gaat wanneer (rooster in kalendervorm), en een gezamenlijke boodschappenlijs
 
 - Titel en ondertekst: bovenin [`config.js`](config.js).
 - Tijdkeuzes lopen van 07:00 tot 22:00 in stappen van een half uur (`tijdOpties` in `script.js`).
+- **Na elke wijziging** aan `style.css`, `config.js` of `script.js`: hoog het versienummer
+  (`?v=…`) in `index.html` op, dan krijgt iedereen meteen de nieuwste versie.
+
+## Tips voor de familie
+
+- Zet de pagina als app op je beginscherm: open de link, kies **Delen → Zet op beginscherm**
+  (iPhone) of **⋮ → App installeren** (Android). Je krijgt dan een 🏡-icoon.
+- De pagina ververst zichzelf elke minuut, dus wijzigingen van anderen verschijnen vanzelf.
 
 ## Let op
 
