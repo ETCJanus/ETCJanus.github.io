@@ -111,6 +111,33 @@
         toast._t = setTimeout(() => el.classList.remove("zichtbaar"), 3200);
     }
 
+    // ---------- Wegklikbare uitleg-tips (per persoon onthouden) ----------
+
+    function tipsSleutel() {
+        return "zorgplek_tips_weg_" + (state.ik ? state.ik.id : "");
+    }
+
+    function geslotenTips() {
+        try { return JSON.parse(localStorage.getItem(tipsSleutel())) || []; }
+        catch (e) { return []; }
+    }
+
+    function sluitTip(id) {
+        try {
+            const tips = geslotenTips();
+            if (!tips.includes(id)) tips.push(id);
+            localStorage.setItem(tipsSleutel(), JSON.stringify(tips));
+        } catch (e) { /* privémodus: dan komt de tip volgende keer terug */ }
+    }
+
+    function uitlegHtml(id, inhoud) {
+        if (geslotenTips().includes(id)) return "";
+        return `<div class="uitleg">
+            <span class="uitleg-tekst">${inhoud}</span>
+            <button class="uitleg-sluit" data-tip-sluit="${id}" aria-label="Verberg deze uitleg" title="Verberg deze uitleg">✕</button>
+        </div>`;
+    }
+
     // Eigen bevestigingsvenster in de stijl van de pagina (i.p.v. de kale browser-popup).
     function vraagBevestiging(vraag, bevestigLabel = "Ja") {
         return new Promise((resolve) => {
@@ -883,12 +910,12 @@
         const rijen = state.personen.map((p) => `
             <div class="beheer-rij">
                 <span class="naam">${esc(p.naam)}${p.id === state.ik.id ? " (jij)" : ""}</span>
-                <label><input type="checkbox" data-beheerder="${p.id}" ${p.is_beheerder ? "checked" : ""}> beheerder</label>
+                <label><input type="checkbox" data-beheerder="${p.id}" ${p.is_beheerder ? "checked" : ""}> Beheerder</label>
                 ${p.id !== state.ik.id ? `<button class="mini-knop" data-verwijder="${p.id}">Verwijder</button>` : ""}
             </div>`).join("");
 
         app.innerHTML = `
-            <div class="uitleg">Alleen beheerders zien dit tabblad. "Mag rooster maken" geeft iemand
+            <div class="uitleg">Alleen beheerders zien dit tabblad. "Beheerder" geeft iemand
                 de mogelijkheid om het rooster te bewerken en dit beheerscherm te zien.</div>
             <div class="kaart">${rijen}</div>`;
 
