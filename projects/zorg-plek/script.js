@@ -117,12 +117,15 @@
         return "zorgplek_tips_weg_" + (state.ik ? state.ik.id : "");
     }
 
+    const tipsWegDezeSessie = new Set(); // vangnet als opslag niet werkt (privémodus)
+
     function geslotenTips() {
         try { return JSON.parse(localStorage.getItem(tipsSleutel())) || []; }
         catch (e) { return []; }
     }
 
     function sluitTip(id) {
+        tipsWegDezeSessie.add(id);
         try {
             const tips = geslotenTips();
             if (!tips.includes(id)) tips.push(id);
@@ -131,7 +134,7 @@
     }
 
     function uitlegHtml(id, inhoud) {
-        if (geslotenTips().includes(id)) return "";
+        if (tipsWegDezeSessie.has(id) || geslotenTips().includes(id)) return "";
         return `<div class="uitleg">
             <span class="uitleg-tekst">${inhoud}</span>
             <button class="uitleg-sluit" data-tip-sluit="${id}" aria-label="Verberg deze uitleg" title="Verberg deze uitleg">✕</button>
@@ -238,6 +241,14 @@
             localStorage.removeItem(OPSLAG_SLEUTEL);
             document.cookie = `${OPSLAG_SLEUTEL}=; max-age=0; path=/`;
         } catch (e) { /* geen probleem */ }
+    }
+
+    function hertekenTab() {
+        if (state.tab === "rooster") toonRooster();
+        else if (state.tab === "beschikbaar") toonBeschikbaarheid();
+        else if (state.tab === "taken") toonTaken();
+        else if (state.tab === "boodschappen") toonBoodschappen();
+        else if (state.tab === "beheer") toonBeheer();
     }
 
     // ---------- Weergave: wie ben jij ----------
@@ -427,8 +438,8 @@
     function toonRooster() {
         const beheer = state.ik.is_beheerder;
 
-        let html = `<div class="uitleg">Hier zie je wie er wanneer naar Wim en Willie gaat.
-            Op <strong>groene dagen</strong> gaat er iemand. Klik op een dag voor de tijden${beheer ? " of om iemand in te plannen" : ""}.</div>`;
+        let html = uitlegHtml("rooster", `Hier zie je wie er wanneer naar Wim en Willie gaat.
+            Op <strong>groene dagen</strong> gaat er iemand. Klik op een dag voor de tijden${beheer ? " of om iemand in te plannen" : ""}.`);
 
         // Jouw eigen momenten in deze maand, vanaf vandaag.
         const vandaagIso = isoDatum(new Date());
@@ -582,8 +593,8 @@
     // ---------- Beschikbaarheid ----------
 
     function toonBeschikbaarheid() {
-        let html = `<div class="uitleg">Klik op een dag en geef door <strong>van hoe laat tot hoe laat</strong>
-            jij naar Wim en Willie kunt. Groene dagen heb jij al ingevuld.</div>`;
+        let html = uitlegHtml("beschikbaar", `Klik op een dag en geef door <strong>van hoe laat tot hoe laat</strong>
+            jij naar Wim en Willie kunt. Groene dagen heb jij al ingevuld.`);
 
         html += kalenderHtml((datum) => {
             const mijn = state.beschikbaarheid.filter(
@@ -694,9 +705,9 @@
         }).join("") || `<p class="leeg" style="padding:6px 4px;">Er staan nog geen taken op de lijst.</p>`;
 
         app.innerHTML = `
-            <div class="uitleg">${beheer
+            ${uitlegHtml("taken", beheer
                 ? "De takenlijst voor bij Wim en Willie. Jij kunt hem bewerken; iedereen kan hem bekijken."
-                : "Deze taken horen bij een bezoek aan Wim en Willie."}</div>
+                : "Deze taken horen bij een bezoek aan Wim en Willie.")}
             ${beheer ? `<div class="boodschap-form">
                 <input type="text" id="taak-invoer" placeholder="Nieuwe taak, bijvoorbeeld: medicijnen klaarzetten" maxlength="200">
                 <button class="knop" id="taak-toevoegen">+ Zet erbij</button>
@@ -825,7 +836,7 @@
         }
 
         app.innerHTML = `
-            <div class="uitleg">Zet hier wat er nodig is voor Wim en Willie. Klik op een boodschap als je hem hebt gekocht.</div>
+            ${uitlegHtml("boodschappen", "Zet hier wat er nodig is voor Wim en Willie. Klik op een boodschap als je hem hebt gekocht.")}
             ${voorbeeldHtml}
             <div class="boodschap-form">
                 <input type="text" id="boodschap-invoer" placeholder="Bijvoorbeeld: melk, brood…" maxlength="120">
@@ -915,8 +926,8 @@
             </div>`).join("");
 
         app.innerHTML = `
-            <div class="uitleg">Alleen beheerders zien dit tabblad. "Beheerder" geeft iemand
-                de mogelijkheid om het rooster te bewerken en dit beheerscherm te zien.</div>
+            ${uitlegHtml("beheer", `"Beheerder" geeft iemand
+                de mogelijkheid om het rooster te bewerken en dit beheerscherm te zien.`)}
             <div class="kaart">${rijen}</div>`;
 
         app.querySelectorAll("[data-beheerder]").forEach((vak) => {
@@ -985,8 +996,15 @@
     document.addEventListener("keydown", (e) => {
         if (e.key !== "Escape" || !state.openDag) return;
         state.openDag = null;
-        if (state.tab === "rooster") toonRooster();
-        else if (state.tab === "beschikbaar") toonBeschikbaarheid();
+        hertekenTab();
+    });
+
+    // Kruisje op een uitlegblok: verberg hem, en onthoud dat.
+    app.addEventListener("click", (e) => {
+        const knop = e.target.closest("[data-tip-sluit]");
+        if (!knop) return;
+        sluitTip(knop.dataset.tipSluit);
+        hertekenTab();
     });
 
     start();

@@ -49,7 +49,13 @@ body {
     gap: 12px;
     text-align: left;
 }
-.top-logo { font-size: 2rem; line-height: 1; }
+.top-logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: block;
+    flex: 0 0 auto;
+}
 header h1 {
     font-size: 1.45rem;
     font-weight: 800;
@@ -133,6 +139,9 @@ header .ondertitel {
     margin-bottom: 14px;
 }
 .uitleg {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
     background: var(--blauw-licht);
     border: 1px solid #cadcf0;
     color: #274a6d;
@@ -141,6 +150,22 @@ header .ondertitel {
     margin-bottom: 18px;
     font-size: 1rem;
 }
+.uitleg-tekst { flex: 1; }
+.uitleg-sluit {
+    flex: 0 0 32px;
+    height: 32px;
+    margin: -4px -8px 0 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(39, 74, 109, 0.1);
+    color: #274a6d;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    order: 2;
+}
+.uitleg-sluit:hover { background: rgba(39, 74, 109, 0.22); }
 .knop {
     display: inline-block;
     font: inherit;
@@ -688,13 +713,24 @@ header .ondertitel {
 
 @media (max-width: 560px) {
     html { font-size: 17px; }
-    .top-balk { justify-content: center; text-align: center; }
-    .top-titel { text-align: center; }
-    .wie-balk { text-align: center; }
-    .wie-balk .wissel { margin: 2px auto 0; }
-    .tabs { flex-wrap: wrap; gap: 6px; }
-    .tabs button { flex: 1 1 30%; min-height: 60px; }
-    .tabs .tab-label { font-size: 0.78rem; }
+    /* Compacte kopbalk: logo + naam klein linksboven, account rechtsboven. */
+    .top-balk { flex-wrap: nowrap; padding: 10px 12px 4px; gap: 8px; }
+    .top-titel { gap: 8px; min-width: 0; }
+    .top-logo { width: 30px; height: 30px; border-radius: 8px; }
+    header h1 { font-size: 1.05rem; white-space: nowrap; }
+    header .ondertitel { display: none; }
+    .wie-balk { font-size: 0.85rem; flex: 0 0 auto; }
+    .wie-balk .wissel { font-size: 0.76rem; }
+    /* Tabs op één rij, compact. */
+    .tabs { flex-wrap: nowrap; gap: 5px; margin: 6px auto 14px; padding: 8px 10px; }
+    /* Knoppen verdelen de breedte naar tekstlengte, zodat lange labels heel blijven. */
+    .tabs button { flex: 1 1 auto; min-height: 52px; padding: 7px 5px 6px; gap: 2px; border-radius: 11px; min-width: 0; }
+    .tabs .tab-icoon { font-size: 1.05rem; }
+    .tabs .tab-label { font-size: 0.7rem; }
+    /* Minder lucht rond de inhoud. */
+    .uitleg { padding: 10px 14px; font-size: 0.92rem; margin-bottom: 12px; }
+    .mijn-momenten { padding: 10px 14px; margin-bottom: 12px; }
+    .kalender-nav { margin-bottom: 8px; }
     .kalender { gap: 3px; padding: 8px; }
     .cel { min-height: 58px; padding: 3px; border-radius: 8px; }
     .cel-item { font-size: 0.6rem; padding: 1px 3px; }
