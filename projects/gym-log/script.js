@@ -26,6 +26,7 @@
         gewicht: [],
         actief: localStorage.getItem(LS_ACTIEF) || null,
         nieuwLabel: "",
+        kopieerVan: "auto",
         nieuweDatum: vandaag(),
         toonNieuweOef: false,
         statsOef: null,
@@ -304,20 +305,43 @@
         const t = {
             id: uuid(),
             datum: state.nieuweDatum || vandaag(),
-            label: state.nieuwLabel || null,
+            label: state.nieuwLabel.trim() || null,
             created_at: new Date().toISOString(),
         };
-        // Zelfde label als eerder? Zet de oefeningen van die vorige keer alvast klaar.
-        if (t.label) {
-            const vorige = state.trainingen.find((x) => x.label === t.label);
-            if (vorige) zetKaarten(t.id, oefeningenIn(vorige.id));
-        }
+        // Oefeningen van de gekozen eerdere training alvast klaarzetten.
+        const bron = bronTraining();
+        if (bron) zetKaarten(t.id, oefeningenIn(bron.id));
         state.trainingen.push(t);
         sorteerTrainingen();
         zetActief(t.id);
         state.nieuwLabel = "";
+        state.kopieerVan = "auto";
         render();
         await schrijf("gym_trainingen", { method: "POST", body: t, headers: INSERT });
+    }
+
+    // Trainingen die echt sets hebben, nieuwste eerst.
+    function gedaneTrainingen() {
+        return state.trainingen.filter((t) => setsVan(t.id).length);
+    }
+
+    // Van welke training nemen we de oefeningen over?
+    // "auto" = de laatste met hetzelfde label, "" = leeg beginnen, anders een training-id.
+    function bronTraining() {
+        if (state.kopieerVan === "") return null;
+        if (state.kopieerVan === "auto") {
+            const label = state.nieuwLabel.trim();
+            return label ? gedaneTrainingen().find((x) => x.label === label) || null : null;
+        }
+        return training(state.kopieerVan) || null;
+    }
+
+    // Labels die je eerder gebruikte (nieuwste eerst), aangevuld met die uit config.js.
+    function bekendeLabels() {
+        const lijst = [];
+        for (const t of gedaneTrainingen()) if (t.label && !lijst.includes(t.label)) lijst.push(t.label);
+        for (const l of LABELS) if (!lijst.includes(l)) lijst.push(l);
+        return lijst;
     }
 
     async function logSet(tid, oefId, gewicht, reps) {
@@ -473,13 +497,25 @@
         return `
             <h2>Nieuwe training</h2>
             <div class="kaart">
+                <label class="veld"><span>Naam (mag leeg)</span>
+                    <input id="nieuw-label" value="${esc(state.nieuwLabel)}" placeholder="bv. Pull, Pull 2, Rug + biceps" autocomplete="off"></label>
                 <div class="chips">
-                    ${LABELS.map((l) => `<button class="chip ${state.nieuwLabel === l ? "aan" : ""}" data-actie="label" data-label="${esc(l)}">${esc(l)}</button>`).join("")}
+                    ${bekendeLabels().map((l) => `<button class="chip ${state.nieuwLabel === l ? "aan" : ""}" data-actie="label" data-label="${esc(l)}">${esc(l)}</button>`).join("")}
                 </div>
+                <label class="veld"><span>Oefeningen klaarzetten van</span>
+                    <select id="kopieer-van">
+                        <option value="auto" ${state.kopieerVan === "auto" ? "selected" : ""}>${state.nieuwLabel.trim()
+                            ? `Vorige "${esc(state.nieuwLabel.trim())}"${bronTraining() || state.kopieerVan !== "auto" ? "" : " (nog nooit gedaan: leeg)"}`
+                            : "Automatisch (zelfde naam)"}</option>
+                        <option value="" ${state.kopieerVan === "" ? "selected" : ""}>Niks, leeg beginnen</option>
+                        ${gedaneTrainingen().slice(0, 15).map((t) => `<option value="${t.id}" ${state.kopieerVan === t.id ? "selected" : ""}>${esc(t.label || "Training")} · ${mooiDatum(t.datum)} (${oefeningenIn(t.id).length} oef.)</option>`).join("")}
+                    </select></label>
                 <label class="veld"><span>Datum</span><input type="date" id="nieuwe-datum" value="${state.nieuweDatum}" max="${vandaag()}"></label>
-                <button class="knop-hoofd knop-breed" data-actie="start">Start ${esc(state.nieuwLabel || "training")}</button>
-                ${state.nieuwLabel && state.trainingen.some((x) => x.label === state.nieuwLabel)
-                    ? `<p class="sub" style="margin-top:8px">De oefeningen van je vorige ${esc(state.nieuwLabel)} worden klaargezet.</p>` : ""}
+                <button class="knop-hoofd knop-breed" data-actie="start">Start training</button>
+                ${(() => {
+                    const bron = bronTraining();
+                    return bron ? `<p class="sub" style="margin-top:8px">Klaar te zetten: ${oefeningenIn(bron.id).map((id) => esc(oef(id).naam)).join(", ")}</p>` : "";
+                })()}
             </div>
             ${vandaagT.length ? `<h2>Vandaag</h2>${vandaagT.map(trainingRegel).join("")}` : ""}
             ${laatste && !vandaagT.length ? `<h2>Vorige training</h2>${trainingRegel(laatste)}` : ""}`;
@@ -915,8 +951,14 @@
         }
     }
 
+    app.addEventListener("input", (e) => {
+        if (e.target.id === "nieuw-label") state.nieuwLabel = e.target.value;
+    });
+
     app.addEventListener("change", (e) => {
         if (e.target.id === "nieuwe-datum") state.nieuweDatum = e.target.value || vandaag();
+        if (e.target.id === "nieuw-label") render();
+        if (e.target.id === "kopieer-van") { state.kopieerVan = e.target.value; render(); }
         if (e.target.id === "stats-oef") { state.statsOef = e.target.value; render(); }
         if (e.target.id === "kies-oef" && e.target.value) {
             zetKaarten(state.actief, [...kaarten(state.actief), e.target.value]);

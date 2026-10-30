@@ -12,7 +12,7 @@ Persoonlijk trainingslogboek: sets, reps en gewicht per oefening, dagelijkse wee
 
 ## Hoe het werkt
 
-- **Training**: kies een label (Push, Pull, Legs...) en start. Bij een label dat je eerder deed staan de oefeningen van de vorige keer al klaar.
+- **Training**: geef de training een naam (vrij te typen; eerder gebruikte namen staan als knopjes) en kies van welke eerdere training je de oefeningen wilt klaarzetten, of begin leeg. Standaard is dat de vorige training met dezelfde naam.
   Per oefening zie je wat je vorige keer deed en een **doel**: haal je bij alle sets de bovenkant van de rep-range,
   dan stelt hij voor het gewicht te verhogen; anders zelfde gewicht en +1 rep per set (double progression).
   De invoervelden staan al op het doel ingevuld, dus meestal is het alleen op "+ Set" tikken.
