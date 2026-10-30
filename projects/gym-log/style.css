@@ -1,0 +1,277 @@
+/* Gym Log — donker, groot, snel in te tikken tussen sets door. */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #0f1115;
+    --card: #171a21;
+    --card-2: #1f232c;
+    --line: #2a2f3a;
+    --ink: #e8eaef;
+    --ink-soft: #9aa1ae;
+    --ink-dim: #6b7280;
+    --accent: #c6f432;
+    --accent-ink: #11140a;
+    --accent-zacht: rgba(198, 244, 50, 0.12);
+    --blauw: #6cb6ff;
+    --rood: #ff6b6b;
+    --oranje: #ffb347;
+    --radius: 14px;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.45;
+    min-height: 100vh;
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+    font-size: 16px;
+}
+
+.wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
+.laden { color: var(--ink-soft); padding: 40px 0; text-align: center; }
+
+/* ---------- Kop ---------- */
+.top {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: calc(14px + env(safe-area-inset-top)) 16px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.top h1 { font-size: 1.15rem; font-weight: 700; letter-spacing: 0.02em; }
+.top h1::before { content: ""; display: inline-block; width: 10px; height: 10px; background: var(--accent); border-radius: 3px; margin-right: 8px; vertical-align: 1px; }
+.sync { font-size: 0.78rem; color: var(--ink-dim); }
+.sync.wacht { color: var(--oranje); }
+
+/* ---------- Tabbalk onderaan ---------- */
+.tabs {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    background: rgba(15, 17, 21, 0.94);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: center;
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 20;
+}
+.tabs button {
+    flex: 1;
+    max-width: 128px;
+    background: none;
+    border: 0;
+    color: var(--ink-dim);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 10px 4px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+}
+.tabs button .ico { font-size: 1.25rem; line-height: 1; filter: grayscale(1); opacity: 0.7; }
+.tabs button.actief { color: var(--accent); }
+.tabs button.actief .ico { filter: none; opacity: 1; }
+
+/* ---------- Bouwstenen ---------- */
+h2 { font-size: 1.05rem; font-weight: 700; margin: 22px 0 10px; }
+h2:first-child { margin-top: 8px; }
+.sub { color: var(--ink-soft); font-size: 0.85rem; }
+.dim { color: var(--ink-dim); }
+.mono { font-family: var(--mono); }
+
+.kaart {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+button, .knop {
+    font: inherit;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--card-2);
+    color: var(--ink);
+    padding: 10px 14px;
+    font-weight: 600;
+    touch-action: manipulation;
+}
+button:active { transform: scale(0.97); }
+.knop-hoofd { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.knop-klein { padding: 6px 10px; font-size: 0.85rem; }
+.knop-link { background: none; border: 0; color: var(--ink-soft); padding: 6px 4px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
+.knop-gevaar { color: var(--rood); }
+.knop-breed { width: 100%; }
+
+input, select, textarea {
+    font: inherit;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 10px 12px;
+    width: 100%;
+    min-width: 0;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
+label.veld { display: block; font-size: 0.8rem; color: var(--ink-soft); margin-bottom: 10px; }
+label.veld > span { display: block; margin-bottom: 4px; }
+
+.rij { display: flex; gap: 8px; align-items: center; }
+.rij > * { flex: 1; }
+.rij > .vast { flex: 0 0 auto; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 12px; }
+.chip {
+    padding: 7px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--card-2);
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+}
+.chip.aan { background: var(--accent-zacht); border-color: var(--accent); color: var(--accent); }
+
+.melding { padding: 10px 12px; border-radius: 10px; font-size: 0.88rem; margin-bottom: 12px; }
+.melding.fout { background: rgba(255, 107, 107, 0.12); color: var(--rood); }
+
+/* ---------- Weeg-herinnering ---------- */
+.weeg-snel {
+    display: flex; gap: 8px; align-items: center;
+    background: var(--card);
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    margin: 6px 0 14px;
+}
+.weeg-snel .lbl { flex: 1; font-size: 0.88rem; color: var(--ink-soft); }
+.weeg-snel input { width: 90px; flex: 0 0 90px; text-align: right; }
+.weeg-snel.klaar { border-style: solid; }
+.weeg-snel.klaar .lbl b { color: var(--ink); }
+
+/* ---------- Training ---------- */
+.training-kop { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 8px 0 12px; }
+.training-kop h2 { margin: 0; }
+
+.oef { padding: 0; overflow: hidden; }
+.oef-kop { padding: 12px 14px 8px; display: flex; justify-content: space-between; gap: 8px; }
+.oef-naam { font-weight: 700; font-size: 1.02rem; }
+.oef-range { font-size: 0.75rem; color: var(--ink-dim); font-weight: 500; margin-left: 6px; }
+.oef-info { padding: 0 14px 10px; font-size: 0.84rem; color: var(--ink-soft); display: grid; gap: 3px; }
+.oef-info .doel { color: var(--accent); font-weight: 600; }
+.oef-info .doel.omhoog::before { content: "▲ "; }
+
+.sets { border-top: 1px solid var(--line); }
+.set {
+    display: grid;
+    grid-template-columns: 28px 1fr auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 0.95rem;
+}
+.set .nr { color: var(--ink-dim); font-size: 0.8rem; }
+.set .e1 { color: var(--ink-dim); font-size: 0.75rem; }
+.set .pr { color: var(--accent-ink); background: var(--accent); font-size: 0.65rem; font-weight: 700; padding: 2px 5px; border-radius: 4px; margin-left: 6px; font-family: 'Inter', sans-serif; }
+.set .weg { background: none; border: 0; color: var(--ink-dim); padding: 4px 6px; font-size: 1rem; }
+.set.wacht { opacity: 0.6; }
+
+.invoer {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 8px;
+    padding: 10px 14px 14px;
+    background: var(--card-2);
+}
+.stepper { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--bg); }
+.stepper button { border: 0; border-radius: 0; background: none; padding: 0 10px; color: var(--ink-soft); font-size: 1.1rem; }
+.stepper input { border: 0; border-radius: 0; text-align: center; font-family: var(--mono); font-size: 1.05rem; padding: 10px 0; background: transparent; }
+.stepper-lbl { font-size: 0.68rem; color: var(--ink-dim); text-align: center; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.05em; }
+.invoer .knop-hoofd { align-self: start; height: 46px; padding: 0 16px; }
+
+.toevoegen { margin-top: 4px; }
+.nieuwe-oef { margin-top: 10px; }
+
+.lijst-training { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+
+/* ---------- Weegschaal ---------- */
+.groot-invoer { display: flex; gap: 8px; align-items: stretch; }
+.groot-invoer input[type="number"] { font-family: var(--mono); font-size: 1.6rem; text-align: center; padding: 12px; }
+.groot-invoer .knop-hoofd { flex: 0 0 auto; padding: 0 22px; }
+
+.tegels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.tegel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.tegel .w { font-family: var(--mono); font-size: 1.2rem; font-weight: 700; }
+.tegel .l { font-size: 0.72rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+.tegel .x { font-size: 0.75rem; color: var(--ink-soft); }
+.goed { color: var(--accent); }
+.matig { color: var(--oranje); }
+
+.grafiek { position: relative; height: 240px; }
+
+.metingen { font-family: var(--mono); font-size: 0.9rem; }
+.meting { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.meting:last-child { border-bottom: 0; }
+
+/* ---------- Stats ---------- */
+.pr-tegels { grid-template-columns: repeat(2, 1fr); }
+table.tabel { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.tabel th, .tabel td { padding: 6px 4px; text-align: right; border-bottom: 1px solid var(--line); }
+.tabel th:first-child, .tabel td:first-child { text-align: left; }
+.tabel th { color: var(--ink-dim); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; }
+.tabel td { font-family: var(--mono); }
+.tabel td:first-child { font-family: 'Inter', sans-serif; }
+
+/* ---------- Historie ---------- */
+.hist { cursor: pointer; }
+.hist-kop { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.hist-kop b { font-size: 0.98rem; }
+.hist-regels { margin-top: 6px; font-size: 0.85rem; color: var(--ink-soft); display: grid; gap: 2px; }
+.hist-regels .mono { color: var(--ink); font-size: 0.82rem; }
+.hist-acties { display: flex; gap: 8px; margin-top: 10px; }
+
+/* ---------- Oefeningen beheer ---------- */
+.oef-beheer { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.oef-beheer:last-child { border-bottom: 0; }
+.oef-beheer .meta { grid-column: 1; font-size: 0.8rem; color: var(--ink-dim); }
+.oef-bewerk { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; grid-column: 1 / -1; margin-top: 6px; }
+.oef-bewerk .vol { grid-column: 1 / -1; }
+
+/* ---------- Rusttimer ---------- */
+.rust {
+    position: fixed;
+    right: 14px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    background: var(--card-2);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    z-index: 15;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+.rust .l { font-family: 'Inter', sans-serif; font-size: 0.72rem; color: var(--ink-dim); margin-right: 6px; }
+
+/* ---------- Slot ---------- */
+.slot { max-width: 320px; margin: 60px auto; text-align: center; }
+.slot p { color: var(--ink-soft); margin-bottom: 14px; }
+.slot input { text-align: center; margin-bottom: 10px; }
+
+.leeg { text-align: center; color: var(--ink-dim); padding: 24px 0; font-size: 0.9rem; }
