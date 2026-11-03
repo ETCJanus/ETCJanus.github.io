@@ -21,14 +21,21 @@ Persoonlijk trainingslogboek: sets, reps en gewicht per oefening, dagelijkse wee
 
 ## Hoe het werkt
 
-- **Training**: geef de training een naam (vrij te typen; eerder gebruikte namen staan als knopjes) en kies van welke eerdere training je de oefeningen wilt klaarzetten, of begin leeg. Standaard is dat de vorige training met dezelfde naam.
-  Per oefening zie je wat je vorige keer deed en een **doel**: haal je bij alle sets de bovenkant van de rep-range,
-  dan stelt hij voor het gewicht te verhogen; anders zelfde gewicht en +1 rep per set (double progression).
-  De invoervelden staan al op het doel ingevuld, dus meestal is het alleen op "+ Set" tikken.
-- **Gewicht**: een meting per dag, met 7-daags gemiddelde en trend in kg/week, vergeleken met `GYM_DOEL_PER_WEEK` in `config.js`.
-- **Stats**: per oefening geschatte 1RM (Epley) en zwaarste gewicht over tijd, en sets per spiergroep per week.
+- **Training**: bovenaan zie je je week (welke dagen je trainde). Eerder gedane trainingen start je opnieuw met één tik, met dezelfde oefeningen klaar. "Andere training" voor een nieuwe naam of een training op een andere dag.
+  Alleen de oefening waar je mee bezig bent staat open, met wat je vorige keer deed en een **doel** (double progression:
+  haal je bij alle sets de bovenkant van de rep-range, dan gaat het gewicht omhoog; anders +1 rep per set).
+  Elke set laat zien of hij beter was dan dezelfde set vorige keer; een nieuw record krijgt een PR-stempel.
+  Na je laatste geplande set gaat de volgende oefening vanzelf open. Rusttimer en trainingsduur staan in de kop.
+  Oefening toevoegen gaat via een zoekpaneel (recent eerst, dan per spiergroep). "Training afronden" geeft een samenvatting.
+- **Gewicht**: een meting per dag, met 7-daags gemiddelde, trend per week vergeleken met je weekdoel, en een grafiek.
+- **Stats**: sets per spiergroep per week, en per oefening een minigrafiek en groei over ~4 weken. Tik voor details.
+  Oefeningen zonder extra gewicht (pull-ups) worden in reps gemeten in plaats van geschatte 1RM.
+- **Historie**: per week, tik op een training voor de samenvatting, aanpassen of verwijderen.
+- Een set, meting of training verwijderen kun je ongedaan maken via de melding onderin.
 - **Slecht bereik in de gym**: sets en metingen die niet verstuurd konden worden blijven lokaal bewaard en gaan vanzelf
   mee zodra er weer verbinding is (rechtsboven zie je hoeveel er wachten).
+
+Spiergroepen hebben de kleuren van wedstrijdschijven: benen rood, rug blauw, borst geel, schouders groen, armen wit.
 
 ## Accounts
 
