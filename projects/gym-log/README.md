@@ -6,9 +6,18 @@ Persoonlijk trainingslogboek: sets, reps en gewicht per oefening, dagelijkse wee
 
 ## Eenmalige setup
 
-1. Open het Supabase-dashboard (zelfde project als de habit tracker en Zorg Plek).
-2. Plak [`SETUP.sql`](SETUP.sql) in de **SQL Editor** en klik **Run**. Dit maakt de `gym_`-tabellen en een paar standaard oefeningen.
-3. Open de pagina op je telefoon, vul de code in (zie `config.js`) en zet hem op je beginscherm.
+**Nieuwe installatie:** plak [`SETUP.sql`](SETUP.sql) in de Supabase **SQL Editor** en klik **Run**.
+
+**Bestaande installatie (van vóór de accounts):**
+1. Open de Gym Log, kies "Nog geen account? Maak er een" en maak je account aan.
+2. Check het e-mailadres in [`MIGRATIE-accounts.sql`](MIGRATIE-accounts.sql), plak het in de SQL Editor en klik **Run**.
+   Al je bestaande data wordt dan van jouw account. Zonder account stopt het script zonder iets te veranderen.
+
+**Supabase Auth instellen** (Authentication in het dashboard):
+- Makkelijkst: zet **Confirm email** uit (Sign In / Providers > Email). Dan werkt een nieuw account meteen.
+- Laat je het aan, zet dan `https://etcjanus.github.io/projects/gym-log/` bij **URL Configuration > Redirect URLs**,
+  anders stuurt de bevestigingslink je naar de verkeerde pagina.
+- Heeft iedereen die je wilt een account? Dan kun je **Allow new users to sign up** uitzetten.
 
 ## Hoe het werkt
 
@@ -21,4 +30,9 @@ Persoonlijk trainingslogboek: sets, reps en gewicht per oefening, dagelijkse wee
 - **Slecht bereik in de gym**: sets en metingen die niet verstuurd konden worden blijven lokaal bewaard en gaan vanzelf
   mee zodra er weer verbinding is (rechtsboven zie je hoeveel er wachten).
 
-Net als de andere tools is de "code" alleen een drempel, geen echte beveiliging: de tabellen staan open voor de anon key.
+## Accounts
+
+Iedereen logt in met een eigen e-mail en wachtwoord en blijft op dat apparaat ingelogd. De database zelf (row level security)
+zorgt dat je alleen je eigen oefeningen, trainingen en metingen ziet, ook als iemand de pagina omzeilt.
+Een nieuw account begint met de standaard oefeningen uit `config.js`. Het weekdoel voor lichaamsgewicht is per account
+(Oefeningen > Account). Uitloggen staat daar ook.

@@ -275,3 +275,11 @@ table.tabel { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 .slot input { text-align: center; margin-bottom: 10px; }
 
 .leeg { text-align: center; color: var(--ink-dim); padding: 24px 0; font-size: 0.9rem; }
+
+/* ---------- Inloggen ---------- */
+.login { text-align: left; display: grid; gap: 10px; }
+.login h2 { margin: 0; }
+.login p.sub { margin: -4px 0 6px; }
+.login .melding { margin: 0; }
+.login .knop-link { justify-self: center; }
+.melding.ok { background: var(--accent-zacht); color: var(--accent); }

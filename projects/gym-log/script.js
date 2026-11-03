@@ -7,14 +7,19 @@
 
     const SB_URL = window.GYM_SUPABASE_URL;
     const SB_KEY = window.GYM_SUPABASE_KEY;
-    const DOEL_PER_WEEK = Number(window.GYM_DOEL_PER_WEEK || 0);
+    const STANDAARD_DOEL = Number(window.GYM_DOEL_PER_WEEK || 0);
     const LABELS = window.GYM_LABELS || [];
 
-    const LS_OUTBOX = "gym_outbox";
-    const LS_OK = "gym_ok";
-    const LS_KAARTEN = "gym_kaarten";   // oefeningen die al op een training staan maar nog geen sets hebben
-    const LS_ACTIEF = "gym_actief";     // id van de training die open staat
-    const LS_RUST = "gym_rust_start";
+    // Inlogsessie (gedeeld voor het apparaat). Alle andere lokale opslag is per gebruiker,
+    // zodat twee accounts op hetzelfde apparaat elkaar niet in de weg zitten.
+    const LS_SESSIE = "gym_sessie";
+    const LS = {};
+    function zetSleutels(uid) {
+        LS.outbox = `gym_outbox_${uid}`;
+        LS.kaarten = `gym_kaarten_${uid}`;   // oefeningen die al op een training staan maar nog geen sets hebben
+        LS.actief = `gym_actief_${uid}`;     // id van de training die open staat
+        LS.rust = `gym_rust_${uid}`;
+    }
 
     const SPIERGROEPEN = ["borst", "rug", "schouders", "benen", "armen", "core", "overig"];
 
@@ -24,7 +29,8 @@
         trainingen: [],
         sets: [],
         gewicht: [],
-        actief: localStorage.getItem(LS_ACTIEF) || null,
+        actief: null,
+        loginModus: "in",               // "in" of "nieuw"
         nieuwLabel: "",
         kopieerVan: "auto",
         nieuweDatum: vandaag(),
@@ -42,14 +48,94 @@
     const rustEl = document.getElementById("rust");
     let grafieken = [];
 
+    // ---------- Inloggen (Supabase Auth) ----------
+
+    let sessie = (() => { try { return JSON.parse(localStorage.getItem(LS_SESSIE) || "null"); } catch { return null; } })();
+
+    function bewaarSessie(s) {
+        sessie = s;
+        if (s) localStorage.setItem(LS_SESSIE, JSON.stringify(s)); else localStorage.removeItem(LS_SESSIE);
+    }
+    function sessieUit(d) {
+        return {
+            access_token: d.access_token,
+            refresh_token: d.refresh_token,
+            expires_at: d.expires_at || Math.floor(Date.now() / 1000) + (d.expires_in || 3600),
+            user: { id: d.user.id, email: d.user.email, meta: d.user.user_metadata || {} },
+        };
+    }
+
+    async function auth(pad, opties = {}) {
+        const res = await fetch(`${SB_URL}/auth/v1/${pad}`, {
+            method: opties.method || "POST",
+            headers: {
+                apikey: SB_KEY,
+                "Content-Type": "application/json",
+                ...(opties.token ? { Authorization: `Bearer ${opties.token}` } : {}),
+            },
+            body: opties.body ? JSON.stringify(opties.body) : undefined,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+            const fout = new Error(data.msg || data.error_description || data.message || res.statusText);
+            fout.status = res.status;
+            fout.code = data.error_code || data.code || data.error;
+            throw fout;
+        }
+        return data;
+    }
+
+    // Geeft een geldig access token; ververst het als het (bijna) verlopen is.
+    let verversen = null;
+    async function geldigToken() {
+        if (!sessie) throw Object.assign(new Error("Niet ingelogd"), { status: 401 });
+        if (sessie.expires_at - 60 > Date.now() / 1000) return sessie.access_token;
+        if (!verversen) {
+            verversen = auth("token?grant_type=refresh_token", { body: { refresh_token: sessie.refresh_token } })
+                .then((d) => bewaarSessie(sessieUit(d)))
+                .catch((e) => {
+                    if (e.status) { bewaarSessie(null); e.status = 401; }  // sessie echt ongeldig
+                    throw e;                                              // zonder status = offline
+                })
+                .finally(() => { verversen = null; });
+        }
+        await verversen;
+        return sessie.access_token;
+    }
+
+    // Na een bevestigingsmail komt Supabase terug met #access_token=... in de URL.
+    async function vangLinkSessie() {
+        if (!location.hash.includes("access_token=")) return;
+        const p = new URLSearchParams(location.hash.slice(1));
+        history.replaceState(null, "", location.pathname + location.search);
+        try {
+            const user = await auth("user", { method: "GET", token: p.get("access_token") });
+            bewaarSessie(sessieUit({
+                access_token: p.get("access_token"),
+                refresh_token: p.get("refresh_token"),
+                expires_at: Number(p.get("expires_at")) || undefined,
+                expires_in: Number(p.get("expires_in")) || 3600,
+                user,
+            }));
+        } catch (e) {
+            console.warn("Link-sessie mislukt", e);
+        }
+    }
+
+    function doelPerWeek() {
+        const m = sessie && sessie.user.meta;
+        return m && m.doel_per_week != null ? Number(m.doel_per_week) : STANDAARD_DOEL;
+    }
+
     // ---------- Supabase REST ----------
 
     async function sb(pad, opties = {}) {
+        const token = await geldigToken();
         const res = await fetch(`${SB_URL}/rest/v1/${pad}`, {
             method: opties.method || "GET",
             headers: {
                 apikey: SB_KEY,
-                Authorization: `Bearer ${SB_KEY}`,
+                Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
                 ...(opties.headers || {}),
             },
@@ -58,6 +144,7 @@
         if (!res.ok) {
             const fout = new Error((await res.text()) || res.statusText);
             fout.status = res.status;
+            if (res.status === 401) { bewaarSessie(null); setTimeout(() => toonLogin("Je sessie is verlopen, log opnieuw in."), 0); }
             throw fout;
         }
         if (res.status === 204) return null;
@@ -81,20 +168,21 @@
     // ---------- Outbox: schrijven die het netwerk niet haalden ----------
 
     function outbox() {
-        try { return JSON.parse(localStorage.getItem(LS_OUTBOX) || "[]"); } catch { return []; }
+        if (!LS.outbox) return [];
+        try { return JSON.parse(localStorage.getItem(LS.outbox) || "[]"); } catch { return []; }
     }
     function zetOutbox(lijst) {
-        localStorage.setItem(LS_OUTBOX, JSON.stringify(lijst));
+        localStorage.setItem(LS.outbox, JSON.stringify(lijst));
         toonSync();
     }
 
-    // Probeert direct te versturen; bij netwerkfout komt het in de outbox.
+    // Probeert direct te versturen; bij netwerkfout (of verlopen sessie) komt het in de outbox.
     async function schrijf(pad, opties) {
         try {
             await sb(pad, opties);
             return true;
         } catch (e) {
-            if (e.status) throw e;           // echte fout van de server: niet opnieuw proberen
+            if (e.status && e.status !== 401) throw e;   // echte fout van de server: niet opnieuw proberen
             zetOutbox([...outbox(), { pad, opties }]);
             return false;
         }
@@ -110,7 +198,7 @@
                 try {
                     await sb(lijst[0].pad, lijst[0].opties);
                 } catch (e) {
-                    if (!e.status) break;      // nog steeds offline
+                    if (!e.status || e.status === 401) break;   // nog offline, of eerst opnieuw inloggen
                     console.warn("Outbox-item afgewezen, overgeslagen:", e);
                 }
                 lijst = lijst.slice(1);
@@ -198,12 +286,12 @@
         return volgorde.filter((id) => oef(id));
     }
 
-    function alleKaarten() { try { return JSON.parse(localStorage.getItem(LS_KAARTEN) || "{}"); } catch { return {}; } }
+    function alleKaarten() { try { return JSON.parse(localStorage.getItem(LS.kaarten) || "{}"); } catch { return {}; } }
     function kaarten(tid) { return alleKaarten()[tid] || []; }
     function zetKaarten(tid, lijst) {
         const k = alleKaarten();
         if (lijst.length) k[tid] = lijst; else delete k[tid];
-        localStorage.setItem(LS_KAARTEN, JSON.stringify(k));
+        localStorage.setItem(LS.kaarten, JSON.stringify(k));
     }
 
     // De laatste eerdere training waarin deze oefening gedaan is.
@@ -296,7 +384,7 @@
 
     function zetActief(id) {
         state.actief = id;
-        if (id) localStorage.setItem(LS_ACTIEF, id); else localStorage.removeItem(LS_ACTIEF);
+        if (id) localStorage.setItem(LS.actief, id); else localStorage.removeItem(LS.actief);
     }
 
     // ---------- Acties ----------
@@ -356,7 +444,7 @@
             created_at: new Date().toISOString(),
         };
         state.sets.push(s);
-        localStorage.setItem(LS_RUST, String(Date.now()));
+        localStorage.setItem(LS.rust, String(Date.now()));
         render();
         const gelukt = await schrijf("gym_sets", { method: "POST", body: s, headers: INSERT });
         if (!gelukt) { s._wacht = true; render(); }
@@ -384,7 +472,7 @@
         if (i >= 0) state.gewicht[i] = { ...state.gewicht[i], ...rij }; else state.gewicht.push(rij);
         state.gewicht.sort((a, b) => a.datum.localeCompare(b.datum));
         render();
-        await schrijf("gym_gewicht", { method: "POST", body: rij, headers: UPSERT });
+        await schrijf("gym_gewicht?on_conflict=user_id,datum", { method: "POST", body: rij, headers: UPSERT });
     }
 
     async function verwijderGewicht(datum) {
@@ -640,11 +728,13 @@
         if (trend) {
             trendTxt = `${trend.perWeek >= 0 ? "+" : ""}${trend.perWeek.toFixed(2)}`;
             trendSub = `kg/week · ${trend.dagen} dgn`;
-            if (DOEL_PER_WEEK) {
-                const afwijking = Math.abs(trend.perWeek - DOEL_PER_WEEK);
-                trendKlasse = afwijking <= Math.max(0.15, Math.abs(DOEL_PER_WEEK) * 0.6) ? "goed" : "matig";
+            const doel = doelPerWeek();
+            if (doel) {
+                const afwijking = Math.abs(trend.perWeek - doel);
+                trendKlasse = afwijking <= Math.max(0.15, Math.abs(doel) * 0.6) ? "goed" : "matig";
             }
         }
+        const doel = doelPerWeek();
 
         return `
             <h2>Weegschaal</h2>
@@ -662,7 +752,9 @@
                 <div class="tegel"><div class="l">7d gem.</div><div class="w">${nu ? nu.gem.toFixed(1) : "–"}</div><div class="x">kg</div></div>
                 <div class="tegel"><div class="l">Trend</div><div class="w ${trendKlasse}">${trendTxt}</div><div class="x">${trendSub}</div></div>
             </div>
-            ${DOEL_PER_WEEK ? `<p class="sub" style="margin:-4px 0 12px">Doel: ${DOEL_PER_WEEK > 0 ? "+" : ""}${DOEL_PER_WEEK} kg/week (aan te passen in config.js).</p>` : ""}
+            <p class="sub" style="margin:-4px 0 12px">${doel
+                ? `Doel: ${doel > 0 ? "+" : ""}${getal(doel, 2)} kg/week.`
+                : "Geen weekdoel ingesteld."} <button class="knop-link" data-actie="tab" data-tab="oefeningen">aanpassen</button></p>
 
             ${state.gewicht.length > 1 ? `
             <div class="kaart">
@@ -880,14 +972,25 @@
             <p class="sub" style="margin-bottom:12px">De rep-range bepaalt het doel: haal je bij alle sets de bovenkant, dan stelt de app voor om het gewicht met de stap te verhogen.</p>
             <div class="kaart">${actief.map(regel).join("")}</div>
             <div class="kaart">${state.toonNieuweOef ? formNieuweOef(null) : `<button class="knop-breed" data-actie="toon-nieuwe-oef">+ Nieuwe oefening</button>`}</div>
-            ${archief.length ? `<h2>Gearchiveerd</h2><div class="kaart">${archief.map(regel).join("")}</div>` : ""}`;
+            ${archief.length ? `<h2>Gearchiveerd</h2><div class="kaart">${archief.map(regel).join("")}</div>` : ""}
+
+            <h2>Account</h2>
+            <form class="kaart" data-form="doel">
+                <label class="veld"><span>Doel lichaamsgewicht per week (kg). Positief = bulk, negatief = cut, 0 = geen doel.</span>
+                    <div class="rij"><input name="doel" type="number" step="0.05" inputmode="decimal" value="${getal(doelPerWeek(), 2)}">
+                    <button class="vast" type="submit">Opslaan</button></div></label>
+            </form>
+            <div class="kaart lijst-training">
+                <span class="sub">Ingelogd als <b style="color:var(--ink)">${esc(sessie.user.email)}</b></span>
+                <button class="knop-klein" data-actie="uitloggen">Uitloggen</button>
+            </div>`;
     }
 
     // ---------- Rusttimer ----------
 
     let rustInterval = null;
     function tikRust() {
-        const start = Number(localStorage.getItem(LS_RUST) || 0);
+        const start = Number(localStorage.getItem(LS.rust) || 0);
         const t = state.actief && training(state.actief);
         const sec = Math.floor((Date.now() - start) / 1000);
         if (!start || !t || state.tab !== "training" || sec > 15 * 60) {
@@ -898,7 +1001,7 @@
         rustEl.innerHTML = `<span class="l">rust</span>${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
         if (!rustInterval) rustInterval = setInterval(tikRust, 1000);
     }
-    rustEl.addEventListener("click", () => { localStorage.removeItem(LS_RUST); tikRust(); });
+    rustEl.addEventListener("click", () => { localStorage.removeItem(LS.rust); tikRust(); });
 
     // ---------- Events ----------
 
@@ -923,7 +1026,7 @@
             case "open-training":
                 e.stopPropagation(); zetActief(id); state.tab = "training"; render(); window.scrollTo(0, 0); break;
             case "sluit-training":
-                zetActief(null); localStorage.removeItem(LS_RUST); render(); break;
+                zetActief(null); localStorage.removeItem(LS.rust); render(); break;
             case "voeg-oef": {
                 const v = document.getElementById("kies-oef").value;
                 if (v) { zetKaarten(state.actief, [...kaarten(state.actief), v]); render(); }
@@ -948,6 +1051,8 @@
             case "weg-training": e.stopPropagation(); verwijderTraining(id); break;
             case "bewerk-oef": state.bewerkOef = id; render(); break;
             case "archiveer": wijzigOefening(id, { gearchiveerd: !oef(id).gearchiveerd }); break;
+            case "uitloggen": uitloggen(); break;
+            case "login-modus": state.loginModus = state.loginModus === "nieuw" ? "in" : "nieuw"; toonLogin(); break;
         }
     }
 
@@ -987,6 +1092,14 @@
                 if (kg) slaGewichtOp(d.get("datum") || vandaag(), kg);
                 break;
             }
+            case "login":
+                login(String(d.get("email")).trim(), String(d.get("wachtwoord")));
+                break;
+            case "doel": {
+                const doel = num(d.get("doel")) ?? 0;
+                slaDoelOp(doel);
+                break;
+            }
             case "nieuwe-oef": {
                 const rep_min = parseInt(d.get("rep_min"), 10) || 8;
                 const rep_max = Math.max(rep_min, parseInt(d.get("rep_max"), 10) || 12);
@@ -1011,40 +1124,135 @@
         }
     });
 
-    window.addEventListener("online", () => flush().then(() => laadAlles()).then(render).catch(() => {}));
-    document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible" && outbox().length) flush();
+    window.addEventListener("online", () => {
+        if (sessie) flush().then(() => laadAlles()).then(render).catch(() => {});
     });
+    document.addEventListener("visibilitychange", () => {
+        if (sessie && document.visibilityState === "visible" && outbox().length) flush();
+    });
+
+    // ---------- Account ----------
+
+    function toonLogin(melding = "", soort = "fout") {
+        tabsEl.hidden = true;
+        rustEl.hidden = true;
+        syncEl.textContent = "";
+        const nieuw = state.loginModus === "nieuw";
+        app.innerHTML = `<form class="slot login" data-form="login">
+            <h2>${nieuw ? "Account maken" : "Inloggen"}</h2>
+            <p class="sub">${nieuw
+                ? "Je eigen logboek: niemand anders ziet jouw trainingen of gewicht."
+                : "Je blijft op dit apparaat ingelogd."}</p>
+            ${melding ? `<div class="melding ${soort}">${esc(melding)}</div>` : ""}
+            <input type="email" name="email" placeholder="e-mailadres" autocomplete="email" required>
+            <input type="password" name="wachtwoord" placeholder="wachtwoord${nieuw ? " (min. 6 tekens)" : ""}"
+                autocomplete="${nieuw ? "new-password" : "current-password"}" minlength="6" required>
+            <button class="knop-hoofd knop-breed" type="submit">${nieuw ? "Account maken" : "Inloggen"}</button>
+            <button class="knop-link" type="button" data-actie="login-modus">${nieuw ? "Ik heb al een account" : "Nog geen account? Maak er een"}</button>
+        </form>`;
+    }
+
+    function vertaalAuthFout(e) {
+        const t = `${e.code || ""} ${e.message || ""}`.toLowerCase();
+        if (!e.status) return "Geen verbinding. Probeer het zo nog eens.";
+        if (t.includes("invalid login") || t.includes("invalid_credentials")) return "E-mail of wachtwoord klopt niet.";
+        if (t.includes("not confirmed")) return "Bevestig eerst je e-mailadres via de link in je inbox.";
+        if (t.includes("already registered") || t.includes("user_already_exists")) return "Er bestaat al een account met dit adres. Log in.";
+        if (t.includes("password") && (t.includes("6") || t.includes("weak") || t.includes("short"))) return "Kies een wachtwoord van minstens 6 tekens.";
+        if (t.includes("signup") && t.includes("disabled")) return "Nieuwe accounts maken staat uit.";
+        if (t.includes("rate limit") || e.status === 429) return "Even te veel pogingen. Wacht een paar minuten.";
+        return e.message || "Er ging iets mis.";
+    }
+
+    async function login(email, wachtwoord) {
+        const knop = app.querySelector("button[type=submit]");
+        if (knop) { knop.disabled = true; knop.textContent = "Even wachten…"; }
+        try {
+            if (state.loginModus === "nieuw") {
+                const terug = encodeURIComponent(location.origin + location.pathname);
+                const d = await auth(`signup?redirect_to=${terug}`, { body: { email, password: wachtwoord } });
+                if (!d.access_token) {
+                    // E-mailbevestiging staat aan in Supabase: eerst de link in de mail volgen.
+                    state.loginModus = "in";
+                    return toonLogin("Account gemaakt! Klik op de link in de mail die je net kreeg, dan ben je meteen ingelogd.", "ok");
+                }
+                bewaarSessie(sessieUit(d));
+            } else {
+                bewaarSessie(sessieUit(await auth("token?grant_type=password", { body: { email, password: wachtwoord } })));
+            }
+            start();
+        } catch (e) {
+            toonLogin(vertaalAuthFout(e));
+            const veld = app.querySelector("input[name=email]");
+            if (veld) veld.value = email;
+        }
+    }
+
+    async function uitloggen() {
+        const wacht = outbox().length;
+        if (wacht && !confirm(`Er ${wacht === 1 ? "staat nog 1 wijziging" : `staan nog ${wacht} wijzigingen`} te wachten op verbinding. Die worden verstuurd als je hier weer inlogt. Toch uitloggen?`)) return;
+        const token = sessie && sessie.access_token;
+        bewaarSessie(null);
+        for (const k of Object.keys(LS)) delete LS[k];
+        Object.assign(state, { tab: "training", oefeningen: [], trainingen: [], sets: [], gewicht: [], actief: null, statsOef: null, openHist: null, bewerkOef: null, fout: "", loginModus: "in" });
+        toonLogin();
+        if (token) auth("logout", { token }).catch(() => {});
+    }
+
+    async function slaDoelOp(doel) {
+        sessie.user.meta = { ...sessie.user.meta, doel_per_week: doel };
+        bewaarSessie(sessie);
+        render();
+        try {
+            const user = await auth("user", { method: "PUT", token: await geldigToken(), body: { data: { doel_per_week: doel } } });
+            sessie.user.meta = user.user_metadata || sessie.user.meta;
+            bewaarSessie(sessie);
+        } catch {
+            state.fout = "Weekdoel alleen op dit apparaat opgeslagen (geen verbinding).";
+            render();
+        }
+    }
+
+    // Lokale opslag van vóór de accounts (zonder gebruiker in de naam) overnemen.
+    function verhuisOudeOpslag() {
+        const oud = { gym_outbox: LS.outbox, gym_kaarten: LS.kaarten, gym_actief: LS.actief, gym_rust_start: LS.rust };
+        for (const [van, naar] of Object.entries(oud)) {
+            const v = localStorage.getItem(van);
+            if (v != null && localStorage.getItem(naar) == null) localStorage.setItem(naar, v);
+            localStorage.removeItem(van);
+        }
+        localStorage.removeItem("gym_ok");
+    }
+
+    // Nieuw account zonder oefeningen: begin met de standaardlijst uit config.js.
+    async function zaaiOefeningen() {
+        const lijst = (window.GYM_STANDAARD_OEFENINGEN || []).map(([naam, spiergroep, rep_min, rep_max, stap_kg]) =>
+            ({ naam, spiergroep, rep_min, rep_max, stap_kg }));
+        if (!lijst.length) return;
+        try {
+            const rijen = await sb("gym_oefeningen", { method: "POST", body: lijst, headers: { Prefer: "return=representation" } });
+            state.oefeningen = (rijen || []).sort((a, b) => a.naam.localeCompare(b.naam));
+        } catch (e) {
+            console.warn("Standaard oefeningen toevoegen mislukt", e);
+        }
+    }
 
     // ---------- Start ----------
 
-    function slot() {
-        tabsEl.hidden = true;
-        app.innerHTML = `<form class="slot" id="slot">
-            <p>Even je code.</p>
-            <input type="password" name="code" autofocus>
-            <button class="knop-hoofd knop-breed" type="submit">Open</button>
-        </form>`;
-        document.getElementById("slot").addEventListener("submit", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (new FormData(e.target).get("code") === window.GYM_WACHTWOORD) {
-                localStorage.setItem(LS_OK, "1");
-                start();
-            } else {
-                e.target.querySelector("p").textContent = "Klopt niet, probeer opnieuw.";
-            }
-        }, { once: false });
-    }
-
     async function start() {
-        if (window.GYM_WACHTWOORD && localStorage.getItem(LS_OK) !== "1") return slot();
+        await vangLinkSessie();
+        if (!sessie) return toonLogin();
+        zetSleutels(sessie.user.id);
+        verhuisOudeOpslag();
+        state.actief = localStorage.getItem(LS.actief) || null;
         app.innerHTML = `<div class="laden">Even laden…</div>`;
         await flush();
         try {
             await laadAlles();
+            if (!state.oefeningen.length) await zaaiOefeningen();
         } catch (e) {
             console.error(e);
+            if (e.status === 401) return toonLogin("Je sessie is verlopen, log opnieuw in.");
             app.innerHTML = `<div class="melding fout">Kon de gegevens niet laden. ${e.status === 404 || /relation|does not exist/.test(e.message)
                 ? "Heb je SETUP.sql al in Supabase gedraaid?" : "Check je verbinding en herlaad."}</div>`;
             return;
