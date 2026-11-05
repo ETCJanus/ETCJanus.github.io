@@ -1224,7 +1224,8 @@
         const gedaan = state.oefeningen.filter((o) => (idx().perOef.get(o.id) || []).length);
         if (!gedaan.length) return `<p class="leeg">Log eerst een paar trainingen. Daarna zie je hier per oefening of je sterker wordt.</p>`;
 
-        // Sets per spiergroep, laatste 28 dagen.
+        // Sets per spiergroep, laatste 28 dagen. Gedeeld door het aantal weken dat je
+        // echt logt (max 4), zodat het getal ook in je eerste weken je echte tempo is.
         const perGroep = {};
         for (const s of state.sets) {
             const t = training(s.training_id);
@@ -1232,8 +1233,16 @@
             if (!t || !o || dagenTussen(t.datum, vandaag()) >= 28) continue;
             perGroep[o.spiergroep] = (perGroep[o.spiergroep] || 0) + 1;
         }
-        const groepen = SPIERGROEPEN.filter((g) => perGroep[g]);
-        const max = Math.max(1, ...groepen.map((g) => perGroep[g]));
+        const gedaneDatums = gedaneTrainingen().map((t) => t.datum);
+        const eersteDatum = gedaneDatums.length ? gedaneDatums.reduce((a, b) => (a < b ? a : b)) : vandaag();
+        const dagenGelogd = Math.min(28, dagenTussen(eersteDatum, vandaag()) + 1);
+        const weken = Math.max(1, dagenGelogd / 7);
+        const periode = dagenGelogd >= 28 ? "laatste 4 weken"
+            : dagenGelogd <= 7 ? `sinds ${mooiDatum(eersteDatum, false)}`
+            : `sinds ${mooiDatum(eersteDatum, false)} (${getal(weken, 1)} weken)`;
+        // De hoofdgroepen altijd tonen, ook op 0: dan zie je ook wat je overslaat.
+        const groepen = SPIERGROEPEN.filter((g) => ["borst", "rug", "schouders", "benen", "armen"].includes(g) || perGroep[g]);
+        const schaal = Math.max(20, ...groepen.map((g) => (perGroep[g] || 0) / weken));
 
         // Oefeningen: meest recent gedaan eerst.
         const laatsteDatum = (o) => {
@@ -1244,17 +1253,19 @@
             .sort((a, b) => b.laatst.localeCompare(a.laatst));
 
         return `
-            ${groepen.length ? `<section class="paneel">
-                <h2 class="paneel-titel">Sets per week, laatste 4 weken</h2>
+            ${Object.keys(perGroep).length ? `<section class="paneel" style="--tien:${(10 / schaal * 100).toFixed(1)}%;--twintig:${(20 / schaal * 100).toFixed(1)}%">
+                <h2 class="paneel-titel">Sets per week<span>gemiddeld, ${periode}</span></h2>
                 <ul class="balken">${groepen.map((g) => {
-                    const perWeek = perGroep[g] / 4;
-                    return `<li style="--spier:${spierKleur(g)}">
+                    const perWeek = (perGroep[g] || 0) / weken;
+                    const zone = perWeek >= 10 ? (perWeek > 20 ? "boven" : "binnen") : "onder";
+                    return `<li style="--spier:${spierKleur(g)}" class="${zone}">
                         <span class="b-naam">${esc(g)}</span>
-                        <span class="b-balk"><span style="width:${(perGroep[g] / max * 100).toFixed(1)}%"></span></span>
+                        <span class="b-balk"><span style="width:${Math.min(100, perWeek / schaal * 100).toFixed(1)}%"></span></span>
                         <span class="b-getal">${getal(perWeek, 1)}</span>
                     </li>`;
                 }).join("")}</ul>
-                <p class="voetnoot">Vuistregel voor spiergroei: zo'n 10 tot 20 harde sets per spiergroep per week.</p>
+                <p class="b-schaal" aria-hidden="true"><span style="left:var(--tien)">10</span><span style="left:var(--twintig)">20</span></p>
+                <p class="voetnoot">Het lichte vlak is 10 tot 20 sets per week: de vuistregel voor spiergroei per spiergroep.</p>
             </section>` : ""}
 
             <h2 class="kopje">Oefeningen</h2>

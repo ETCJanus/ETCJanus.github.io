@@ -482,12 +482,25 @@ button.rij { cursor: pointer; }
 .s-sets { font-stretch: var(--smal); font-weight: 600; font-size: 16px; color: var(--krijt-2); white-space: pre-wrap; }
 
 /* ---------- Stats ---------- */
+.paneel-titel span { display: block; font-size: 13px; font-weight: 400; color: var(--krijt-3); margin-top: 2px; }
 .balken { list-style: none; display: grid; gap: 10px; }
-.balken li { display: grid; grid-template-columns: 82px 1fr 34px; gap: 10px; align-items: center; }
+.balken li { display: grid; grid-template-columns: 82px 1fr 40px; gap: 10px; align-items: center; }
 .b-naam { font-size: 14px; color: var(--krijt-2); }
-.b-balk { height: 12px; background: var(--vloer); border-radius: 6px; overflow: hidden; }
+/* De balk loopt tot (minstens) 20 sets; het lichte vlak is 10–20. */
+.b-balk {
+    position: relative; height: 12px; border-radius: 6px; overflow: hidden;
+    background:
+        linear-gradient(90deg, transparent var(--tien), rgba(242, 239, 232, 0.09) var(--tien), rgba(242, 239, 232, 0.09) var(--twintig), transparent var(--twintig)),
+        var(--vloer);
+}
 .b-balk span { display: block; height: 100%; background: var(--spier); border-radius: 6px; }
 .b-getal { font-stretch: var(--smal); font-weight: 750; font-size: 18px; text-align: right; }
+.balken li.onder .b-getal { color: var(--krijt-2); }
+.b-schaal {
+    position: relative; height: 16px; margin: 4px 50px 0 92px;
+    font-size: 12px; color: var(--krijt-3);
+}
+.b-schaal span { position: absolute; transform: translateX(-50%); }
 
 .stat-lijst { list-style: none; display: flex; flex-direction: column; gap: 2px; border-radius: var(--r); overflow: hidden; }
 .stat-rij {
@@ -496,7 +509,7 @@ button.rij { cursor: pointer; }
     background: var(--vlak); border: 0; color: var(--krijt); font: inherit; text-align: left; cursor: pointer;
 }
 .stat-naam { display: flex; flex-wrap: wrap; align-items: center; gap: 0 8px; font-weight: 600; min-width: 0; }
-.stat-naam small { flex-basis: 100%; padding-left: 18px; font-size: 13px; font-weight: 400; color: var(--krijt-3); }
+.stat-naam small { flex-basis: 100%; padding-left: 18px; font-size: 13px; font-weight: 400; color: var(--krijt-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .spark { width: 80px; height: 28px; overflow: visible; }
 .spark polyline { fill: none; stroke: var(--spier); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .spark circle { fill: var(--krijt); }
