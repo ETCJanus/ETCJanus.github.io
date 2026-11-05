@@ -27,7 +27,13 @@ Persoonlijk trainingslogboek: sets, reps en gewicht per oefening, dagelijkse wee
   Elke set laat zien of hij beter was dan dezelfde set vorige keer; een nieuw record krijgt een PR-stempel.
   Na je laatste geplande set gaat de volgende oefening vanzelf open. Rusttimer en trainingsduur staan in de kop.
   Oefening toevoegen gaat via een zoekpaneel (recent eerst, dan per spiergroep). "Training afronden" geeft een samenvatting.
-- **Gewicht**: een meting per dag, met 7-daags gemiddelde, trend per week vergeleken met je weekdoel, en een grafiek.
+- **Lichaam > Foto's**: dagelijkse progressiefoto. De camera opent in de app met je vorige foto doorzichtig erover
+  (zelfontspanner 3 of 10 s, voor- of achtercamera, of kies uit je galerij). Daarna lijnt de app de foto automatisch uit:
+  schouders en heupen worden herkend (MediaPipe Pose, draait op je telefoon) en op twee vaste lijnen gezet. Bijstellen met
+  slepen, knijpen en draaien. Van alle foto's maak je een timelapse (mp4, met datum en gewicht in beeld) om te delen of op te slaan.
+  **Foto's staan alleen op het apparaat** (IndexedDB, per account) en gaan nooit naar Supabase. Maak daarom af en toe
+  een back-up (zip, via delen of downloaden); die zet je ook weer terug. De app herinnert je eraan na 30 dagen.
+- **Lichaam > Gewicht**: een meting per dag, met 7-daags gemiddelde, trend per week vergeleken met je weekdoel, en een grafiek.
 - **Stats**: sets per spiergroep per week, en per oefening een minigrafiek en groei over ~4 weken. Tik voor details.
   Oefeningen zonder extra gewicht (pull-ups) worden in reps gemeten in plaats van geschatte 1RM.
 - **Historie**: per week, tik op een training voor de samenvatting, aanpassen of verwijderen.

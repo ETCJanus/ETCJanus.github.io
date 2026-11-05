@@ -46,6 +46,7 @@
         statsOef: null,
         weegBereik: 90,
         weegBewerk: false,
+        lichaam: "gewicht",             // "gewicht" of "fotos" in de tab Lichaam
         openHist: null,
         bewerkOef: null,
         fout: "",
@@ -575,6 +576,12 @@
         vink: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
         omhoog: '<path d="M12 18.5v-13M6.5 11L12 5.5l5.5 5.5"/>',
         klok: '<circle cx="12" cy="12.5" r="7.5"/><path d="M12 8.5v4l2.5 2M10 3h4"/>',
+        camera: '<path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.8l1.4-2h4.6l1.4 2h1.8A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.5"/>',
+        galerij: '<rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="9.5" r="1.6"/><path d="M4 17l5-4.5 3.5 3 3-2.5 4.5 4"/>',
+        film: '<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.3v5.4l4.6-2.7z"/>',
+        geest: '<rect x="4" y="3.5" width="11" height="14.5" rx="2"/><rect x="9" y="6" width="11" height="14.5" rx="2" stroke-dasharray="2.2 2.2"/>',
+        wissel: '<path d="M4.5 10a7.5 7.5 0 0 1 13.4-3.4M19.5 14a7.5 7.5 0 0 1-13.4 3.4"/><path d="M18.5 3.5v3.6h-3.6M5.5 20.5v-3.6h3.6"/>',
+        doel: '<circle cx="12" cy="12" r="7.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/>',
     };
     function ico(n, extra = "") {
         return `<svg class="ico ${extra}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICON[n]}</svg>`;
@@ -641,7 +648,7 @@
 
     const TABS = [
         ["training", "dumbbell", "Training"],
-        ["weegschaal", "scale", "Gewicht"],
+        ["weegschaal", "scale", "Lichaam"],
         ["stats", "chart", "Stats"],
         ["historie", "calendar", "Historie"],
         ["instellingen", "sliders", "Instellingen"],
@@ -686,7 +693,7 @@
             return `<button class="kop-terug" data-actie="stats-terug" aria-label="Terug naar alle oefeningen">${ico("terug")}</button>
                 <h1>${esc(oef(state.statsOef).naam)}</h1>`;
         }
-        return `<h1>${{ weegschaal: "Gewicht", stats: "Stats", historie: "Historie", instellingen: "Instellingen" }[state.tab]}</h1>`;
+        return `<h1>${{ weegschaal: "Lichaam", stats: "Stats", historie: "Historie", instellingen: "Instellingen" }[state.tab]}</h1>`;
     }
 
     // ---------- Training: startscherm ----------
@@ -738,6 +745,12 @@
         </section>`;
     }
 
+    function fotoRij() {
+        const f = window.GymFotos;
+        if (!f || !f.geladen() || !f.heeftFotos() || f.heeftVandaag()) return "";
+        return `<button class="weeg-rij foto-rij" data-actie="foto-vandaag">${ico("camera")}<span>Foto van vandaag maken</span>${ico("pijl")}</button>`;
+    }
+
     function weegRij() {
         const g = state.gewicht.find((x) => x.datum === vandaag());
         if (g) return "";
@@ -771,6 +784,7 @@
         return `
             ${weekStrip()}
             ${weegRij()}
+            ${fotoRij()}
             ${vandaagT.length ? `<h2 class="kopje">Vandaag</h2>
                 <div class="rijen">${vandaagT.map((t) => {
                     const s = setsVan(t.id);
@@ -1069,6 +1083,14 @@
     }
 
     function viewWeegschaal() {
+        const seg = `<div class="segment lichaam-segment" role="group" aria-label="Lichaam">
+            <button aria-pressed="${state.lichaam !== "fotos"}" data-actie="lichaam" data-n="gewicht">Gewicht</button>
+            <button aria-pressed="${state.lichaam === "fotos"}" data-actie="lichaam" data-n="fotos">Foto's</button></div>`;
+        if (state.lichaam === "fotos" && window.GymFotos) return seg + window.GymFotos.view();
+        return seg + viewGewicht();
+    }
+
+    function viewGewicht() {
         const vandaagG = state.gewicht.find((g) => g.datum === vandaag());
         const laatste = state.gewicht[state.gewicht.length - 1];
         const gem = gemiddelden();
@@ -1539,6 +1561,8 @@
             case "rust-reset": localStorage.removeItem(LS.rust); tikKlok(); break;
             case "weg-set": verwijderSet(id); break;
             case "weg-gewicht": verwijderGewicht(el.dataset.datum); break;
+            case "lichaam": state.lichaam = el.dataset.n; render(); break;
+            case "foto-vandaag": state.tab = "weegschaal"; state.lichaam = "fotos"; render(); if (window.GymFotos) window.GymFotos.openCamera(); break;
             case "meer-metingen": state.meerMetingen = true; render(); break;
             case "weeg-bereik": state.weegBereik = Number(el.dataset.n); render(); break;
             case "weeg-bewerk": state.weegBewerk = true; render(); focusEerste("input[name=kg]"); break;
@@ -1725,6 +1749,7 @@
         const wacht = outbox().length;
         if (wacht && !confirm(`Er ${wacht === 1 ? "staat nog 1 wijziging" : `staan nog ${wacht} wijzigingen`} te wachten op verbinding. Die worden verstuurd als je hier weer inlogt. Toch uitloggen?`)) return;
         const token = sessie && sessie.access_token;
+        if (window.GymFotos) window.GymFotos.reset();
         bewaarSessie(null);
         for (const k of Object.keys(LS)) delete LS[k];
         Object.assign(state, {
@@ -1774,6 +1799,15 @@
         }
     }
 
+    // Hulpjes voor fotos.js.
+    window.GymLog = {
+        uid: () => (sessie ? sessie.user.id : "anoniem"),
+        render: () => render(),
+        toast: (...a) => toast(...a),
+        esc, ico, mooiDatum, relDatum, getal, vandaag, datumStr, dagenTussen,
+        gewichtOp: (d) => { const g = state.gewicht.find((x) => x.datum === d); return g ? Number(g.kg) : null; },
+    };
+
     // ---------- Start ----------
 
     async function start() {
@@ -1787,6 +1821,7 @@
         try {
             await laadAlles();
             if (!state.oefeningen.length) await zaaiOefeningen();
+            if (window.GymFotos) window.GymFotos.laad().then(() => { if (state.tab === "training") render(); }).catch(() => {});
         } catch (e) {
             console.error(e);
             if (e.status === 401) return toonLogin("Je sessie is verlopen, log opnieuw in.");

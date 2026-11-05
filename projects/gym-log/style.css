@@ -593,3 +593,158 @@ button.rij { cursor: pointer; }
 
 .meer { margin-top: 12px; }
 .stat-cijfer b small, .m-kg small { font-stretch: 100%; font-size: 12px; font-weight: 500; color: var(--krijt-3); }
+
+/* ======================================================================
+   Progressiefoto's
+   ====================================================================== */
+
+.lichaam-segment { margin: 4px 0 10px; }
+
+/* Startscherm-herinnering */
+.foto-rij { width: 100%; border: 0; color: var(--krijt); font: inherit; cursor: pointer; text-align: left; padding: 12px 14px; }
+.foto-rij span { flex: 1; font-weight: 600; font-size: 15px; }
+.foto-rij .ico:last-child { width: 18px; height: 18px; color: var(--krijt-3); }
+
+/* Lichaam > Foto's */
+.foto-start { display: flex; flex-direction: column; gap: 8px; padding: 8px 0 4px; }
+.foto-start .uitleg { margin-top: 6px; }
+label.knop { cursor: pointer; }
+.foto-vandaag { display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: center; padding: 8px 0 4px; }
+.foto-groot { border: 0; padding: 0; background: none; border-radius: var(--r); overflow: hidden; cursor: pointer; aspect-ratio: 3 / 4; }
+.foto-groot img, .vergelijk-foto img, .foto-grid img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.foto-vandaag-titel { font-weight: 650; }
+.foto-vandaag .knoppen { margin-top: 10px; }
+.foto-vandaag .knoppen > * { flex: none; }
+.foto-backup-melding { background: rgba(240, 164, 59, 0.12); color: #f6cf98; margin-top: 14px; padding-right: 8px; }
+.foto-backup-melding span { flex: 1; }
+
+.vergelijk { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.vergelijk-foto {
+    position: relative; border: 0; padding: 0; cursor: pointer;
+    border-radius: var(--r); overflow: hidden; aspect-ratio: 3 / 4; background: var(--vlak);
+}
+.vergelijk-foto span, .foto-grid span {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; justify-content: space-between; gap: 6px;
+    padding: 22px 10px 8px; font-size: 13px; font-weight: 600; color: var(--krijt);
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+}
+.vergelijk-foto b { font-stretch: var(--smal); font-weight: 800; font-size: 16px; }
+
+.foto-kopje { display: flex; justify-content: space-between; align-items: baseline; }
+.foto-kopje span { font-size: 14px; font-weight: 500; color: var(--krijt-3); }
+.foto-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; border-radius: var(--r); overflow: hidden; }
+.foto-grid button { position: relative; border: 0; padding: 0; cursor: pointer; aspect-ratio: 3 / 4; background: var(--vlak); }
+.foto-grid span { padding: 16px 6px 5px; font-size: 12px; }
+.foto-onder { margin-top: 12px; display: flex; justify-content: center; }
+.foto-onder.knoppen > * { flex: 1; }
+
+/* ---------- Schermvullende laag ---------- */
+body.laag-open { overflow: hidden; }
+.foto-laag {
+    position: fixed; inset: 0; z-index: 60;
+    display: flex; flex-direction: column; align-items: center;
+    background: #0d0f11; color: var(--krijt);
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    overflow-y: auto;
+}
+.foto-laag[hidden] { display: none; }
+
+.cam-kader, .uit-kader {
+    position: relative; flex: none; overflow: hidden;
+    aspect-ratio: 3 / 4; background: #000;
+}
+.cam-kader { width: min(100vw, calc((100dvh - 128px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 0.75)); margin-top: auto; }
+.cam-kader video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cam-kader video.spiegel { transform: scaleX(-1); }
+.geest { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; transition: opacity 0.15s; }
+.hulplijnen { position: absolute; inset: 0; pointer-events: none; }
+.hulplijnen span { position: absolute; left: 0; right: 0; border-top: 1.5px dashed rgba(242, 239, 232, 0.55); }
+.hulplijnen i {
+    position: absolute; right: 8px; top: -22px;
+    font-style: normal; font-size: 12px; font-weight: 600; color: rgba(242, 239, 232, 0.8);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+.aftellen {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    font-stretch: var(--smal); font-weight: 900; font-size: 160px; color: var(--krijt);
+    text-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+}
+.aftellen[hidden] { display: none; }
+.cam-melding {
+    position: absolute; left: 16px; right: 16px; top: 40%;
+    padding: 14px 16px; border-radius: var(--r);
+    background: rgba(13, 15, 17, 0.85); text-align: center; font-size: 15px;
+}
+.cam-melding[hidden] { display: none; }
+
+.cam-balk {
+    width: 100%; max-width: 520px; margin-bottom: auto;
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 18px 12px 20px;
+}
+.cam-knop {
+    width: 48px; height: 48px; display: grid; place-items: center; position: relative;
+    background: rgba(242, 239, 232, 0.08); border: 0; border-radius: 50%;
+    color: var(--krijt); cursor: pointer;
+}
+.cam-knop[aria-pressed="true"] { background: var(--krijt); color: var(--vloer); }
+.cam-timer span { position: absolute; bottom: -18px; font-size: 11px; font-weight: 600; color: var(--krijt-2); }
+.sluiter {
+    width: 76px; height: 76px; border-radius: 50%; cursor: pointer;
+    border: 4px solid var(--krijt); background: none; padding: 4px;
+}
+.sluiter span { display: block; width: 100%; height: 100%; border-radius: 50%; background: var(--krijt); transition: transform 0.08s; }
+.sluiter:active span { transform: scale(0.88); }
+
+/* Uitlijnen en bekijken */
+.uit-kop {
+    width: 100%; max-width: 600px; flex: none;
+    display: flex; align-items: center; gap: 12px; padding: 8px 12px;
+}
+.uit-kop h2 { flex: 1; font-stretch: 85%; font-weight: 800; font-size: 22px; }
+.uit-kop h2 span { margin-left: 10px; font-stretch: var(--smal); font-weight: 700; font-size: 18px; color: var(--krijt-2); }
+.uit-kader { width: min(100vw, calc((100dvh - 190px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 0.75)); touch-action: none; cursor: grab; }
+.uit-kader canvas { display: block; width: 100%; height: 100%; }
+.uit-status { width: 100%; max-width: 600px; padding: 10px 16px 0; font-size: 14px; color: var(--krijt-2); min-height: 30px; }
+.uit-status.goed { color: var(--groen); }
+.uit-status.matig { color: #f6cf98; }
+.uit-balk {
+    width: 100%; max-width: 600px;
+    display: flex; align-items: center; gap: 10px; padding: 10px 16px 16px;
+}
+.uit-balk .knop { flex: none; }
+.uit-datum { flex: 1; display: flex; justify-content: flex-end; }
+.uit-datum input { width: auto; max-width: 170px; min-height: 40px; padding: 6px 10px; font-size: 15px; }
+.uit-dekking {
+    width: 100%; max-width: 600px; padding: 0 16px 16px;
+    display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--krijt-2);
+}
+.uit-dekking span { flex: none; }
+.uit-dekking input { flex: 1; padding: 0; min-height: 32px; border: 0; background: none; accent-color: var(--krijt); }
+
+.bekijk-kader { cursor: default; touch-action: pan-y; }
+.bekijk-kader img { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; -webkit-user-drag: none; }
+.bekijk-pijl {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 44px; height: 44px; display: grid; place-items: center;
+    background: rgba(13, 15, 17, 0.6); border: 0; border-radius: 50%; color: var(--krijt); cursor: pointer;
+}
+.bekijk-pijl.links { left: 10px; }
+.bekijk-pijl.rechts { right: 10px; }
+.bekijk-pijl[hidden] { display: none; }
+.bekijk-teller { font-size: 14px; color: var(--krijt-3); }
+.laag-bekijk .uit-balk { justify-content: space-between; }
+
+/* Video en back-up */
+.video-paneel { width: 100%; max-width: 520px; padding: 8px 16px 24px; }
+.video-paneel .segment { margin-bottom: 18px; }
+.video-paneel .veld { margin-bottom: 8px; }
+.video-voorbeeld { display: block; width: 100%; max-height: 62dvh; border-radius: var(--r); background: #000; margin-bottom: 4px; }
+.video-paneel > .knop-link { display: block; margin: 12px auto 0; }
+.schakel { display: flex; align-items: center; gap: 10px; margin: 4px 0 14px; font-size: 15px; cursor: pointer; }
+.schakel input { width: 22px; height: 22px; min-height: 0; accent-color: var(--krijt); }
+.voortgang { height: 8px; border-radius: 4px; background: var(--vlak-2); overflow: hidden; margin-bottom: 14px; }
+.voortgang[hidden] { display: none; }
+.voortgang span { display: block; height: 100%; width: 0; background: var(--krijt); transition: width 0.1s linear; }
+a.knop { text-decoration: none; }
