@@ -952,5 +952,9 @@
         else if (document.visibilityState === "visible" && F.laag === "camera" && !F.stream) startCamera();
     });
 
-    window.GymFotos = { view, reset, laad, heeftVandaag, heeftFotos, openCamera, geladen: () => F.geladen };
+    window.GymFotos = {
+        view, reset, laad, heeftVandaag, heeftFotos, openCamera,
+        geladen: () => F.geladen,
+        laatste: () => (F.lijst.length ? F.lijst[F.lijst.length - 1].datum : null),
+    };
 })();
