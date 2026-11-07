@@ -35,8 +35,7 @@ Persoonlijk trainingslogboek: sets, reps en gewicht per oefening, dagelijkse wee
   een back-up (zip, via delen of downloaden); die zet je ook weer terug. De app herinnert je eraan na 30 dagen.
 - **Lichaam > Gewicht**: een meting per dag, met 7-daags gemiddelde, trend per week vergeleken met je weekdoel, en een grafiek.
 - **Stats > Overzicht**: kies een maand, een jaar of alles (met pijltjes om te bladeren). Je ziet hoe vaak je ging
-  (maandkalender met keer per week tegen je weekdoel, of per maand een staafje; tik om naar die maand te gaan), wat goed ging
-  (weken doel gehaald, records, grootste stijgers, gewicht), sets per spiergroep tegen de 10–20 richtlijn, records en totalen
+  (maandkalender met keer per week tegen je weekdoel, of per maand een staafje; tik om naar die maand te gaan), sets per spiergroep tegen de 10–20 richtlijn, records en totalen
   vergeleken met de periode ervoor (bij een lopende maand: dezelfde dagen van vorige maand).
 - **Stats > Per oefening**: sets per spiergroep per week, en per oefening een minigrafiek en groei over ~4 weken. Tik voor details.
   Oefeningen zonder extra gewicht (pull-ups) worden in reps gemeten in plaats van geschatte 1RM.

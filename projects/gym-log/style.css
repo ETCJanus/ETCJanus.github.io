@@ -765,18 +765,8 @@ a.knop { text-decoration: none; }
 .doel-vraag p { font-weight: 600; font-size: 15px; margin-bottom: 10px; }
 .doel-vraag .chips { margin: 0; }
 
-/* Kan beter / gaat goed */
-.inzichten .paneel-titel { margin: 0 0 8px; }
-.inzichten ul + .paneel-titel { margin-top: 18px; }
-.inzichten ul { list-style: none; display: grid; gap: 10px; }
-.inzichten li { position: relative; padding-left: 20px; display: flex; flex-direction: column; }
-.inzichten li::before {
     content: ""; position: absolute; left: 2px; top: 7px; width: 9px; height: 9px; border-radius: 50%;
 }
-.inzichten li.ins-beter::before { background: var(--oranje); }
-.inzichten li.ins-goed::before { background: var(--groen); }
-.inzichten li b { font-weight: 600; font-size: 15px; }
-.inzichten li span { font-size: 14px; color: var(--krijt-3); }
 
 /* Sets per spiergroep */
 .paneel-titel span { display: block; font-size: 13px; font-weight: 400; color: var(--krijt-3); margin-top: 2px; }

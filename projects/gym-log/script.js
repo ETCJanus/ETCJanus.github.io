@@ -1328,17 +1328,6 @@
         };
     }
 
-    function weekTellingen(b) {
-        const dagen = trainDagen();
-        const uit = [];
-        for (let m = parseDatum(maandagVan(b.vanaf)); datumStr(m) <= b.tot; m.setDate(m.getDate() + 7)) {
-            let n = 0;
-            for (let i = 0; i < 7; i++) { const d = new Date(m); d.setDate(m.getDate() + i); if (dagen.has(datumStr(d))) n++; }
-            uit.push({ ma: datumStr(m), n, bezig: datumStr(m) === maandagVan(vandaag()) });
-        }
-        return uit;
-    }
-
     // Sets per spiergroep per week binnen de periode.
     function setsPerGroep(b) {
         const per = {};
@@ -1351,34 +1340,6 @@
         const weken = Math.max(1, (dagenTussen(b.vanaf, b.tot) + 1) / 7);
         const groepen = SPIERGROEPEN.filter((g) => HOOFDGROEPEN.includes(g) || per[g]);
         return groepen.map((g) => ({ g, perWeek: (per[g] || 0) / weken }));
-    }
-
-    // Wat ging goed in deze periode.
-    function hoogtepunten(b, wekenTel) {
-        const uit = [];
-        const doel = trainingDoel();
-        if (doel) {
-            const tellen = wekenTel.filter((w) => !w.bezig || w.n >= doel);
-            const gehaald = tellen.filter((w) => w.n >= doel).length;
-            if (tellen.length && gehaald) uit.push({ t: `${gehaald} van de ${tellen.length} weken je doel van ${doel}× gehaald` });
-        }
-        const prs = state.sets.filter((s) => { const t = training(s.training_id); return t && binnen(t.datum, b) && isPr(s); });
-        if (prs.length) uit.push({ t: `${prs.length} ${prs.length === 1 ? "record" : "records"}` });
-        // Grootste stijgers: eerste tegen laatste keer binnen de periode.
-        const stijgers = state.oefeningen.map((o) => {
-            const r = statsPerTraining(o.id).filter((x) => binnen(x.datum, b));
-            return r.length >= 2 ? { o, g: procent(r[r.length - 1].e1rm, r[0].e1rm), n: r.length } : null;
-        }).filter((x) => x && x.g >= 3).sort((a, b2) => b2.g - a.g);
-        for (const x of stijgers.slice(0, 3)) uit.push({ t: `${x.o.naam} ${deltaTekst(x.g)}`, s: `Geschatte 1-rep max, eerste tegen laatste keer (${x.n} keer gedaan).`, kleur: spierKleur(x.o.spiergroep) });
-        // Lichaamsgewicht: 7-daags gemiddelde aan het begin en eind van de periode.
-        const gem = gemiddelden().filter((g) => binnen(g.datum, b));
-        if (gem.length >= 2 && dagenTussen(gem[0].datum, gem[gem.length - 1].datum) >= 7) {
-            const verschil = gem[gem.length - 1].gem - gem[0].gem;
-            const perWeek = verschil / dagenTussen(gem[0].datum, gem[gem.length - 1].datum) * 7;
-            const wdoel = doelPerWeek();
-            uit.push({ t: `Gewicht ${plusMin(verschil, 1)} kg`, s: `${plusMin(perWeek)} kg per week${wdoel ? `, je doel is ${plusMin(wdoel)}` : ""}.` });
-        }
-        return uit;
     }
 
     function viewStats() {
@@ -1455,7 +1416,6 @@
         const p = state.periode;
         const b = periodeBereik(p);
         const doel = trainingDoel();
-        const wekenTel = weekTellingen(b);
         const cijfers = periodeCijfers(b);
         const weken = Math.max(1, (dagenTussen(b.vanaf, b.tot) + 1) / 7);
         const gemPerWeek = cijfers.keer / weken;
@@ -1463,7 +1423,6 @@
         const vorig = vb ? periodeCijfers(vb) : null;
         const heeftVorig = vorig && vorig.keer > 0;
         const groepen = setsPerGroep(b);
-        const hoog = hoogtepunten(b, wekenTel);
 
         const prs = state.sets.map((s) => ({ s, t: training(s.training_id) }))
             .filter((x) => x.t && binnen(x.t.datum, b) && isPr(x.s))
@@ -1495,11 +1454,6 @@
                 ${doel ? "" : `<div class="doel-vraag"><p>Hoe vaak per week wil je gaan?</p>
                     <div class="chips">${[2, 3, 4, 5, 6].map((n) => `<button class="chip" data-actie="trainingdoel" data-n="${n}">${n}×</button>`).join("")}</div></div>`}
             </section>
-
-            ${hoog.length ? `<section class="paneel inzichten">
-                <h2 class="paneel-titel">Gaat goed</h2>
-                <ul>${hoog.map((x) => `<li class="ins-goed"><b>${esc(x.t)}</b>${x.s ? `<span>${esc(x.s)}</span>` : ""}</li>`).join("")}</ul>
-            </section>` : ""}
 
             <section class="paneel">
                 <h2 class="paneel-titel">Sets per spiergroep per week<span>gemiddeld over ${p.soort === "alles" ? "alles" : b.label}${b.vanaf > b.van ? ` (sinds ${kort(b.vanaf)})` : ""}</span></h2>
