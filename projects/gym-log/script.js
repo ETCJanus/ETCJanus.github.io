@@ -47,6 +47,7 @@
         weegBereik: 90,
         weegBewerk: false,
         lichaam: "gewicht",
+        metingOpen: null,
         statsTab: "overzicht",          // "overzicht" of "oefeningen"
         periode: { soort: "maand", jaar: new Date().getFullYear(), maand: new Date().getMonth() },
         instPagina: null,               // null of "oefeningen"
@@ -647,6 +648,19 @@
         if (r === 0) return "gelijk";
         return `${r > 0 ? "+" : "−"}${Math.abs(r).toLocaleString("nl-NL")}%`;
     }
+    // Logboekregel: label links, waarde rechts in smalle cijfers, eventueel een korte regel eronder.
+    function cijferRij(label, waarde, eenheid = "", sub = "", subKlasse = "", waardeKlasse = "", naast = false) {
+        return `<li class="${naast ? "naast" : ""}"><span class="lc-label">${label}</span>
+            ${naast ? `<span class="lc-naast ${subKlasse}">${sub}</span>` : ""}
+            <span class="lc-waarde ${waardeKlasse}">${waarde}${eenheid ? `<small> ${eenheid}</small>` : ""}</span>
+            ${sub && !naast ? `<span class="lc-sub ${subKlasse}">${sub}</span>` : ""}</li>`;
+    }
+    // Tweede navigatieniveau als tekst-tabs onder de paginatitel.
+    function subtabs(actie, opties, actief, label) {
+        return `<nav class="subtabs" aria-label="${label}">${opties.map(([n, l]) =>
+            `<button data-actie="${actie}" data-n="${n}" aria-pressed="${actief === n}">${l}</button>`).join("")}</nav>`;
+    }
+
     function deltaKlasse(p) { return p == null || Math.abs(p) < 0.5 ? "gelijk" : p > 0 ? "up" : "down"; }
 
     // ---------- Render ----------
@@ -978,7 +992,7 @@
                     <span class="sv-delta ${deltaKlasse(p)}">${p == null ? "nieuw" : deltaTekst(p, 1)}</span>
                 </li>`;
             }).join("")}</ul>
-            ${ids.length ? `<p class="voetnoot">Percentage = verschil in geschatte 1-rep max met de vorige keer.</p>` : ""}`;
+`;
     }
 
     function viewSamenvatting(t) {
@@ -1091,9 +1105,7 @@
     }
 
     function viewWeegschaal() {
-        const seg = `<div class="segment lichaam-segment" role="group" aria-label="Lichaam">
-            <button aria-pressed="${state.lichaam !== "fotos"}" data-actie="lichaam" data-n="gewicht">Gewicht</button>
-            <button aria-pressed="${state.lichaam === "fotos"}" data-actie="lichaam" data-n="fotos">Foto's</button></div>`;
+        const seg = subtabs("lichaam", [["gewicht", "Gewicht"], ["fotos", "Foto's"]], state.lichaam === "fotos" ? "fotos" : "gewicht", "Lichaam");
         if (state.lichaam === "fotos" && window.GymFotos) return seg + window.GymFotos.view();
         return seg + viewGewicht();
     }
@@ -1134,23 +1146,21 @@
                 </div>`}
             </section>
 
-            ${gem.length ? `<div class="tegels">
-                <div class="tegel"><span class="t-label">7-daags gemiddelde</span><b class="t-waarde">${getal(nu.gem.toFixed(1), 1)}<small> kg</small></b></div>
-                <div class="tegel"><span class="t-label">Per week</span><b class="t-waarde ${oordeel ? (goed ? "goed" : "matig") : ""}">${trend ? plusMin(trend.perWeek) : "–"}<small> kg</small></b>
-                    <span class="t-sub">${trend ? (oordeel || `over ${trend.dagen} dagen`) : "Nog te weinig metingen"}</span></div>
-                <div class="tegel"><span class="t-label">Sinds ${mooiDatum(eerste.datum, false)}</span><b class="t-waarde">${plusMin(nu.gem - eerste.gem, 1)}<small> kg</small></b></div>
-            </div>
-            <p class="doel-regel">${doel ? `Doel ${plusMin(doel)} kg per week.` : "Geen weekdoel ingesteld."}
-                <button class="knop-link" data-actie="tab" data-tab="instellingen">Aanpassen</button></p>` : ""}
+            ${gem.length ? `<ul class="cijfers">
+                ${cijferRij("7-daags gemiddelde", getal(nu.gem.toFixed(1), 1), "kg")}
+                ${cijferRij("Per week", trend ? plusMin(trend.perWeek) : "–", "kg",
+                    trend ? `${oordeel || `over ${trend.dagen} dagen`}${doel ? `, doel ${plusMin(doel)}` : ""}` : "Nog te weinig metingen voor een trend",
+                    oordeel ? (goed ? "goed" : "matig") : "", oordeel ? (goed ? "goed" : "matig") : "")}
+                ${cijferRij(`Sinds ${mooiDatum(eerste.datum, false)}`, plusMin(nu.gem - eerste.gem, 1), "kg")}
+            </ul>` : ""}
 
             ${state.gewicht.length > 1 ? `
-            <section class="paneel grafiek-paneel">
-                <div class="segment" role="group" aria-label="Periode">
-                    ${[[30, "30 dagen"], [90, "90 dagen"], [365, "Jaar"], [0, "Alles"]].map(([n, l]) =>
+            <div class="blok-kop"><h2 class="kopje">Verloop</h2>
+                <div class="segment klein" role="group" aria-label="Periode">
+                    ${[[30, "30 d"], [90, "90 d"], [365, "Jaar"], [0, "Alles"]].map(([n, l]) =>
                         `<button aria-pressed="${state.weegBereik === n}" data-actie="weeg-bereik" data-n="${n}">${l}</button>`).join("")}
-                </div>
-                <div class="grafiek"><canvas id="grafiek-gewicht" aria-label="Grafiek van je gewicht en 7-daags gemiddelde"></canvas></div>
-            </section>` : ""}
+                </div></div>
+            <div class="grafiek"><canvas id="grafiek-gewicht" aria-label="Grafiek van je gewicht en 7-daags gemiddelde"></canvas></div>` : ""}
 
             ${state.gewicht.length ? `
             <h2 class="kopje">Metingen</h2>
@@ -1158,15 +1168,18 @@
                 ${state.gewicht.slice(state.meerMetingen ? 0 : -10).reverse().map((g) => {
                     const i = state.gewicht.indexOf(g);
                     const v = i > 0 ? Number(g.kg) - Number(state.gewicht[i - 1].kg) : null;
-                    return `<li>
-                        <span class="m-datum">${mooiDatum(g.datum)}</span>
-                        <span class="m-kg">${getal(g.kg, 2)}</span>
-                        <span class="m-delta ${v == null ? "" : v > 0 ? "up" : v < 0 ? "down" : ""}">${v == null ? "" : plusMin(v, 1)}</span>
-                        <button class="knop-icoon" data-actie="weg-gewicht" data-datum="${g.datum}" aria-label="Meting van ${mooiDatum(g.datum)} verwijderen">${ico("x")}</button>
+                    const open = state.metingOpen === g.datum;
+                    return `<li class="${open ? "open" : ""}">
+                        <button class="m-rij" data-actie="meting" data-datum="${g.datum}" aria-expanded="${open}">
+                            <span class="m-datum">${mooiDatum(g.datum)}</span>
+                            <span class="m-kg">${getal(g.kg, 2)}</span>
+                            <span class="m-delta">${v == null ? "" : plusMin(v, 1)}</span>
+                        </button>
+                        ${open ? `<button class="knop knop-klein knop-gevaar" data-actie="weg-gewicht" data-datum="${g.datum}">Verwijderen</button>` : ""}
                     </li>`;
                 }).join("")}
             </ul>
-            ${state.gewicht.length > 10 && !state.meerMetingen ? `<button class="knop breed meer" data-actie="meer-metingen">Alle ${state.gewicht.length} metingen tonen</button>` : ""}` : `<p class="leeg">Weeg je elke ochtend op hetzelfde moment, na het opstaan. Na een week zie je hier je trend.</p>`}`;
+            ${state.gewicht.length > 10 && !state.meerMetingen ? `<button class="knop-link meer" data-actie="meer-metingen">Alle ${state.gewicht.length} metingen tonen</button>` : ""}` : `<p class="leeg">Weeg je elke ochtend op hetzelfde moment, na het opstaan. Na een week zie je hier je trend.</p>`}`;
     }
 
     function stijlGrafiek() {
@@ -1345,9 +1358,7 @@
     function viewStats() {
         if (state.statsOef && oef(state.statsOef)) return viewStatsDetail(oef(state.statsOef));
         if (!gedaneTrainingen().length) return `<p class="leeg">Log eerst een paar trainingen. Daarna zie je hier hoe vaak je gaat en hoe je vooruitgaat.</p>`;
-        const seg = `<div class="segment" role="group" aria-label="Stats">
-            <button aria-pressed="${state.statsTab !== "oefeningen"}" data-actie="stats-tab" data-n="overzicht">Overzicht</button>
-            <button aria-pressed="${state.statsTab === "oefeningen"}" data-actie="stats-tab" data-n="oefeningen">Per oefening</button></div>`;
+        const seg = subtabs("stats-tab", [["overzicht", "Overzicht"], ["oefeningen", "Per oefening"]], state.statsTab === "oefeningen" ? "oefeningen" : "overzicht", "Stats");
         return seg + (state.statsTab === "oefeningen" ? viewStatsOefeningen() : viewOverzicht());
     }
 
@@ -1356,14 +1367,14 @@
         const kanTerug = p.soort !== "alles" && periodeBereik(periodeStap(p, -1)).eind >= eerste;
         const kanVerder = p.soort !== "alles" && !b.loopt;
         return `<div class="periode">
-            <div class="segment" role="group" aria-label="Periode">
+            <div class="periode-nav">
+                <b>${esc(b.label)}</b>
+                ${p.soort === "alles" ? "" : `<button class="knop-icoon" data-actie="periode-stap" data-n="-1" aria-label="Vorige periode" ${kanTerug ? "" : "disabled"}>${ico("terug")}</button>
+                <button class="knop-icoon" data-actie="periode-stap" data-n="1" aria-label="Volgende periode" ${kanVerder ? "" : "disabled"}>${ico("pijl")}</button>`}
+            </div>
+            <div class="segment klein" role="group" aria-label="Soort periode">
                 ${[["maand", "Maand"], ["jaar", "Jaar"], ["alles", "Alles"]].map(([s, l]) =>
                     `<button aria-pressed="${p.soort === s}" data-actie="periode-soort" data-n="${s}">${l}</button>`).join("")}
-            </div>
-            <div class="periode-nav">
-                <button class="knop-icoon" data-actie="periode-stap" data-n="-1" aria-label="Vorige periode" ${kanTerug ? "" : "disabled"}>${ico("terug")}</button>
-                <b>${esc(b.label)}</b>
-                <button class="knop-icoon" data-actie="periode-stap" data-n="1" aria-label="Volgende periode" ${kanVerder ? "" : "disabled"}>${ico("pijl")}</button>
             </div>
         </div>`;
     }
@@ -1433,9 +1444,7 @@
 
         const tegel = (label, waarde, was, eenheid = "") => {
             const pct = heeftVorig && was ? procent(waarde, was) : null;
-            return `<div class="tegel"><span class="t-label">${label}</span>
-                <b class="t-waarde">${typeof waarde === "number" ? duizend(waarde) : waarde}${eenheid ? `<small> ${eenheid}</small>` : ""}</b>
-                ${pct != null ? `<span class="t-sub ${deltaKlasse(pct)}">${deltaTekst(pct)}</span>` : ""}</div>`;
+            return cijferRij(label, typeof waarde === "number" ? duizend(waarde) : waarde, eenheid, pct != null ? deltaTekst(pct) : "", pct != null ? deltaKlasse(pct) : "", "", true);
         };
         const kort = (d) => mooiDatum(d, false);
         const vergelijkTekst = !vb ? "" : !heeftVorig ? "" : b.loopt
@@ -1445,7 +1454,7 @@
         return `
             ${periodeKiezer(p, b)}
 
-            <section class="paneel">
+            <section class="blok">
                 <div class="freq-kop">
                     <p class="freq-getal"><b>${cijfers.keer}</b></p>
                     <p class="freq-tekst">keer getraind<br><span>gemiddeld ${getal(gemPerWeek, 1)} per week${doel ? `, je doel is ${doel}` : ""}</span></p>
@@ -1455,8 +1464,8 @@
                     <div class="chips">${[2, 3, 4, 5, 6].map((n) => `<button class="chip" data-actie="trainingdoel" data-n="${n}">${n}×</button>`).join("")}</div></div>`}
             </section>
 
-            <section class="paneel">
-                <h2 class="paneel-titel">Sets per spiergroep per week<span>gemiddeld over ${p.soort === "alles" ? "alles" : b.label}${b.vanaf > b.van ? ` (sinds ${kort(b.vanaf)})` : ""}</span></h2>
+            <section class="blok">
+                <h2 class="kopje">Sets per spiergroep<span>per week, gemiddeld over ${p.soort === "alles" ? "alles" : b.label}${b.vanaf > b.van ? ` (sinds ${kort(b.vanaf)})` : ""}. Groen is 10 tot 20, de richtlijn voor groei.</span></h2>
                 <ul class="spierdoel">${groepen.map(({ g, perWeek }) => {
                     const status = perWeek >= 10 ? (perWeek > 20 ? "veel" : "goed") : perWeek > 0 ? "weinig" : "geen";
                     const label = { veel: "veel", goed: "goed", weinig: "te weinig", geen: "niet gedaan" }[status];
@@ -1467,11 +1476,10 @@
                         <span class="sd-balk" aria-hidden="true"><span style="width:${Math.min(100, perWeek / 20 * 100).toFixed(1)}%"></span></span>
                     </li>`;
                 }).join("")}</ul>
-                <p class="voetnoot">Groen vlak = 10 tot 20 sets per week, de vuistregel voor spiergroei. De balk loopt tot 20.</p>
             </section>
 
-            ${prPerOef.length ? `<section class="paneel">
-                <h2 class="paneel-titel">Records</h2>
+            ${prPerOef.length ? `<section class="blok">
+                <h2 class="kopje">Records</h2>
                 <ul class="records">${prPerOef.slice(0, 6).map(({ s, t }) => `<li style="--spier:${spierKleur(oef(s.oefening_id).spiergroep)}">
                     <span class="spier-stip"></span>
                     <span class="r-naam">${esc(oef(s.oefening_id).naam)}<small>${relDatum(t.datum)}</small></span>
@@ -1479,13 +1487,15 @@
                 </li>`).join("")}</ul>
             </section>` : ""}
 
-            <h2 class="kopje maand-kop">Totaal${vergelijkTekst ? `<span>${vergelijkTekst}</span>` : ""}</h2>
-            <div class="tegels twee">
-                ${tegel("Trainingen", cijfers.keer, vorig && vorig.keer)}
-                ${tegel("Sets", cijfers.sets, vorig && vorig.sets)}
-                ${tegel("Volume", cijfers.volume, vorig && vorig.volume, "kg")}
-                ${cijfers.duur ? tegel("Gemiddelde duur", Math.round(cijfers.duur), vorig && vorig.duur, "min") : `<div class="tegel"><span class="t-label">Gemiddelde duur</span><b class="t-waarde">–</b></div>`}
-            </div>`;
+            <section class="blok">
+                <h2 class="kopje">Totaal${vergelijkTekst ? `<span>${vergelijkTekst}</span>` : ""}</h2>
+                <ul class="cijfers">
+                    ${tegel("Trainingen", cijfers.keer, vorig && vorig.keer)}
+                    ${tegel("Sets", cijfers.sets, vorig && vorig.sets)}
+                    ${tegel("Volume", cijfers.volume, vorig && vorig.volume, "kg")}
+                    ${cijfers.duur ? tegel("Gemiddelde duur", Math.round(cijfers.duur), vorig && vorig.duur, "min") : cijferRij("Gemiddelde duur", "–")}
+                </ul>
+            </section>`;
     }
 
     function viewStatsOefeningen() {
@@ -1506,7 +1516,7 @@
                     <span class="stat-cijfer"><b>${Math.round(nu.e1rm)}${nu.lg ? "<small> reps</small>" : ""}</b><span class="${deltaKlasse(g)}">${g == null ? "" : deltaTekst(g)}</span></span>
                 </button></li>`;
             }).join("")}</ul>
-            <p class="voetnoot">Het getal is je geschatte 1-rep max uit je beste set van de laatste keer, of je meeste reps bij oefeningen met alleen je lichaamsgewicht. Het percentage is de verandering over ongeveer 4 weken.</p>`;
+            <p class="voetnoot">Geschatte 1-rep max van je beste set (bij pull-ups e.d. je meeste reps), en de verandering over ongeveer 4 weken.</p>`;
     }
 
     function viewStatsDetail(o) {
@@ -1520,16 +1530,15 @@
         const groei = rijen.length > 1 ? procent(laatste.e1rm, eerste.e1rm) : null;
 
         return `
-            <div class="tegels twee">
-                ${lg ? `<div class="tegel"><span class="t-label">Meeste reps</span><b class="t-waarde">${besteE.reps}<small> reps</small></b><span class="t-sub">alleen lichaamsgewicht</span></div>
-                <div class="tegel"><span class="t-label">Laatste keer</span><b class="t-waarde">${rijen[rijen.length - 1].e1rm}<small> reps</small></b><span class="t-sub">${relDatum(rijen[rijen.length - 1].datum)}</span></div>`
-                : `<div class="tegel"><span class="t-label">Beste set (e1RM)</span><b class="t-waarde">${Math.round(score(besteE))}<small> kg</small></b><span class="t-sub">${getal(besteE.gewicht, 2)} kg × ${besteE.reps}</span></div>
-                <div class="tegel"><span class="t-label">Zwaarste gewicht</span><b class="t-waarde">${getal(zwaarste.gewicht, 2)}<small> kg</small></b><span class="t-sub">× ${zwaarste.reps} reps</span></div>`}
-                <div class="tegel"><span class="t-label">Groei sinds ${mooiDatum(eerste.datum, false)}</span><b class="t-waarde ${groei > 0 ? "goed" : ""}">${groei == null ? "–" : deltaTekst(groei)}</b></div>
-                <div class="tegel"><span class="t-label">Gedaan</span><b class="t-waarde">${rijen.length}<small> keer</small></b><span class="t-sub">${alleSets.length} sets</span></div>
-            </div>
-            <section class="paneel"><div class="grafiek"><canvas id="grafiek-oef" aria-label="Grafiek van je geschatte 1-rep max en zwaarste gewicht"></canvas></div></section>
-            <p class="voetnoot">e1RM is je geschatte 1-rep max (Epley). Stijgt die lijn, dan werkt je progressive overload, ook als het gewicht nog gelijk is en alleen de reps omhoog gaan.</p>
+            <ul class="cijfers">
+                ${lg ? `${cijferRij("Meeste reps", besteE.reps, "reps", "alleen lichaamsgewicht")}
+                    ${cijferRij("Laatste keer", rijen[rijen.length - 1].e1rm, "reps", relDatum(rijen[rijen.length - 1].datum))}`
+                : `${cijferRij("Beste set", Math.round(score(besteE)), "kg", `geschatte 1-rep max uit ${getal(besteE.gewicht, 2)} kg × ${besteE.reps}`)}
+                    ${cijferRij("Zwaarste gewicht", getal(zwaarste.gewicht, 2), "kg", `× ${zwaarste.reps} reps`)}`}
+                ${cijferRij(`Groei sinds ${mooiDatum(eerste.datum, false)}`, groei == null ? "–" : deltaTekst(groei), "", "", "", groei > 0 ? "goed" : "")}
+                ${cijferRij("Gedaan", rijen.length, "keer", `${alleSets.length} sets`)}
+            </ul>
+            <div class="grafiek grafiek-detail"><canvas id="grafiek-oef" aria-label="Grafiek van je geschatte 1-rep max en zwaarste gewicht"></canvas></div>
             <h2 class="kopje">Per keer</h2>
             <ul class="sessies">${[...rijen].reverse().map((r) => `<li>
                 <span class="m-datum">${mooiDatum(r.datum)}</span>
@@ -1814,6 +1823,7 @@
             case "weg-gewicht": verwijderGewicht(el.dataset.datum); break;
             case "lichaam": state.lichaam = el.dataset.n; render(); break;
             case "foto-vandaag": state.tab = "weegschaal"; state.lichaam = "fotos"; render(); if (window.GymFotos) window.GymFotos.openCamera(); break;
+            case "meting": state.metingOpen = state.metingOpen === el.dataset.datum ? null : el.dataset.datum; render(); break;
             case "meer-metingen": state.meerMetingen = true; render(); break;
             case "weeg-bereik": state.weegBereik = Number(el.dataset.n); render(); break;
             case "weeg-bewerk": state.weegBewerk = true; render(); focusEerste("input[name=kg]"); break;
@@ -1869,6 +1879,12 @@
 
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && state.sheet) { state.sheet = null; renderSheet(); }
+    });
+
+    // Getal aantikken = alles selecteren, zodat je meteen het nieuwe getal typt.
+    document.addEventListener("focusin", (e) => {
+        const el = e.target;
+        if (el.matches && el.matches('input[type="number"]')) setTimeout(() => { try { el.select(); } catch { /* sommige browsers */ } }, 0);
     });
 
     document.addEventListener("input", (e) => {

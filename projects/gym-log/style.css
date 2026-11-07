@@ -860,3 +860,74 @@ a.knop { text-decoration: none; }
 .mb.later .mb-staaf { background: transparent; box-shadow: inset 0 0 0 1px var(--lijn-zacht); }
 .mb-m { font-size: 11px; color: var(--krijt-3); line-height: 1.2; text-align: center; }
 .mb-m b { font-weight: 600; color: var(--krijt-2); }
+
+/* ======================================================================
+   Afwerking: logboek in plaats van dashboard, en hoe het aanvoelt
+   ====================================================================== */
+
+/* Aanraken: geen blauwe flits, wel zichtbare reactie onder je vinger. */
+html { -webkit-tap-highlight-color: transparent; }
+button, a, label.knop, .chip, summary { -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+.rij:active, .stat-rij:active, .oef.dicht:active, .kies:active, .oef-instelling:active,
+.groep-kop:active, .hist-rij:active, .m-rij:active, .foto-grid button:active { background-color: var(--vlak-2); }
+.knop:active { background-color: var(--lijn); }
+.knop-hoofd:active { background-color: #d9d6cf; }
+.chip:active, .segment button:active, .subtabs button:active { opacity: 0.75; }
+
+/* Tweede niveau als tekst-tabs onder de paginatitel. */
+.subtabs { display: flex; gap: 26px; margin: 0 0 20px; border-bottom: 1px solid var(--lijn-zacht); }
+.subtabs button {
+    position: relative; background: none; border: 0; cursor: pointer;
+    padding: 6px 0 12px; font: inherit; font-size: 16px; font-weight: 600; color: var(--krijt-3);
+}
+.subtabs button[aria-pressed="true"] { color: var(--krijt); }
+.subtabs button[aria-pressed="true"]::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2.5px; border-radius: 2px; background: var(--krijt);
+}
+
+/* Kleine keuzeknoppen (periode, bereik grafiek). */
+.segment.klein { display: inline-flex; padding: 2px; margin: 0; }
+.segment.klein button { flex: none; min-height: 30px; padding: 0 12px; font-size: 13px; }
+
+/* Blokken zonder kaart: kop, inhoud, ruimte. */
+.blok { margin-bottom: 30px; }
+.blok > .kopje:first-child { margin-top: 0; }
+.kopje span { display: block; font-size: 13px; font-weight: 400; color: var(--krijt-3); margin-top: 3px; line-height: 1.4; max-width: 52ch; }
+.blok-kop { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 30px 0 12px; }
+.blok-kop .kopje { margin: 0; }
+
+/* Logboekregels: label links, cijfer rechts, dunne lijnen. */
+.cijfers { list-style: none; border-top: 1px solid var(--lijn); margin-bottom: 6px; }
+.cijfers li {
+    display: grid; grid-template-columns: 1fr auto; align-items: baseline; column-gap: 12px;
+    padding: 12px 0 11px; border-bottom: 1px solid var(--lijn-zacht);
+}
+.lc-label { font-size: 15px; color: var(--krijt-2); }
+.lc-waarde { font-stretch: var(--smal); font-weight: 800; font-size: 26px; line-height: 1.05; text-align: right; }
+.lc-waarde small { font-stretch: 100%; font-size: 13px; font-weight: 500; color: var(--krijt-3); }
+.lc-sub { grid-column: 1 / -1; font-size: 13px; color: var(--krijt-3); text-align: right; margin-top: 1px; }
+.lc-sub.up, .lc-sub.goed { color: var(--groen); }
+.lc-sub.down { color: var(--zacht-rood); }
+.lc-sub.matig { color: var(--oranje); }
+
+/* Periode: naam groot links, pijltjes rechts, soort eronder. */
+.periode { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 20px; }
+.periode-nav { display: flex; align-items: center; gap: 2px; width: 100%; }
+.periode-nav b { flex: 1; font-stretch: 85%; font-weight: 800; font-size: 24px; }
+
+/* Grafieken zonder kaart */
+.grafiek { margin: 0 -4px; }
+.grafiek-detail { margin: 18px -4px 6px; }
+
+/* Metingen: rij aantikken om te verwijderen. */
+.metingen li { display: flex; align-items: center; gap: 8px; }
+.m-rij {
+    flex: 1; display: grid; grid-template-columns: 1fr auto 60px; gap: 10px; align-items: center;
+    min-height: 50px; padding: 0 2px; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.metingen li.open .m-rij .m-delta { visibility: hidden; }
+.meer { display: block; margin: 14px auto 0; }
+.cijfers li.naast { grid-template-columns: 1fr auto auto; }
+.lc-naast { font-size: 13px; font-weight: 600; color: var(--krijt-3); }
+.lc-naast.up { color: var(--groen); }
+.lc-naast.down { color: var(--zacht-rood); }
