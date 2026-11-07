@@ -34,10 +34,10 @@ Persoonlijk trainingslogboek: sets, reps en gewicht per oefening, dagelijkse wee
   **Foto's staan alleen op het apparaat** (IndexedDB, per account) en gaan nooit naar Supabase. Maak daarom af en toe
   een back-up (zip, via delen of downloaden); die zet je ook weer terug. De app herinnert je eraan na 30 dagen.
 - **Lichaam > Gewicht**: een meting per dag, met 7-daags gemiddelde, trend per week vergeleken met je weekdoel, en een grafiek.
-- **Stats > Overzicht**: hoe vaak je gaat (kalender van 12 weken, deze week tegen je weekdoel), een lijst "Kan beter" en
-  "Gaat goed" (spiergroepen die achterblijven of lang niet getraind zijn, oefeningen die stilstaan of stijgen, gewicht tegen
-  je doel, wegen, foto's), sets per spiergroep tegen de 10–20 richtlijn, laatste records en deze maand tegen dezelfde
-  periode vorige maand.
+- **Stats > Overzicht**: kies een maand, een jaar of alles (met pijltjes om te bladeren). Je ziet hoe vaak je ging
+  (maandkalender met keer per week tegen je weekdoel, of per maand een staafje; tik om naar die maand te gaan), wat goed ging
+  (weken doel gehaald, records, grootste stijgers, gewicht), sets per spiergroep tegen de 10–20 richtlijn, records en totalen
+  vergeleken met de periode ervoor (bij een lopende maand: dezelfde dagen van vorige maand).
 - **Stats > Per oefening**: sets per spiergroep per week, en per oefening een minigrafiek en groei over ~4 weken. Tik voor details.
   Oefeningen zonder extra gewicht (pull-ups) worden in reps gemeten in plaats van geschatte 1RM.
 - **Instellingen**: je doelen (trainingen per week, lichaamsgewicht per week) staan bij je account. Oefeningen beheer je op een

@@ -48,6 +48,7 @@
         weegBewerk: false,
         lichaam: "gewicht",
         statsTab: "overzicht",          // "overzicht" of "oefeningen"
+        periode: { soort: "maand", jaar: new Date().getFullYear(), maand: new Date().getMonth() },
         instPagina: null,               // null of "oefeningen"
         oefZoek: "",
         openGroepen: new Set(),             // "gewicht" of "fotos" in de tab Lichaam
@@ -1269,230 +1270,239 @@
         return d.length ? d.reduce((a, b) => (a < b ? a : b)) : null;
     }
 
-    // Sets per spiergroep per week over de laatste 4 weken (of korter als je net begint).
-    function setsPerGroep() {
-        const per = {};
-        for (const s of state.sets) {
-            const t = training(s.training_id);
-            const o = oef(s.oefening_id);
-            if (!t || !o || dagenTussen(t.datum, vandaag()) >= 28) continue;
-            per[o.spiergroep] = (per[o.spiergroep] || 0) + 1;
-        }
+    // ---------- Periode (maand, jaar of alles) ----------
+
+    const MAANDNAMEN = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
+    const pad2 = (n) => String(n).padStart(2, "0");
+    function laatsteDag(j, m) { return new Date(j, m + 1, 0).getDate(); }   // m: 0-11
+
+    // Begin en eind van een periode; "tot" wordt nooit later dan vandaag.
+    function periodeBereik(p) {
         const eerste = eersteTrainDag() || vandaag();
-        const dagen = Math.min(28, dagenTussen(eerste, vandaag()) + 1);
-        const weken = Math.max(1, dagen / 7);
-        const periode = dagen >= 28 ? "gemiddeld over de laatste 4 weken"
-            : dagen <= 7 ? `sinds je begon op ${mooiDatum(eerste, false)}`
-            : `gemiddeld sinds ${mooiDatum(eerste, false)}`;
-        const groepen = SPIERGROEPEN.filter((g) => HOOFDGROEPEN.includes(g) || per[g]);
-        return { groepen: groepen.map((g) => ({ g, perWeek: (per[g] || 0) / weken })), periode, weken };
-    }
-
-    function laatstGetraind(groep) {
-        let laatst = null;
-        for (const s of state.sets) {
-            const o = oef(s.oefening_id);
-            const t = training(s.training_id);
-            if (o && t && o.spiergroep === groep && (!laatst || t.datum > laatst)) laatst = t.datum;
+        let van, eind, label;
+        if (p.soort === "maand") {
+            van = `${p.jaar}-${pad2(p.maand + 1)}-01`;
+            eind = `${p.jaar}-${pad2(p.maand + 1)}-${pad2(laatsteDag(p.jaar, p.maand))}`;
+            label = `${MAANDNAMEN[p.maand]} ${p.jaar}`;
+        } else if (p.soort === "jaar") {
+            van = `${p.jaar}-01-01`; eind = `${p.jaar}-12-31`; label = String(p.jaar);
+        } else {
+            van = eerste; eind = vandaag(); label = `sinds ${mooiDatum(eerste, false)}`;
         }
-        return laatst;
+        const tot = eind < vandaag() ? eind : vandaag();
+        const loopt = eind >= vandaag();          // periode is nog bezig
+        const vanaf = van > eerste ? van : eerste; // voor gemiddelden: niet vóór je begon
+        return { van, eind, tot, vanaf, loopt, label };
     }
 
-    // Oefeningen die de laatste 3 keer niet beter werden dan daarvoor.
-    function stilstaand() {
+    function periodeStap(p, stap) {
+        if (p.soort === "maand") {
+            const d = new Date(p.jaar, p.maand + stap, 1);
+            return { soort: "maand", jaar: d.getFullYear(), maand: d.getMonth() };
+        }
+        if (p.soort === "jaar") return { ...p, jaar: p.jaar + stap };
+        return p;
+    }
+
+    // Dezelfde stukje periode ervoor (bij een lopende maand: 1 t/m vandaag van vorige maand).
+    function vorigePeriode(p, b) {
+        if (p.soort === "alles") return null;
+        const v = periodeStap(p, -1);
+        const vb = periodeBereik(v);
+        if (!b.loopt) return { ...vb, tot: vb.eind, label: vb.label };
+        const dagen = dagenTussen(b.van, b.tot);
+        const t = parseDatum(vb.van); t.setDate(t.getDate() + dagen);
+        const tot = datumStr(t) > vb.eind ? vb.eind : datumStr(t);
+        return { ...vb, tot };
+    }
+
+    const binnen = (d, b) => d >= b.van && d <= b.tot;
+
+    function periodeCijfers(b) {
+        const tr = gedaneTrainingen().filter((t) => binnen(t.datum, b));
+        const sets = tr.flatMap((t) => setsVan(t.id));
+        const duren = tr.map((t) => duurMinuten(setsVan(t.id))).filter(Boolean);
+        return {
+            keer: new Set(tr.map((t) => t.datum)).size, sets: sets.length, volume: volumeVan(sets),
+            duur: duren.length ? duren.reduce((a, x) => a + x, 0) / duren.length : null,
+        };
+    }
+
+    function weekTellingen(b) {
+        const dagen = trainDagen();
         const uit = [];
-        for (const o of state.oefeningen) {
-            const r = statsPerTraining(o.id);
-            if (r.length < 4) continue;
-            const laatste3 = r.slice(-3), eerder = r.slice(0, -3);
-            if (dagenTussen(laatste3[2].datum, vandaag()) > 21) continue;
-            const best3 = Math.max(...laatste3.map((x) => x.e1rm));
-            const bestEerder = Math.max(...eerder.map((x) => x.e1rm));
-            if (best3 <= bestEerder + 0.01) {
-                const s = laatste3[2].sets.reduce((b, x) => (score(x) > score(b) ? x : b));
-                uit.push({ o, s });
-            }
+        for (let m = parseDatum(maandagVan(b.vanaf)); datumStr(m) <= b.tot; m.setDate(m.getDate() + 7)) {
+            let n = 0;
+            for (let i = 0; i < 7; i++) { const d = new Date(m); d.setDate(m.getDate() + i); if (dagen.has(datumStr(d))) n++; }
+            uit.push({ ma: datumStr(m), n, bezig: datumStr(m) === maandagVan(vandaag()) });
         }
         return uit;
     }
 
-    function inzichten() {
-        const kanBeter = [], gaatGoed = [];
-        const dagen = trainDagen();
-        const eerste = eersteTrainDag();
+    // Sets per spiergroep per week binnen de periode.
+    function setsPerGroep(b) {
+        const per = {};
+        for (const s of state.sets) {
+            const t = training(s.training_id);
+            const o = oef(s.oefening_id);
+            if (!t || !o || !binnen(t.datum, b)) continue;
+            per[o.spiergroep] = (per[o.spiergroep] || 0) + 1;
+        }
+        const weken = Math.max(1, (dagenTussen(b.vanaf, b.tot) + 1) / 7);
+        const groepen = SPIERGROEPEN.filter((g) => HOOFDGROEPEN.includes(g) || per[g]);
+        return groepen.map((g) => ({ g, perWeek: (per[g] || 0) / weken }));
+    }
 
-        // Trainingsdoel
+    // Wat ging goed in deze periode.
+    function hoogtepunten(b, wekenTel) {
+        const uit = [];
         const doel = trainingDoel();
         if (doel) {
-            const ma = parseDatum(maandagVan(vandaag()));
-            let reeks = 0;
-            for (let i = 1; i <= 52; i++) {
-                const start = new Date(ma); start.setDate(ma.getDate() - 7 * i);
-                const s = datumStr(start);
-                if (eerste && s < maandagVan(eerste)) break;
-                const n = [...dagen].filter((d) => maandagVan(d) === s).length;
-                if (n >= doel) reeks++; else break;
-            }
-            if (reeks >= 2) gaatGoed.push({ t: `${reeks} weken op rij je doel van ${doel}× gehaald` });
+            const tellen = wekenTel.filter((w) => !w.bezig || w.n >= doel);
+            const gehaald = tellen.filter((w) => w.n >= doel).length;
+            if (tellen.length && gehaald) uit.push({ t: `${gehaald} van de ${tellen.length} weken je doel van ${doel}× gehaald` });
         }
-
-        // Spiergroepen: lang niet getraind apart noemen, de rest onder 10 sets samenvatten.
-        const { groepen } = setsPerGroep();
-        const genoeg = [], weinig = [], lang = [];
-        for (const { g, perWeek } of groepen.filter((x) => HOOFDGROEPEN.includes(x.g)).sort((a, b) => a.perWeek - b.perWeek)) {
-            if (perWeek >= 10) { genoeg.push(g); continue; }
-            const l = laatstGetraind(g);
-            if (!l || dagenTussen(l, vandaag()) >= 8) lang.push({ g, l });
-            else weinig.push({ g, perWeek });
+        const prs = state.sets.filter((s) => { const t = training(s.training_id); return t && binnen(t.datum, b) && isPr(s); });
+        if (prs.length) uit.push({ t: `${prs.length} ${prs.length === 1 ? "record" : "records"}` });
+        // Grootste stijgers: eerste tegen laatste keer binnen de periode.
+        const stijgers = state.oefeningen.map((o) => {
+            const r = statsPerTraining(o.id).filter((x) => binnen(x.datum, b));
+            return r.length >= 2 ? { o, g: procent(r[r.length - 1].e1rm, r[0].e1rm), n: r.length } : null;
+        }).filter((x) => x && x.g >= 3).sort((a, b2) => b2.g - a.g);
+        for (const x of stijgers.slice(0, 3)) uit.push({ t: `${x.o.naam} ${deltaTekst(x.g)}`, s: `Geschatte 1-rep max, eerste tegen laatste keer (${x.n} keer gedaan).`, kleur: spierKleur(x.o.spiergroep) });
+        // Lichaamsgewicht: 7-daags gemiddelde aan het begin en eind van de periode.
+        const gem = gemiddelden().filter((g) => binnen(g.datum, b));
+        if (gem.length >= 2 && dagenTussen(gem[0].datum, gem[gem.length - 1].datum) >= 7) {
+            const verschil = gem[gem.length - 1].gem - gem[0].gem;
+            const perWeek = verschil / dagenTussen(gem[0].datum, gem[gem.length - 1].datum) * 7;
+            const wdoel = doelPerWeek();
+            uit.push({ t: `Gewicht ${plusMin(verschil, 1)} kg`, s: `${plusMin(perWeek)} kg per week${wdoel ? `, je doel is ${plusMin(wdoel)}` : ""}.` });
         }
-        const lijstje = (a) => a.join(", ").replace(/, ([^,]*)$/, " en $1");
-        const sindsTekst = ({ g, l }) => l ? `${hoofdletter(g)} ${dagenTussen(l, vandaag())} dagen` : `${hoofdletter(g)} nog nooit`;
-        if (lang.length > 2) {
-            kanBeter.push({ t: `${hoofdletter(lijstje(lang.map((x) => x.g)))} al meer dan een week niet getraind`, s: `${lang.map(sindsTekst).join(", ")}.` });
-        } else {
-            for (const x of lang) kanBeter.push(x.l
-                ? { t: `${hoofdletter(x.g)} ${dagenTussen(x.l, vandaag())} dagen niet getraind`, s: `Laatst op ${mooiDatum(x.l)}.`, kleur: spierKleur(x.g) }
-                : { t: `${hoofdletter(x.g)} nog niet getraind`, s: "Sinds je begon met loggen.", kleur: spierKleur(x.g) });
-        }
-        if (weinig.length) kanBeter.push({
-            t: `${hoofdletter(lijstje(weinig.map((x) => x.g)))} onder de 10 sets per week`,
-            s: `${weinig.map((x) => `${hoofdletter(x.g)} ${getal(x.perWeek, 1)}`).join(", ")}. Richtlijn voor groei is 10 tot 20.`,
-        });
-        if (genoeg.length) gaatGoed.push({ t: `${hoofdletter(lijstje(genoeg))} ${genoeg.length === 1 ? "zit" : "zitten"} op 10 of meer sets per week` });
-
-        // Stilstand en groei per oefening
-        for (const { o, s } of stilstaand().slice(0, 2)) {
-            kanBeter.push({ t: `${o.naam} staat 3 keer stil`, s: `Beste set de laatste keer: ${getal(s.gewicht, 2)} kg × ${s.reps}. Een lichtere week of een andere rep-range kan helpen.`, kleur: spierKleur(o.spiergroep) });
-        }
-        const stijgers = state.oefeningen.map((o) => ({ o, r: statsPerTraining(o.id) }))
-            .filter((x) => x.r.length >= 2 && dagenTussen(x.r[x.r.length - 1].datum, vandaag()) <= 21)
-            .map((x) => ({ ...x, g: groei4w(x.r) })).filter((x) => x.g >= 3).sort((a, b) => b.g - a.g);
-        for (const x of stijgers.slice(0, 2)) gaatGoed.push({ t: `${x.o.naam} ${deltaTekst(x.g)}`, s: "Geschatte 1-rep max, ongeveer 4 weken.", kleur: spierKleur(x.o.spiergroep) });
-
-        // Records deze maand
-        const maand = vandaag().slice(0, 7);
-        const prs = state.sets.filter((s) => { const t = training(s.training_id); return t && t.datum.startsWith(maand) && isPr(s); });
-        if (prs.length) gaatGoed.push({ t: `${prs.length} ${prs.length === 1 ? "record" : "records"} deze maand` });
-
-        // Lichaamsgewicht
-        const trend = trendPerWeek();
-        const wdoel = doelPerWeek();
-        if (trend && wdoel) {
-            const afw = trend.perWeek - wdoel;
-            const marge = Math.max(0.15, Math.abs(wdoel) * 0.6);
-            const tekst = `${plusMin(trend.perWeek)} kg per week, je doel is ${plusMin(wdoel)}`;
-            if (Math.abs(afw) <= marge) gaatGoed.push({ t: "Je gewicht gaat volgens plan", s: tekst });
-            else kanBeter.push({ t: (wdoel > 0) === (afw > 0) ? "Je gewicht gaat sneller dan je doel" : "Je gewicht gaat langzamer dan je doel", s: tekst });
-        }
-        if (state.gewicht.length) {
-            const week = state.gewicht.filter((g) => dagenTussen(g.datum, vandaag()) < 7).length;
-            if (week < 4) kanBeter.push({ t: `${week} van de 7 dagen gewogen`, s: "Hoe vaker je weegt, hoe betrouwbaarder je trend." });
-        }
-
-        // Foto's
-        const f = window.GymFotos;
-        if (f && f.geladen() && f.heeftFotos()) {
-            const l = f.laatste();
-            const n = dagenTussen(l, vandaag());
-            if (n >= 3) kanBeter.push({ t: `${n} dagen geen foto`, s: "Elke dag een foto maakt je timelapse vloeiender." });
-        }
-        return { kanBeter: kanBeter.slice(0, 5), gaatGoed: gaatGoed.slice(0, 5) };
+        return uit;
     }
 
     function viewStats() {
         if (state.statsOef && oef(state.statsOef)) return viewStatsDetail(oef(state.statsOef));
-        if (!gedaneTrainingen().length) return `<p class="leeg">Log eerst een paar trainingen. Daarna zie je hier hoe vaak je gaat, wat goed gaat en wat achterblijft.</p>`;
+        if (!gedaneTrainingen().length) return `<p class="leeg">Log eerst een paar trainingen. Daarna zie je hier hoe vaak je gaat en hoe je vooruitgaat.</p>`;
         const seg = `<div class="segment" role="group" aria-label="Stats">
             <button aria-pressed="${state.statsTab !== "oefeningen"}" data-actie="stats-tab" data-n="overzicht">Overzicht</button>
             <button aria-pressed="${state.statsTab === "oefeningen"}" data-actie="stats-tab" data-n="oefeningen">Per oefening</button></div>`;
         return seg + (state.statsTab === "oefeningen" ? viewStatsOefeningen() : viewOverzicht());
     }
 
-    function viewOverzicht() {
+    function periodeKiezer(p, b) {
+        const eerste = eersteTrainDag() || vandaag();
+        const kanTerug = p.soort !== "alles" && periodeBereik(periodeStap(p, -1)).eind >= eerste;
+        const kanVerder = p.soort !== "alles" && !b.loopt;
+        return `<div class="periode">
+            <div class="segment" role="group" aria-label="Periode">
+                ${[["maand", "Maand"], ["jaar", "Jaar"], ["alles", "Alles"]].map(([s, l]) =>
+                    `<button aria-pressed="${p.soort === s}" data-actie="periode-soort" data-n="${s}">${l}</button>`).join("")}
+            </div>
+            <div class="periode-nav">
+                <button class="knop-icoon" data-actie="periode-stap" data-n="-1" aria-label="Vorige periode" ${kanTerug ? "" : "disabled"}>${ico("terug")}</button>
+                <b>${esc(b.label)}</b>
+                <button class="knop-icoon" data-actie="periode-stap" data-n="1" aria-label="Volgende periode" ${kanVerder ? "" : "disabled"}>${ico("pijl")}</button>
+            </div>
+        </div>`;
+    }
+
+    // Maandkalender: rijen zijn weken (ma t/m zo), met het aantal keer per week erachter.
+    function maandKalender(b, doel) {
         const dagen = trainDagen();
-        const doel = trainingDoel();
-        const ma = parseDatum(maandagVan(vandaag()));
-        const eerste = eersteTrainDag();
-
-        // 12 weken: kolommen van ma t/m zo.
-        const weken = [];
-        for (let i = 11; i >= 0; i--) {
-            const start = new Date(ma); start.setDate(ma.getDate() - 7 * i);
+        const rijen = [];
+        for (let m = parseDatum(maandagVan(b.van)); datumStr(m) <= b.eind; m.setDate(m.getDate() + 7)) {
             const cellen = [];
-            for (let d = 0; d < 7; d++) {
-                const dag = new Date(start); dag.setDate(start.getDate() + d);
-                const ds = datumStr(dag);
-                cellen.push({ ds, ja: dagen.has(ds), later: ds > vandaag(), vandaag: ds === vandaag(), voor: eerste && ds < eerste });
+            let n = 0;
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(m); d.setDate(m.getDate() + i);
+                const ds = datumStr(d);
+                const ja = dagen.has(ds);
+                if (ja) n++;
+                const buiten = ds < b.van || ds > b.eind;
+                cellen.push(`<span class="${ja ? "ja" : ""} ${buiten ? "buiten" : ""} ${ds === vandaag() ? "nu" : ""} ${ds > vandaag() ? "later" : ""}">${d.getDate()}</span>`);
             }
-            weken.push({ start: datumStr(start), n: cellen.filter((c) => c.ja).length, cellen });
+            const telt = datumStr(m) <= vandaag();
+            rijen.push(`<div class="mk-rij">${cellen.join("")}<i class="${doel && n >= doel ? "gehaald" : ""}">${telt ? `${n}×` : ""}</i></div>`);
         }
-        const dezeWeek = weken[11].n;
-        // Gemiddelde over volledige weken sinds je begon (max 8).
-        const volledig = weken.slice(0, 11).filter((w) => eerste && w.cellen[6].ds >= eerste).slice(-8);
-        const gem = volledig.length ? volledig.reduce((a, w) => a + w.n, 0) / volledig.length : null;
+        return `<div class="maandkal" role="img" aria-label="Trainingsdagen in ${esc(b.label)}">
+            <div class="mk-rij mk-kop" aria-hidden="true">${["ma", "di", "wo", "do", "vr", "za", "zo"].map((d) => `<span>${d}</span>`).join("")}<i></i></div>
+            ${rijen.join("")}</div>`;
+    }
 
-        const { kanBeter, gaatGoed } = inzichten();
-        const { groepen, periode } = setsPerGroep();
+    // Jaar en Alles: per maand een staafje met hoe vaak je ging. Tik = naar die maand.
+    function maandBalken(b) {
+        const dagen = [...trainDagen()];
+        const maanden = [];
+        for (let d = parseDatum(b.van.slice(0, 8) + "01"); datumStr(d) <= b.eind; d.setMonth(d.getMonth() + 1)) {
+            const key = datumStr(d).slice(0, 7);
+            const eerste = (eersteTrainDag() || vandaag()).slice(0, 7);
+            maanden.push({ j: d.getFullYear(), m: d.getMonth(), n: dagen.filter((x) => x.startsWith(key)).length, later: key > vandaag().slice(0, 7) || key < eerste });
+        }
+        const max = Math.max(1, ...maanden.map((x) => x.n));
+        const veel = maanden.length > 12;
+        return `<div class="maandbalken ${veel ? "scroll" : ""}" style="--n:${maanden.length}">
+            ${maanden.map((x, i) => `<button class="mb ${x.later ? "later" : ""}" data-actie="naar-maand" data-j="${x.j}" data-m="${x.m}" ${x.later ? "disabled" : ""}
+                aria-label="${MAANDNAMEN[x.m]} ${x.j}: ${x.n} keer">
+                <span class="mb-n">${x.later ? "" : x.n}</span>
+                <span class="mb-staaf"><span style="height:${(x.n / max * 100).toFixed(1)}%"></span></span>
+                <span class="mb-m">${MAANDEN[x.m].slice(0, veel ? 1 : 3)}${veel && (x.m === 0 || i === 0) ? `<br><b>${String(x.j).slice(2)}</b>` : ""}</span>
+            </button>`).join("")}
+        </div>`;
+    }
 
-        // Records: laatste 5.
-        const prs = state.sets.filter(isPr).map((s) => ({ s, t: training(s.training_id) })).filter((x) => x.t)
-            .sort((a, b) => b.t.datum.localeCompare(a.t.datum) || String(b.s.created_at).localeCompare(String(a.s.created_at)));
+    function viewOverzicht() {
+        const p = state.periode;
+        const b = periodeBereik(p);
+        const doel = trainingDoel();
+        const wekenTel = weekTellingen(b);
+        const cijfers = periodeCijfers(b);
+        const weken = Math.max(1, (dagenTussen(b.vanaf, b.tot) + 1) / 7);
+        const gemPerWeek = cijfers.keer / weken;
+        const vb = vorigePeriode(p, b);
+        const vorig = vb ? periodeCijfers(vb) : null;
+        const heeftVorig = vorig && vorig.keer > 0;
+        const groepen = setsPerGroep(b);
+        const hoog = hoogtepunten(b, wekenTel);
+
+        const prs = state.sets.map((s) => ({ s, t: training(s.training_id) }))
+            .filter((x) => x.t && binnen(x.t.datum, b) && isPr(x.s))
+            .sort((a, c) => c.t.datum.localeCompare(a.t.datum) || String(c.s.created_at).localeCompare(String(a.s.created_at)));
         const prPerOef = [];
         for (const x of prs) if (!prPerOef.some((y) => y.s.oefening_id === x.s.oefening_id)) prPerOef.push(x);
 
-        // Deze maand tegen vorige maand.
-        const nu = vandaag().slice(0, 7);
-        const vd = parseDatum(vandaag()); vd.setDate(1); vd.setMonth(vd.getMonth() - 1);
-        const vorig = datumStr(vd).slice(0, 7);
-        const totDag = Number(vandaag().slice(8));   // vergelijk 1 t/m vandaag met dezelfde dagen vorige maand
-        const maandCijfers = (m) => {
-            const tr = gedaneTrainingen().filter((t) => t.datum.startsWith(m) && Number(t.datum.slice(8)) <= totDag);
-            const sets = tr.flatMap((t) => setsVan(t.id));
-            const duren = tr.map((t) => duurMinuten(setsVan(t.id))).filter(Boolean);
-            return { keer: new Set(tr.map((t) => t.datum)).size, sets: sets.length, volume: volumeVan(sets), duur: duren.length ? duren.reduce((a, b) => a + b, 0) / duren.length : null };
-        };
-        const mNu = maandCijfers(nu), mVorig = maandCijfers(vorig);
-        const heeftVorig = mVorig.keer > 0;
-        const maandNaam = (m) => ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"][Number(m.slice(5)) - 1];
+
         const tegel = (label, waarde, was, eenheid = "") => {
-            const p = heeftVorig && was ? procent(waarde, was) : null;
+            const pct = heeftVorig && was ? procent(waarde, was) : null;
             return `<div class="tegel"><span class="t-label">${label}</span>
                 <b class="t-waarde">${typeof waarde === "number" ? duizend(waarde) : waarde}${eenheid ? `<small> ${eenheid}</small>` : ""}</b>
-                ${p != null ? `<span class="t-sub ${deltaKlasse(p)}">${deltaTekst(p)}</span>` : ""}</div>`;
+                ${pct != null ? `<span class="t-sub ${deltaKlasse(pct)}">${deltaTekst(pct)}</span>` : ""}</div>`;
         };
+        const kort = (d) => mooiDatum(d, false);
+        const vergelijkTekst = !vb ? "" : !heeftVorig ? "" : b.loopt
+            ? `${kort(b.van)} t/m ${kort(b.tot)}, vergeleken met ${kort(vb.van)} t/m ${kort(vb.tot)}`
+            : `Vergeleken met ${vb.label}`;
 
         return `
+            ${periodeKiezer(p, b)}
+
             <section class="paneel">
                 <div class="freq-kop">
-                    <p class="freq-getal"><b>${dezeWeek}</b>${doel ? `<span> van ${doel}</span>` : ""}</p>
-                    <p class="freq-tekst">keer getraind deze week${gem != null ? `<br><span>gemiddeld ${getal(gem, 1)} per week</span>` : ""}</p>
+                    <p class="freq-getal"><b>${cijfers.keer}</b></p>
+                    <p class="freq-tekst">keer getraind<br><span>gemiddeld ${getal(gemPerWeek, 1)} per week${doel ? `, je doel is ${doel}` : ""}</span></p>
                 </div>
-                <div class="kalender" role="img" aria-label="Trainingsdagen in de laatste 12 weken">
-                    <div class="kal-dagen" aria-hidden="true">${["ma", "", "wo", "", "vr", "", "zo"].map((d) => `<span>${d}</span>`).join("")}</div>
-                    ${weken.map((w) => `<div class="kal-week ${doel && w.n >= doel ? "gehaald" : ""}">
-                        ${w.cellen.map((c) => `<span class="${c.ja ? "ja" : ""} ${c.later ? "later" : ""} ${c.vandaag ? "nu" : ""} ${c.voor ? "voor" : ""}" title="${mooiDatum(c.ds)}"></span>`).join("")}
-                        <i>${w.cellen[0].voor && w.cellen[6].voor ? "" : w.n}</i>
-                    </div>`).join("")}
-                </div>
-                <p class="kal-maanden" aria-hidden="true">${weken.map((w, i) => {
-                    const d = parseDatum(w.start);
-                    const eersteVanMaand = i === 0 || parseDatum(weken[i - 1].start).getMonth() !== d.getMonth();
-                    return `<span>${eersteVanMaand ? MAANDEN[d.getMonth()] : ""}</span>`;
-                }).join("")}</p>
-                ${doel ? `<p class="voetnoot">Een getal in het groen: die week je doel gehaald. <button class="knop-link" data-actie="tab" data-tab="instellingen">Doel aanpassen</button></p>`
-                : `<div class="doel-vraag"><p>Hoe vaak per week wil je gaan?</p>
+                ${p.soort === "maand" ? maandKalender(b, doel) : maandBalken(b)}
+                ${doel ? "" : `<div class="doel-vraag"><p>Hoe vaak per week wil je gaan?</p>
                     <div class="chips">${[2, 3, 4, 5, 6].map((n) => `<button class="chip" data-actie="trainingdoel" data-n="${n}">${n}×</button>`).join("")}</div></div>`}
             </section>
 
-            ${kanBeter.length || gaatGoed.length ? `<section class="paneel inzichten">
-                ${kanBeter.length ? `<h2 class="paneel-titel">Kan beter</h2>
-                    <ul>${kanBeter.map((x) => `<li class="ins-beter" ${x.kleur ? `style="--spier:${x.kleur}"` : ""}><b>${esc(x.t)}</b>${x.s ? `<span>${esc(x.s)}</span>` : ""}</li>`).join("")}</ul>` : ""}
-                ${gaatGoed.length ? `<h2 class="paneel-titel">Gaat goed</h2>
-                    <ul>${gaatGoed.map((x) => `<li class="ins-goed" ${x.kleur ? `style="--spier:${x.kleur}"` : ""}><b>${esc(x.t)}</b>${x.s ? `<span>${esc(x.s)}</span>` : ""}</li>`).join("")}</ul>` : ""}
+            ${hoog.length ? `<section class="paneel inzichten">
+                <h2 class="paneel-titel">Gaat goed</h2>
+                <ul>${hoog.map((x) => `<li class="ins-goed"><b>${esc(x.t)}</b>${x.s ? `<span>${esc(x.s)}</span>` : ""}</li>`).join("")}</ul>
             </section>` : ""}
 
             <section class="paneel">
-                <h2 class="paneel-titel">Sets per spiergroep per week<span>${periode}</span></h2>
+                <h2 class="paneel-titel">Sets per spiergroep per week<span>gemiddeld over ${p.soort === "alles" ? "alles" : b.label}${b.vanaf > b.van ? ` (sinds ${kort(b.vanaf)})` : ""}</span></h2>
                 <ul class="spierdoel">${groepen.map(({ g, perWeek }) => {
                     const status = perWeek >= 10 ? (perWeek > 20 ? "veel" : "goed") : perWeek > 0 ? "weinig" : "geen";
                     const label = { veel: "veel", goed: "goed", weinig: "te weinig", geen: "niet gedaan" }[status];
@@ -1507,22 +1517,21 @@
             </section>
 
             ${prPerOef.length ? `<section class="paneel">
-                <h2 class="paneel-titel">Laatste records</h2>
-                <ul class="records">${prPerOef.slice(0, 5).map(({ s, t }) => `<li style="--spier:${spierKleur(oef(s.oefening_id).spiergroep)}">
+                <h2 class="paneel-titel">Records</h2>
+                <ul class="records">${prPerOef.slice(0, 6).map(({ s, t }) => `<li style="--spier:${spierKleur(oef(s.oefening_id).spiergroep)}">
                     <span class="spier-stip"></span>
                     <span class="r-naam">${esc(oef(s.oefening_id).naam)}<small>${relDatum(t.datum)}</small></span>
                     <span class="r-set">${Number(s.gewicht) > 0 ? `${getal(s.gewicht, 2)} × ${s.reps}` : `${s.reps} reps`}</span>
                 </li>`).join("")}</ul>
             </section>` : ""}
 
-            <h2 class="kopje maand-kop">${hoofdletter(maandNaam(nu))}<span>${heeftVorig ? `1 t/m ${totDag} ${maandNaam(nu)}, vergeleken met 1 t/m ${totDag} ${maandNaam(vorig)}` : `1 t/m ${totDag} ${maandNaam(nu)}`}</span></h2>
+            <h2 class="kopje maand-kop">Totaal${vergelijkTekst ? `<span>${vergelijkTekst}</span>` : ""}</h2>
             <div class="tegels twee">
-                ${tegel("Trainingen", mNu.keer, mVorig.keer)}
-                ${tegel("Sets", mNu.sets, mVorig.sets)}
-                ${tegel("Volume", mNu.volume, mVorig.volume, "kg")}
-                ${mNu.duur ? tegel("Gemiddelde duur", Math.round(mNu.duur), mVorig.duur, "min") : `<div class="tegel"><span class="t-label">Gemiddelde duur</span><b class="t-waarde">–</b></div>`}
-            </div>
-            ${heeftVorig ? "" : `<p class="voetnoot">Volgende maand zie je hier ook het verschil met ${maandNaam(nu)}.</p>`}`;
+                ${tegel("Trainingen", cijfers.keer, vorig && vorig.keer)}
+                ${tegel("Sets", cijfers.sets, vorig && vorig.sets)}
+                ${tegel("Volume", cijfers.volume, vorig && vorig.volume, "kg")}
+                ${cijfers.duur ? tegel("Gemiddelde duur", Math.round(cijfers.duur), vorig && vorig.duur, "min") : `<div class="tegel"><span class="t-label">Gemiddelde duur</span><b class="t-waarde">–</b></div>`}
+            </div>`;
     }
 
     function viewStatsOefeningen() {
@@ -1856,6 +1865,18 @@
             case "weeg-bewerk": state.weegBewerk = true; render(); focusEerste("input[name=kg]"); break;
             case "andere-dag-weeg": state.weegBewerk = true; state.andereDag = true; render(); break;
             case "stats-tab": state.statsTab = el.dataset.n; render(); break;
+            case "periode-soort": {
+                const nu = new Date();
+                const j = state.periode.jaar;
+                // De gekozen maand blijft onthouden, ook als je even naar Jaar of Alles kijkt.
+                const m = state.periode.maand ?? nu.getMonth();
+                state.periode = el.dataset.n === "maand"
+                    ? { soort: "maand", jaar: j, maand: j === nu.getFullYear() && m > nu.getMonth() ? nu.getMonth() : m }
+                    : { ...state.periode, soort: el.dataset.n };
+                render(); break;
+            }
+            case "naar-maand": state.periode = { soort: "maand", jaar: Number(el.dataset.j), maand: Number(el.dataset.m) }; render(); break;
+            case "periode-stap": state.periode = periodeStap(state.periode, Number(el.dataset.n)); render(); break;
             case "inst-pagina": state.instPagina = el.dataset.n; state.oefZoek = ""; render(); window.scrollTo(0, 0); break;
             case "inst-terug": state.instPagina = null; state.bewerkOef = null; render(); window.scrollTo(0, 0); break;
             case "groep": {
@@ -2064,6 +2085,7 @@
             openHist: null, bewerkOef: null, fout: "", loginModus: "in", openOef: {}, samenvatting: null,
             sheet: null, startOpen: false, andereDag: false, weegBewerk: false, laatsteSet: null,
             statsTab: "overzicht", instPagina: null, oefZoek: "", openGroepen: new Set(),
+            periode: { soort: "maand", jaar: new Date().getFullYear(), maand: new Date().getMonth() },
         });
         toonLogin();
         if (token) auth("logout", { token }).catch(() => {});
