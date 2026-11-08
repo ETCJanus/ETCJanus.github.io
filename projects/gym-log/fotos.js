@@ -679,8 +679,7 @@
         ctx.fillRect(0, h - 200 * k, b, 200 * k);
         ctx.fillStyle = "#f2efe8";
         ctx.textBaseline = "alphabetic";
-        ctx.font = `800 ${Math.round(64 * k)}px Archivo, system-ui, sans-serif`;
-        try { ctx.fontStretch = "condensed"; } catch { /* oudere browsers */ }
+        ctx.font = `800 ${Math.round(76 * k)}px "Big Shoulders", Archivo, system-ui, sans-serif`;
         ctx.fillText(mooiDatum(r.datum, false), 48 * k, h - 56 * k);
         if (kg) {
             const t = `${getal(kg, 2)} kg`;

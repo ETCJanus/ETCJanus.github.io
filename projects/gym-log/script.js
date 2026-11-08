@@ -595,7 +595,7 @@
 
     // Spiergroepen krijgen de kleuren van wedstrijdschijven: 25 rood, 20 blauw, 15 geel, 10 groen, 5 wit.
     const SPIERKLEUR = {
-        benen: "#e0472f", rug: "#3d74de", borst: "#e8b425", schouders: "#36a062",
+        benen: "#d23a2c", rug: "#2f66c9", borst: "#e3a817", schouders: "#2b8f58",
         armen: "#e9e6de", core: "#9a8fd0", overig: "#7c838c",
     };
     function spierKleur(g) { return SPIERKLEUR[g] || SPIERKLEUR.overig; }
@@ -706,7 +706,9 @@
                         <button class="klok-rust" id="rust" data-actie="rust-reset" hidden aria-label="Rusttimer stoppen"></button>
                     </div>`;
             }
-            return `<h1>Training</h1>`;
+            const d = parseDatum(vandaag());
+            const dagNaam = ["Zondag", "Maandag", "Dinsdag", "Woensdag", "Donderdag", "Vrijdag", "Zaterdag"][d.getDay()];
+            return `<div class="kop-titel"><h1>${dagNaam}</h1><span class="kop-sub">${d.getDate()} ${MAANDNAMEN[d.getMonth()]}, week ${weekNummer(d)}</span></div>`;
         }
         if (state.tab === "stats" && state.statsOef && oef(state.statsOef)) {
             return `<button class="kop-terug" data-actie="stats-terug" aria-label="Terug naar alle oefeningen">${ico("terug")}</button>
@@ -747,6 +749,15 @@
         return null;
     }
 
+    // ISO-weeknummer (zoals in je agenda).
+    function weekNummer(d) {
+        const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        const dag = t.getUTCDay() || 7;
+        t.setUTCDate(t.getUTCDate() + 4 - dag);
+        const jaarStart = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+        return Math.ceil(((t - jaarStart) / 86400000 + 1) / 7);
+    }
+
     function weekStrip() {
         const ma = parseDatum(maandagVan(vandaag()));
         const gedaan = new Set(gedaneTrainingen().map((t) => t.datum));
@@ -763,7 +774,7 @@
         }).join("");
         return `<section class="week" aria-label="Deze week">
             <ol class="week-dagen">${dagen}</ol>
-            <p class="week-tekst">${n ? `${n} ${n === 1 ? "training" : "trainingen"} deze week` : "Nog niet getraind deze week"}</p>
+            <p class="week-tekst">${n ? `${n}${trainingDoel() ? ` van ${trainingDoel()}` : ""} ${n === 1 && !trainingDoel() ? "training" : "trainingen"} deze week` : `Nog niet getraind deze week${trainingDoel() ? `, je doel is ${trainingDoel()}` : ""}`}</p>
         </section>`;
     }
 
@@ -781,7 +792,7 @@
             ${ico("scale")}
             <label for="weeg-snel">Weeg je vandaag</label>
             <input id="weeg-snel" type="number" name="kg" step="0.1" inputmode="decimal" placeholder="${laatste ? getal(laatste.kg, 2) : "kg"}" required>
-            <button class="knop knop-klein" type="submit">Opslaan</button>
+            <button class="knop knop-klein knop-vink" type="submit" aria-label="Gewicht opslaan">${ico("vink")}</button>
         </form>`;
     }
 
@@ -1187,6 +1198,7 @@
         Chart.defaults.color = "#9ba1a8";
         Chart.defaults.borderColor = "rgba(255,255,255,0.07)";
         Chart.defaults.font.family = "Archivo, system-ui, sans-serif";
+        Chart.defaults.color = "#7b828a";
         Chart.defaults.font.size = 12;
         return true;
     }
