@@ -252,7 +252,7 @@
                         const kg = G().gewichtOp(r.datum);
                         return `<button class="vergelijk-foto" data-foto="bekijk" data-datum="${r.datum}">
                             <img src="${r.url}" alt="Foto van ${mooiDatum(r.datum)}">
-                            <span>${mooiDatum(r.datum, false)}${kg ? `<b>${getal(kg, 2)} kg</b>` : ""}</span></button>`;
+                            <span>${mooiDatum(r.datum, false)}${kg ? `<b>${G().gewichtTekst(r.datum)}</b>` : ""}</span></button>`;
                     }).join("")}
                 </div>
                 <button class="knop knop-hoofd breed" data-foto="video">${ico("film")}Maak een timelapse</button>` : ""}
@@ -577,7 +577,7 @@
         laagEl().innerHTML = `
             <div class="uit-kop">
                 <button class="cam-knop" data-foto="sluit" aria-label="Sluiten">${ico("x")}</button>
-                <h2>${mooiDatum(r.datum)}${kg ? `<span>${getal(kg, 2)} kg</span>` : ""}</h2>
+                <h2>${mooiDatum(r.datum)}${kg ? `<span>${G().gewichtTekst(r.datum)}</span>` : ""}</h2>
                 <span class="bekijk-teller">${F.bekijkIndex + 1}/${F.lijst.length}</span>
             </div>
             <div class="uit-kader bekijk-kader" id="bekijk-kader">
@@ -682,7 +682,7 @@
         ctx.font = `800 ${Math.round(76 * k)}px "Big Shoulders", Archivo, system-ui, sans-serif`;
         ctx.fillText(mooiDatum(r.datum, false), 48 * k, h - 56 * k);
         if (kg) {
-            const t = `${getal(kg, 2)} kg`;
+            const t = G().gewichtTekst(r.datum);
             ctx.textAlign = "right";
             ctx.fillText(t, b - 48 * k, h - 56 * k);
         }

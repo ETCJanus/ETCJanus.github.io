@@ -1,6 +1,7 @@
 -- GYM LOG — setup voor een nieuwe installatie (met accounts).
 -- Plak dit hele script in de Supabase SQL Editor en klik Run.
 -- Had je de Gym Log al vóór november 2026? Gebruik dan MIGRATIE-accounts.sql in plaats van dit script.
+-- Draai daarna ook MIGRATIE-vrienden.sql (vrienden en kg/lb per oefening).
 --
 -- Iedereen logt in met een eigen account (Supabase Auth) en ziet alleen zijn eigen data.
 -- Nieuwe accounts krijgen bij de eerste keer inloggen de standaard oefeningen uit config.js.

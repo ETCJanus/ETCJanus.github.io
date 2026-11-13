@@ -6,7 +6,11 @@ Persoonlijk trainingslogboek: sets, reps en gewicht per oefening, dagelijkse wee
 
 ## Eenmalige setup
 
-**Nieuwe installatie:** plak [`SETUP.sql`](SETUP.sql) in de Supabase **SQL Editor** en klik **Run**.
+**Nieuwe installatie:** plak [`SETUP.sql`](SETUP.sql) in de Supabase **SQL Editor** en klik **Run**,
+en daarna [`MIGRATIE-vrienden.sql`](MIGRATIE-vrienden.sql).
+
+**Vrienden en kg/lb (november 2026):** plak [`MIGRATIE-vrienden.sql`](MIGRATIE-vrienden.sql) eenmalig in de SQL Editor en klik **Run**.
+Veilig om nog eens te draaien. Zonder dit script laat de Vrienden-tab zien dat de database nog bijgewerkt moet worden.
 
 **Bestaande installatie (van vóór de accounts):**
 1. Open de Gym Log, kies "Nog geen account? Maak er een" en maak je account aan.
@@ -39,7 +43,13 @@ Persoonlijk trainingslogboek: sets, reps en gewicht per oefening, dagelijkse wee
   vergeleken met de periode ervoor (bij een lopende maand: dezelfde dagen van vorige maand).
 - **Stats > Per oefening**: sets per spiergroep per week, en per oefening een minigrafiek en groei over ~4 weken. Tik voor details.
   Oefeningen zonder extra gewicht (pull-ups) worden in reps gemeten in plaats van geschatte 1RM.
-- **Instellingen**: je doelen (trainingen per week, lichaamsgewicht per week) staan bij je account. Oefeningen beheer je op een
+- **Vrienden**: kies een naam en deel je code of link (`?vriend=CODE`). Vrienden zien per week hoe vaak je trainde,
+  welke trainingen je deed (naam, aantal sets, duur) en je records. Je kunt reageren met 💪 🔥 👏 of een kort berichtje.
+  Nieuwe reacties op jouw trainingen zie je als bolletje op de tab. Je sets, lichaamsgewicht en foto's blijven privé;
+  dat dwingt de database af, niet alleen de app. Met "Nieuwe code maken" werkt een oude code niet meer.
+- **kg of lb**: kies bij Profiel > Doelen. Per oefening kun je het anders zetten (handig als de ene machine in pounds is).
+  Alles wordt in kg opgeslagen en alleen bij het tonen omgerekend, dus wisselen kan altijd.
+- **Profiel**: je doelen (trainingen per week, lichaamsgewicht per week) staan bij je account. Oefeningen beheer je op een
   eigen pagina met zoeken en inklapbare spiergroepen.
 - **Historie**: per week, tik op een training voor de samenvatting, aanpassen of verwijderen.
 - Een set, meting of training verwijderen kun je ongedaan maken via de melding onderin.

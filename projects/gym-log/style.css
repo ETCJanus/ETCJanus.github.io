@@ -1047,3 +1047,94 @@ body { letter-spacing: 0.002em; }
 .freq-getal b { font-weight: 800; font-size: 92px; }
 /* Titels: ruimte voor staarten van g, j, p. */
 .kop h1 { line-height: 1.02; padding-bottom: 2px; }
+
+.rij-velden.twee { grid-template-columns: 1fr 1fr; }
+.r-set small { font-family: var(--tekst); font-size: 12px; font-weight: 500; color: var(--krijt-3); }
+
+/* ======================================================================
+   Vrienden
+   ====================================================================== */
+
+.tabs button { max-width: 96px; }
+.tab-badge {
+    position: absolute; top: 6px; left: calc(50% + 6px);
+    min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px;
+    background: var(--pr); color: #fff; font-style: normal; font-size: 11px; font-weight: 700; line-height: 17px; text-align: center;
+}
+
+.avatar {
+    flex: none; width: 36px; height: 36px; border-radius: 8px;
+    display: grid; place-items: center;
+    background: var(--kleur); color: var(--vloer);
+    font-family: var(--cijfer); font-weight: 800; font-size: 19px;
+}
+
+/* Intro */
+.vr-intro { padding-top: 6px; }
+.vr-intro-titel { font-family: var(--stencil); font-weight: 850; font-size: 56px; line-height: 0.92; margin-bottom: 14px; }
+.vr-intro .paneel { margin-top: 18px; }
+
+/* Deze week */
+.vr-week { list-style: none; border-top: 1px solid var(--lijn); }
+.vr-week li {
+    display: grid; grid-template-columns: 36px 1fr auto 44px; gap: 12px; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--lijn-zacht);
+}
+.vw-naam { font-weight: 600; font-size: 16px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vw-blokjes { display: flex; gap: 3px; }
+.vw-blokjes i { width: 12px; height: 18px; border-radius: 3px; background: var(--vlak-2); }
+.vw-blokjes i.ja { background: var(--krijt); }
+.vw-blokjes i.extra { width: 8px; }
+.vw-getal { font-family: var(--cijfer); font-weight: 800; font-size: 24px; text-align: right; }
+.vw-getal small { font-size: 15px; color: var(--krijt-3); font-weight: 700; }
+.vw-getal.gehaald { color: var(--groen); }
+
+/* Trainingen van jou en je vrienden */
+.vr-dag { font-size: 13px; font-weight: 600; color: var(--krijt-3); margin: 18px 0 8px; }
+.vr-dag:first-of-type { margin-top: 4px; }
+.vr-item {
+    background: var(--vlak); border-radius: var(--r); padding: 14px 14px 10px; margin-bottom: 8px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+.vr-item header { display: flex; gap: 12px; align-items: flex-start; }
+.vr-item header p { font-size: 15px; color: var(--krijt-2); line-height: 1.35; }
+.vr-item header b { color: var(--krijt); font-weight: 650; }
+.vr-label { font-family: var(--cijfer); font-weight: 800 !important; font-size: 20px; letter-spacing: 0.01em; }
+.vr-meta { display: block; font-size: 13px; color: var(--krijt-3); margin-top: 1px; }
+.vr-records { list-style: none; margin: 12px 0 2px; padding: 10px 12px; border-radius: var(--r-klein); background: rgba(255, 82, 51, 0.07); display: grid; gap: 6px; }
+.vr-records li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; font-size: 15px; }
+.vr-records .stempel { font-size: 13px; padding: 2px 5px 1px; }
+.vr-records b { font-family: var(--cijfer); font-weight: 800; font-size: 20px; }
+.vr-berichten { list-style: none; margin: 10px 0 0; display: grid; gap: 4px; }
+.vr-berichten li { display: flex; align-items: baseline; gap: 6px; font-size: 15px; color: var(--krijt-2); line-height: 1.4; }
+.vr-berichten b { color: var(--krijt); font-weight: 650; flex: none; }
+.vr-berichten .knop-icoon { width: 28px; height: 28px; margin-left: auto; align-self: center; }
+.vr-acties { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+.vr-emoji {
+    display: inline-flex; align-items: center; gap: 5px; height: 36px; padding: 0 11px;
+    border-radius: 6px; border: 1px solid var(--lijn); background: none; color: var(--krijt); cursor: pointer;
+    font: inherit; font-size: 16px;
+}
+.vr-emoji b { font-size: 13px; font-weight: 700; }
+.vr-emoji[aria-pressed="true"] { background: var(--vlak-2); border-color: var(--krijt-2); }
+.vr-reageer {
+    margin-left: auto; background: none; border: 0; padding: 8px 4px; cursor: pointer;
+    font: inherit; font-size: 14px; font-weight: 600; color: var(--krijt-2);
+}
+.vr-bericht { display: flex; gap: 8px; margin: 10px 0 4px; }
+.vr-bericht input { min-height: 40px; padding: 8px 12px; }
+.vr-item.eigen { background: var(--vloer); box-shadow: inset 0 0 0 1px var(--lijn-zacht); }
+
+/* Code en vrienden */
+.vr-code {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 16px; border-radius: var(--r); background: var(--vlak); margin-bottom: 10px;
+}
+.vr-code span { display: block; font-size: 13px; color: var(--krijt-3); }
+.vr-code b { font-family: var(--cijfer); font-weight: 800; font-size: 34px; letter-spacing: 0.06em; line-height: 1.05; }
+.vr-code .knop { flex: none; }
+.vr-code-invoer input:not(:placeholder-shown) { text-transform: uppercase; letter-spacing: 0.08em; }
+.vr-lijst { list-style: none; border-top: 1px solid var(--lijn); margin-bottom: 10px; }
+.vr-lijst li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--lijn-zacht); }
+.vr-lijst li span:not(.avatar) { flex: 1; font-weight: 600; }
+.vr-naam { margin-top: 12px; }

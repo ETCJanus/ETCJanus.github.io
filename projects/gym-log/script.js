@@ -13,6 +13,16 @@
     // Inlogsessie (gedeeld voor het apparaat). Alle andere lokale opslag is per gebruiker,
     // zodat twee accounts op hetzelfde apparaat elkaar niet in de weg zitten.
     const LS_SESSIE = "gym_sessie";
+
+    // Uitnodiging via link (?vriend=CODE): onthouden tot je bent ingelogd.
+    (function vangVriendLink() {
+        const p = new URLSearchParams(location.search);
+        const code = p.get("vriend");
+        if (!code) return;
+        try { sessionStorage.setItem("gym_vriendcode", code); } catch { /* privé-modus */ }
+        p.delete("vriend");
+        history.replaceState(null, "", location.pathname + (p.toString() ? `?${p}` : "") + location.hash);
+    })();
     const LS = {};
     function zetSleutels(uid) {
         LS.outbox = `gym_outbox_${uid}`;
@@ -286,6 +296,23 @@
         return reps === 1 ? gewicht : gewicht * (1 + reps / 30);
     }
 
+    // ---------- Eenheden: alles staat in kg opgeslagen, je ziet en typt kg of lb ----------
+    const LB = 0.45359237;
+    function accountEenheid() { const m = sessie && sessie.user.meta; return m && m.eenheid === "lb" ? "lb" : "kg"; }
+    function eenheidVan(o) { return o && (o.eenheid === "kg" || o.eenheid === "lb") ? o.eenheid : accountEenheid(); }
+    function naarEenheid(kg, e) { return e === "lb" ? Number(kg) / LB : Number(kg); }
+    function naarKg(x, e) { return e === "lb" ? Number(x) * LB : Number(x); }
+    function gw(kg, e, dec) { return getal(naarEenheid(kg, e), dec ?? (e === "lb" ? 1 : 2)); }
+    function gwPunt(kg, e) { return punt(naarEenheid(kg, e), e === "lb" ? 1 : 2); }
+    const eh = (s) => eenheidVan(oef(s.oefening_id));   // eenheid van de oefening van een set
+    function eenheidKeuze(huidig) {
+        return `<label class="veld"><span>Eenheid</span><select name="eenheid">
+            <option value="" ${!huidig ? "selected" : ""}>Zoals je account (${accountEenheid()})</option>
+            <option value="kg" ${huidig === "kg" ? "selected" : ""}>kg</option>
+            <option value="lb" ${huidig === "lb" ? "selected" : ""}>lb (pounds)</option>
+        </select></label>`;
+    }
+
     // Maat voor "hoe sterk was deze set": geschatte 1RM, of het aantal reps
     // bij oefeningen zonder extra gewicht (pull-ups, dips).
     function score(s) { return Number(s.gewicht) > 0 ? e1rm(Number(s.gewicht), s.reps) : s.reps; }
@@ -342,7 +369,7 @@
                 omhoog: true,
                 gewicht: top + Number(o.stap_kg),
                 perSet: opTop.map(() => o.rep_min),
-                tekst: `Omhoog naar ${getal(top + Number(o.stap_kg), 2)} kg × ${o.rep_min}+`,
+                tekst: `Omhoog naar ${gw(top + Number(o.stap_kg), eenheidVan(o))} ${eenheidVan(o)} × ${o.rep_min}+`,
             };
         }
         const perSet = opTop.map((s) => Math.min(s.reps + 1, o.rep_max));
@@ -350,7 +377,7 @@
             omhoog: false,
             gewicht: top,
             perSet,
-            tekst: `${getal(top, 2)} kg × ${perSet.join(" / ")}`,
+            tekst: `${gw(top, eenheidVan(o))} ${eenheidVan(o)} × ${perSet.join(" / ")}`,
         };
     }
 
@@ -473,10 +500,11 @@
         localStorage.setItem(LS.rust, String(Date.now()));
         render();
         if (isPr(s)) {
-            toast(`Nieuw record op ${esc(oef(oefId).naam)}: ${getal(gewicht, 2)} kg × ${reps}`, null, "pr");
+            toast(`Nieuw record op ${esc(oef(oefId).naam)}: ${gw(gewicht, eenheidVan(oef(oefId)))} ${eenheidVan(oef(oefId))} × ${reps}`, null, "pr");
             if (navigator.vibrate) navigator.vibrate([30, 60, 30]);
         } else if (navigator.vibrate) navigator.vibrate(15);
         const gelukt = await schrijf("gym_sets", { method: "POST", body: s, headers: INSERT });
+        if (window.GymVrienden) window.GymVrienden.naTraining(tid);
         if (!gelukt) { s._wacht = true; render(); }
     }
 
@@ -488,12 +516,14 @@
         state.sets = state.sets.filter((s) => s.id !== id);
         if (state.laatsteSet === id) state.laatsteSet = null;
         render();
-        toast(`Set ${getal(weg.gewicht, 2)} kg × ${weg.reps} verwijderd`, () => {
+        toast(`Set ${gw(weg.gewicht, eh(weg))} ${eh(weg)} × ${weg.reps} verwijderd`, () => {
             state.sets.push(weg);
             render();
-            schrijf("gym_sets", { method: "POST", body: zonderLokaal(weg), headers: INSERT });
+            schrijf("gym_sets", { method: "POST", body: zonderLokaal(weg), headers: INSERT })
+                .then(() => window.GymVrienden && window.GymVrienden.naTraining(weg.training_id));
         });
         await schrijf(`gym_sets?id=eq.${id}`, { method: "DELETE" });
+        if (window.GymVrienden) window.GymVrienden.naTraining(weg.training_id);
     }
 
     async function verwijderTraining(id) {
@@ -514,8 +544,10 @@
             render();
             await schrijf("gym_trainingen", { method: "POST", body: zonderLokaal(t), headers: INSERT });
             if (sets.length) await schrijf("gym_sets", { method: "POST", body: sets.map(zonderLokaal), headers: INSERT });
+            if (window.GymVrienden) window.GymVrienden.naTraining(id, true);
         });
         await schrijf(`gym_trainingen?id=eq.${id}`, { method: "DELETE" });
+        if (window.GymVrienden) window.GymVrienden.naTraining(id, true);
     }
 
     async function slaGewichtOp(datum, kg) {
@@ -587,6 +619,7 @@
         film: '<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M10 9.3v5.4l4.6-2.7z"/>',
         geest: '<rect x="4" y="3.5" width="11" height="14.5" rx="2"/><rect x="9" y="6" width="11" height="14.5" rx="2" stroke-dasharray="2.2 2.2"/>',
         wissel: '<path d="M4.5 10a7.5 7.5 0 0 1 13.4-3.4M19.5 14a7.5 7.5 0 0 1-13.4 3.4"/><path d="M18.5 3.5v3.6h-3.6M5.5 20.5v-3.6h3.6"/>',
+        vrienden: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="16.5" cy="9.5" r="2.6"/><path d="M15.5 14.2a4.6 4.6 0 0 1 5 4.8"/>',
         doel: '<circle cx="12" cy="12" r="7.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/>',
     };
     function ico(n, extra = "") {
@@ -669,8 +702,9 @@
         ["training", "dumbbell", "Training"],
         ["weegschaal", "scale", "Lichaam"],
         ["stats", "chart", "Stats"],
+        ["vrienden", "vrienden", "Vrienden"],
         ["historie", "calendar", "Historie"],
-        ["instellingen", "sliders", "Instellingen"],
+        ["instellingen", "sliders", "Profiel"],
     ];
 
     function render() {
@@ -678,14 +712,16 @@
         grafieken.forEach((g) => g.destroy());
         grafieken = [];
         tabsEl.hidden = false;
+        const nieuweReacties = window.GymVrienden && state.tab !== "vrienden" ? window.GymVrienden.nieuw() : 0;
         tabsEl.innerHTML = TABS.map(([id, i, naam]) =>
-            `<button data-actie="tab" data-tab="${id}" ${state.tab === id ? 'aria-current="page"' : ""}>${ico(i)}<span>${naam}</span></button>`
+            `<button data-actie="tab" data-tab="${id}" ${state.tab === id ? 'aria-current="page"' : ""}>${ico(i)}<span>${naam}</span>${
+                id === "vrienden" && nieuweReacties ? `<i class="tab-badge" aria-label="${nieuweReacties} nieuwe reacties">${nieuweReacties > 9 ? "9+" : nieuweReacties}</i>` : ""}</button>`
         ).join("");
 
         const fout = state.fout
             ? `<div class="melding fout" role="alert">${esc(state.fout)}<button class="knop-icoon" data-actie="fout-weg" aria-label="Melding sluiten">${ico("x")}</button></div>`
             : "";
-        const views = { training: viewTraining, weegschaal: viewWeegschaal, stats: viewStats, historie: viewHistorie, instellingen: viewInstellingen };
+        const views = { vrienden: () => (window.GymVrienden ? window.GymVrienden.view() : ""), training: viewTraining, weegschaal: viewWeegschaal, stats: viewStats, historie: viewHistorie, instellingen: viewInstellingen };
         app.innerHTML = fout + views[state.tab]();
         kopEl.innerHTML = kop();
         renderSheet();
@@ -717,7 +753,7 @@
         if (state.tab === "instellingen" && state.instPagina === "oefeningen") {
             return `<button class="kop-terug" data-actie="inst-terug" aria-label="Terug naar instellingen">${ico("terug")}</button><h1>Oefeningen</h1>`;
         }
-        return `<h1>${{ weegschaal: "Lichaam", stats: "Stats", historie: "Historie", instellingen: "Instellingen" }[state.tab]}</h1>`;
+        return `<h1>${{ weegschaal: "Lichaam", stats: "Stats", vrienden: "Vrienden", historie: "Historie", instellingen: "Profiel" }[state.tab]}</h1>`;
     }
 
     // ---------- Training: startscherm ----------
@@ -791,7 +827,7 @@
         return `<form class="weeg-rij" data-form="weeg-snel">
             ${ico("scale")}
             <label for="weeg-snel">Weeg je vandaag</label>
-            <input id="weeg-snel" type="number" name="kg" step="0.1" inputmode="decimal" placeholder="${laatste ? getal(laatste.kg, 2) : "kg"}" required>
+            <input id="weeg-snel" type="number" name="kg" step="0.1" inputmode="decimal" placeholder="${laatste ? gw(laatste.kg, accountEenheid()) : accountEenheid()}" required aria-label="Gewicht in ${accountEenheid()}">
             <button class="knop knop-klein knop-vink" type="submit" aria-label="Gewicht opslaan">${ico("vink")}</button>
         </form>`;
     }
@@ -881,8 +917,8 @@
         if (isPr(s)) return `<span class="stempel" title="Persoonlijk record">PR</span>`;
         if (!vorigeSet) return "";
         const dw = Number(s.gewicht) - Number(vorigeSet.gewicht);
-        if (Math.abs(dw) > 0.001) {
-            return `<span class="verschil ${dw > 0 ? "up" : "down"}">${dw > 0 ? "+" : "−"}${getal(Math.abs(dw), 2)} kg</span>`;
+        if (Math.abs(dw) > 0.01) {
+            return `<span class="verschil ${dw > 0 ? "up" : "down"}">${dw > 0 ? "+" : "−"}${gw(Math.abs(dw), eh(s))} ${eh(s)}</span>`;
         }
         const dr = s.reps - vorigeSet.reps;
         if (dr === 0) return `<span class="verschil gelijk">=</span>`;
@@ -902,7 +938,7 @@
                 <span class="oef-regel"><span class="oef-naam">${esc(o.naam)}</span>
                 <span class="oef-telling">${klaar ? ico("vink") : ""}${sets.length}/${n}</span></span>
                 <span class="oef-reeks">${sets.length
-                    ? sets.map((s) => `<span class="${isPr(s) ? "is-pr" : ""}">${getal(s.gewicht, 2)}×${s.reps}</span>`).join("")
+                    ? sets.map((s) => `<span class="${isPr(s) ? "is-pr" : ""}">${gw(s.gewicht, eh(s))}×${s.reps}</span>`).join("")
                     : `<span class="dim">${doel ? `Doel ${esc(doel.tekst.replace("Omhoog naar ", "↑ "))}` : "Nog niet gedaan"}</span>`}</span>
             </button>`;
         }
@@ -911,11 +947,11 @@
         let wGewicht = "", wReps = "";
         if (sets.length) {
             const l = sets[sets.length - 1];
-            wGewicht = punt(l.gewicht);
+            wGewicht = gwPunt(l.gewicht, eenheidVan(o));
             const doelReps = doel && doel.perSet[sets.length];
-            wReps = doelReps != null && Number(l.gewicht) === doel.gewicht ? doelReps : l.reps;
+            wReps = doelReps != null && Math.abs(Number(l.gewicht) - doel.gewicht) < 0.01 ? doelReps : l.reps;
         } else if (doel) {
-            wGewicht = punt(doel.gewicht);
+            wGewicht = gwPunt(doel.gewicht, eenheidVan(o));
             wReps = doel.perSet[0];
         }
         const volgende = sets.length >= n && volgendeOef(t, o.id);
@@ -926,22 +962,22 @@
                 <span class="oef-range">${o.rep_min}–${o.rep_max} reps</span>
             </button>
             <dl class="oef-context">
-                ${vorige ? `<div><dt>Vorige keer</dt><dd><span class="reeks">${vorige.sets.map((s) => `${getal(s.gewicht, 2)}×${s.reps}`).join("  ")}</span>
+                ${vorige ? `<div><dt>Vorige keer</dt><dd><span class="reeks">${vorige.sets.map((s) => `${gw(s.gewicht, eh(s))}×${s.reps}`).join("  ")}</span>
                     <span class="wanneer">${relDatum(vorige.training.datum)}</span></dd></div>
                     <div class="doel ${doel.omhoog ? "omhoog" : ""}"><dt>Doel</dt><dd>${doel.omhoog ? ico("omhoog") : ""}${esc(doel.tekst)}</dd></div>`
                 : `<div class="eerste"><dt>Eerste keer</dt><dd>Kies een gewicht waarmee je ${o.rep_min} tot ${o.rep_max} reps haalt.</dd></div>`}
             </dl>
             ${sets.length ? `<ol class="sets">${sets.map((s, i) => `<li class="${s._wacht ? "wacht" : ""} ${s.id === state.laatsteSet ? "nieuw" : ""}">
                 <span class="set-nr">${i + 1}</span>
-                <span class="set-waarde"><b>${getal(s.gewicht, 2)}</b> kg × <b>${s.reps}</b></span>
+                <span class="set-waarde"><b>${gw(s.gewicht, eh(s))}</b> ${eh(s)} × <b>${s.reps}</b></span>
                 ${vergelijk(s, vorige && vorige.sets[i])}
                 <button class="knop-icoon set-weg" data-actie="weg-set" data-id="${s.id}" aria-label="Set ${i + 1} verwijderen">${ico("x")}</button>
             </li>`).join("")}</ol>` : ""}
             <form class="invoer" data-form="set" data-tid="${t.id}" data-oef="${o.id}">
                 <div class="teller">
-                    <button type="button" data-actie="stap" data-d="-${o.stap_kg}" aria-label="${getal(o.stap_kg, 2)} kg minder">${ico("min")}</button>
-                    <label><input name="gewicht" type="number" step="any" inputmode="decimal" value="${wGewicht}" placeholder="0" required aria-label="Gewicht in kg"><span>kg</span></label>
-                    <button type="button" data-actie="stap" data-d="${o.stap_kg}" aria-label="${getal(o.stap_kg, 2)} kg meer">${ico("plus")}</button>
+                    <button type="button" data-actie="stap" data-d="-${gwPunt(o.stap_kg, eenheidVan(o))}" aria-label="${gw(o.stap_kg, eenheidVan(o))} ${eenheidVan(o)} minder">${ico("min")}</button>
+                    <label><input name="gewicht" type="number" step="any" inputmode="decimal" value="${wGewicht}" placeholder="0" required aria-label="Gewicht in ${eenheidVan(o)}"><span>${eenheidVan(o)}</span></label>
+                    <button type="button" data-actie="stap" data-d="${gwPunt(o.stap_kg, eenheidVan(o))}" aria-label="${gw(o.stap_kg, eenheidVan(o))} ${eenheidVan(o)} meer">${ico("plus")}</button>
                 </div>
                 <div class="teller">
                     <button type="button" data-actie="stap" data-d="-1" aria-label="1 rep minder">${ico("min")}</button>
@@ -987,11 +1023,11 @@
         return `<div class="sv-cijfers">
                 ${duur ? `<div><b>${duur}</b><span>minuten</span></div>` : ""}
                 <div><b>${sets.length}</b><span>sets</span></div>
-                <div><b>${duizend(volume)}</b><span>kg volume</span>
+                <div><b>${duizend(naarEenheid(volume, accountEenheid()))}</b><span>${accountEenheid()} volume</span>
                     ${pVol != null ? `<em class="${deltaKlasse(pVol)}">${deltaTekst(pVol)} t.o.v. vorige ${esc(t.label || "training")}</em>` : ""}</div>
             </div>
             ${prs.length ? `<div class="sv-prs"><span class="stempel groot">PR</span><p>${prs.map((s) =>
-                `<b>${esc(oef(s.oefening_id).naam)}</b> ${getal(s.gewicht, 2)} kg × ${s.reps}`).join("<br>")}</p></div>` : ""}
+                `<b>${esc(oef(s.oefening_id).naam)}</b> ${gw(s.gewicht, eh(s))} ${eh(s)} × ${s.reps}`).join("<br>")}</p></div>` : ""}
             <ul class="sv-oef">${ids.map((id) => {
                 const o = oef(id);
                 const s = sets.filter((x) => x.oefening_id === id);
@@ -999,7 +1035,7 @@
                 const p = v ? procent(Math.max(...s.map(score)), Math.max(...v.sets.map(score))) : null;
                 return `<li style="--spier:${spierKleur(o.spiergroep)}">
                     <span class="spier-stip"></span>
-                    <span class="sv-naam">${esc(o.naam)}<small>${s.map((x) => `${getal(x.gewicht, 2)}×${x.reps}`).join("  ")}</small></span>
+                    <span class="sv-naam">${esc(o.naam)}<small>${s.map((x) => `${gw(x.gewicht, eh(x))}×${x.reps}`).join("  ")}</small></span>
                     <span class="sv-delta ${deltaKlasse(p)}">${p == null ? "nieuw" : deltaTekst(p, 1)}</span>
                 </li>`;
             }).join("")}</ul>
@@ -1081,9 +1117,10 @@
             <div class="rij-velden">
                 <label class="veld"><span>Min. reps</span><input name="rep_min" type="number" inputmode="numeric" value="8"></label>
                 <label class="veld"><span>Max. reps</span><input name="rep_max" type="number" inputmode="numeric" value="12"></label>
-                <label class="veld"><span>Stap (kg)</span><input name="stap_kg" type="number" step="any" inputmode="decimal" value="2.5"></label>
+                <label class="veld"><span>Stap</span><input name="stap_kg" type="number" step="any" inputmode="decimal" value="${accountEenheid() === "lb" ? 5 : 2.5}"></label>
             </div>
-            <p class="uitleg">Haal je bij alle sets het maximum aantal reps, dan stelt de app voor om het gewicht met de stap te verhogen.</p>
+            ${eenheidKeuze("")}
+            <p class="uitleg">Haal je bij alle sets het maximum aantal reps, dan stelt de app voor om het gewicht met de stap te verhogen. De stap is in de eenheid die je hierboven kiest.</p>
             <button class="knop knop-hoofd breed" type="submit">Oefening opslaan</button>
         </form>`;
     }
@@ -1129,6 +1166,7 @@
         const trend = trendPerWeek();
         const doel = doelPerWeek();
         const toonForm = !vandaagG || state.weegBewerk;
+        const E = accountEenheid();
 
         let oordeel = "";
         if (trend && doel) {
@@ -1145,24 +1183,24 @@
             <section class="weeg-hero">
                 ${toonForm ? `<form data-form="weeg" class="weeg-form">
                     <label class="weeg-invoer"><input type="number" name="kg" step="0.1" inputmode="decimal" required
-                        value="${vandaagG ? punt(vandaagG.kg) : ""}" placeholder="${laatste ? getal(laatste.kg, 2) : "0,0"}" aria-label="Gewicht in kg"><span>kg</span></label>
+                        value="${vandaagG ? gwPunt(vandaagG.kg, E) : ""}" placeholder="${laatste ? gw(laatste.kg, E) : "0,0"}" aria-label="Gewicht in ${E}"><span>${E}</span></label>
                     ${state.andereDag
                         ? `<label class="veld"><span>Datum</span><input type="date" name="datum" value="${vandaag()}" max="${vandaag()}"></label>`
                         : `<p class="weeg-wanneer">Vandaag, ${mooiDatum(vandaag())} <button type="button" class="knop-link" data-actie="andere-dag">andere dag</button></p>`}
                     <button class="knop knop-hoofd breed" type="submit">Opslaan</button>
                 </form>`
                 : `<div class="weeg-vandaag">
-                    <p class="weeg-getal"><b>${getal(vandaagG.kg, 2)}</b><span>kg</span></p>
+                    <p class="weeg-getal"><b>${gw(vandaagG.kg, E)}</b><span>${E}</span></p>
                     <p class="weeg-wanneer">Vandaag gewogen <button class="knop-link" data-actie="weeg-bewerk">wijzig</button> <button class="knop-link" data-actie="andere-dag-weeg">andere dag</button></p>
                 </div>`}
             </section>
 
             ${gem.length ? `<ul class="cijfers">
-                ${cijferRij("7-daags gemiddelde", getal(nu.gem.toFixed(1), 1), "kg")}
-                ${cijferRij("Per week", trend ? plusMin(trend.perWeek) : "–", "kg",
-                    trend ? `${oordeel || `over ${trend.dagen} dagen`}${doel ? `, doel ${plusMin(doel)}` : ""}` : "Nog te weinig metingen voor een trend",
+                ${cijferRij("7-daags gemiddelde", getal(naarEenheid(nu.gem, E).toFixed(1), 1), E)}
+                ${cijferRij("Per week", trend ? plusMin(naarEenheid(trend.perWeek, E)) : "–", E,
+                    trend ? `${oordeel || `over ${trend.dagen} dagen`}${doel ? `, doel ${plusMin(naarEenheid(doel, E))}` : ""}` : "Nog te weinig metingen voor een trend",
                     oordeel ? (goed ? "goed" : "matig") : "", oordeel ? (goed ? "goed" : "matig") : "")}
-                ${cijferRij(`Sinds ${mooiDatum(eerste.datum, false)}`, plusMin(nu.gem - eerste.gem, 1), "kg")}
+                ${cijferRij(`Sinds ${mooiDatum(eerste.datum, false)}`, plusMin(naarEenheid(nu.gem - eerste.gem, E), 1), E)}
             </ul>` : ""}
 
             ${state.gewicht.length > 1 ? `
@@ -1178,12 +1216,12 @@
             <ul class="metingen">
                 ${state.gewicht.slice(state.meerMetingen ? 0 : -10).reverse().map((g) => {
                     const i = state.gewicht.indexOf(g);
-                    const v = i > 0 ? Number(g.kg) - Number(state.gewicht[i - 1].kg) : null;
+                    const v = i > 0 ? naarEenheid(Number(g.kg) - Number(state.gewicht[i - 1].kg), E) : null;
                     const open = state.metingOpen === g.datum;
                     return `<li class="${open ? "open" : ""}">
                         <button class="m-rij" data-actie="meting" data-datum="${g.datum}" aria-expanded="${open}">
                             <span class="m-datum">${mooiDatum(g.datum)}</span>
-                            <span class="m-kg">${getal(g.kg, 2)}</span>
+                            <span class="m-kg">${gw(g.kg, E)}</span>
                             <span class="m-delta">${v == null ? "" : plusMin(v, 1)}</span>
                         </button>
                         ${open ? `<button class="knop knop-klein knop-gevaar" data-actie="weg-gewicht" data-datum="${g.datum}">Verwijderen</button>` : ""}
@@ -1206,7 +1244,8 @@
     function tekenGewicht() {
         const el = document.getElementById("grafiek-gewicht");
         if (!el || !stijlGrafiek()) return;
-        let data = gemiddelden();
+        const E = accountEenheid();
+        let data = gemiddelden().map((g) => ({ ...g, kg: naarEenheid(g.kg, E), gem: naarEenheid(g.gem, E) }));
         if (state.weegBereik) data = data.filter((g) => dagenTussen(g.datum, vandaag()) < state.weegBereik);
         grafieken.push(new Chart(el, {
             type: "line",
@@ -1495,7 +1534,7 @@
                 <ul class="records">${prPerOef.slice(0, 6).map(({ s, t }) => `<li style="--spier:${spierKleur(oef(s.oefening_id).spiergroep)}">
                     <span class="spier-stip"></span>
                     <span class="r-naam">${esc(oef(s.oefening_id).naam)}<small>${relDatum(t.datum)}</small></span>
-                    <span class="r-set">${Number(s.gewicht) > 0 ? `${getal(s.gewicht, 2)} × ${s.reps}` : `${s.reps} reps`}</span>
+                    <span class="r-set">${Number(s.gewicht) > 0 ? `${gw(s.gewicht, eh(s))}<small> ${eh(s)}</small> × ${s.reps}` : `${s.reps} reps`}</span>
                 </li>`).join("")}</ul>
             </section>` : ""}
 
@@ -1504,7 +1543,7 @@
                 <ul class="cijfers">
                     ${tegel("Trainingen", cijfers.keer, vorig && vorig.keer)}
                     ${tegel("Sets", cijfers.sets, vorig && vorig.sets)}
-                    ${tegel("Volume", cijfers.volume, vorig && vorig.volume, "kg")}
+                    ${tegel("Volume", naarEenheid(cijfers.volume, accountEenheid()), vorig && naarEenheid(vorig.volume, accountEenheid()), accountEenheid())}
                     ${cijfers.duur ? tegel("Gemiddelde duur", Math.round(cijfers.duur), vorig && vorig.duur, "min") : cijferRij("Gemiddelde duur", "–")}
                 </ul>
             </section>`;
@@ -1525,7 +1564,7 @@
                 return `<li><button class="stat-rij" data-actie="stats-oef" data-id="${o.id}" style="--spier:${spierKleur(o.spiergroep)}">
                     <span class="stat-naam"><span class="spier-stip"></span>${esc(o.naam)}<small>${relDatum(laatst)}, ${rijen.length} keer</small></span>
                     ${sparkline(rijen.slice(-12).map((r) => r.e1rm))}
-                    <span class="stat-cijfer"><b>${Math.round(nu.e1rm)}${nu.lg ? "<small> reps</small>" : ""}</b><span class="${deltaKlasse(g)}">${g == null ? "" : deltaTekst(g)}</span></span>
+                    <span class="stat-cijfer"><b>${nu.lg ? `${nu.e1rm}<small> reps</small>` : `${Math.round(naarEenheid(nu.e1rm, eenheidVan(o)))}<small> ${eenheidVan(o)}</small>`}</b><span class="${deltaKlasse(g)}">${g == null ? "" : deltaTekst(g)}</span></span>
                 </button></li>`;
             }).join("")}</ul>
             <p class="voetnoot">Geschatte 1-rep max van je beste set (bij pull-ups e.d. je meeste reps), en de verandering over ongeveer 4 weken.</p>`;
@@ -1545,8 +1584,8 @@
             <ul class="cijfers">
                 ${lg ? `${cijferRij("Meeste reps", besteE.reps, "reps", "alleen lichaamsgewicht")}
                     ${cijferRij("Laatste keer", rijen[rijen.length - 1].e1rm, "reps", relDatum(rijen[rijen.length - 1].datum))}`
-                : `${cijferRij("Beste set", Math.round(score(besteE)), "kg", `geschatte 1-rep max uit ${getal(besteE.gewicht, 2)} kg × ${besteE.reps}`)}
-                    ${cijferRij("Zwaarste gewicht", getal(zwaarste.gewicht, 2), "kg", `× ${zwaarste.reps} reps`)}`}
+                : `${cijferRij("Beste set", Math.round(naarEenheid(score(besteE), eenheidVan(o))), eenheidVan(o), `geschatte 1-rep max uit ${gw(besteE.gewicht, eenheidVan(o))} ${eenheidVan(o)} × ${besteE.reps}`)}
+                    ${cijferRij("Zwaarste gewicht", gw(zwaarste.gewicht, eenheidVan(o)), eenheidVan(o), `× ${zwaarste.reps} reps`)}`}
                 ${cijferRij(`Groei sinds ${mooiDatum(eerste.datum, false)}`, groei == null ? "–" : deltaTekst(groei), "", "", "", groei > 0 ? "goed" : "")}
                 ${cijferRij("Gedaan", rijen.length, "keer", `${alleSets.length} sets`)}
             </ul>
@@ -1554,8 +1593,8 @@
             <h2 class="kopje">Per keer</h2>
             <ul class="sessies">${[...rijen].reverse().map((r) => `<li>
                 <span class="m-datum">${mooiDatum(r.datum)}</span>
-                <span class="s-sets">${r.sets.map((s) => `${getal(s.gewicht, 2)}×${s.reps}`).join("  ")}</span>
-                <span class="m-kg">${Math.round(r.e1rm)}${r.lg ? "<small> reps</small>" : ""}</span>
+                <span class="s-sets">${r.sets.map((s) => `${gw(s.gewicht, eh(s))}×${s.reps}`).join("  ")}</span>
+                <span class="m-kg">${r.lg ? `${r.e1rm}<small> reps</small>` : Math.round(naarEenheid(r.e1rm, eenheidVan(o)))}</span>
             </li>`).join("")}</ul>`;
     }
 
@@ -1565,13 +1604,14 @@
         const rijen = statsPerTraining(state.statsOef);
         const kleur = spierKleur(oef(state.statsOef).spiergroep);
         const lg = rijen.every((r) => r.lg);
+        const E = eenheidVan(oef(state.statsOef));
         grafieken.push(new Chart(el, {
             type: "line",
             data: {
                 labels: rijen.map((r) => mooiDatum(r.datum, false)),
                 datasets: [
-                    { label: lg ? "Meeste reps" : "e1RM", data: rijen.map((r) => +r.e1rm.toFixed(1)), borderColor: "#f2efe8", backgroundColor: "#f2efe8", borderWidth: 2.5, pointRadius: 2.5, tension: 0.3 },
-                    ...(lg ? [] : [{ label: "Zwaarste gewicht", data: rijen.map((r) => r.top), borderColor: kleur, backgroundColor: kleur, borderWidth: 2, pointRadius: 2, tension: 0.3 }]),
+                    { label: lg ? "Meeste reps" : "e1RM", data: rijen.map((r) => +(lg ? r.e1rm : naarEenheid(r.e1rm, E)).toFixed(1)), borderColor: "#f2efe8", backgroundColor: "#f2efe8", borderWidth: 2.5, pointRadius: 2.5, tension: 0.3 },
+                    ...(lg ? [] : [{ label: "Zwaarste gewicht", data: rijen.map((r) => +naarEenheid(r.top, E).toFixed(1)), borderColor: kleur, backgroundColor: kleur, borderWidth: 2, pointRadius: 2, tension: 0.3 }]),
                 ],
             },
             options: {
@@ -1579,7 +1619,7 @@
                 animation: matchMedia("(prefers-reduced-motion: reduce)").matches ? false : { duration: 400 },
                 interaction: { mode: "index", intersect: false },
                 plugins: { legend: { position: "bottom", labels: { boxWidth: 8, boxHeight: 8, usePointStyle: true, padding: 16 } } },
-                scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 5, maxRotation: 0 } }, y: { ticks: { maxTicksLimit: 5, callback: (v) => `${v} ${lg ? "" : "kg"}` } } },
+                scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 5, maxRotation: 0 } }, y: { ticks: { maxTicksLimit: 5, callback: (v) => `${v} ${lg ? "" : E}` } } },
             },
         }));
     }
@@ -1631,13 +1671,17 @@
         return `
             <h2 class="kopje">Doelen</h2>
             <div class="paneel">
+                <p class="veld-titel">Eenheid</p>
+                <div class="chips" role="group" aria-label="Eenheid">
+                    ${[["kg", "Kilogram (kg)"], ["lb", "Pounds (lb)"]].map(([n, l]) => `<button class="chip" aria-pressed="${accountEenheid() === n}" data-actie="eenheid" data-n="${n}">${l}</button>`).join("")}
+                </div>
                 <p class="veld-titel">Trainingen per week</p>
                 <div class="chips" role="group" aria-label="Trainingen per week">
                     ${[1, 2, 3, 4, 5, 6, 7].map((n) => `<button class="chip" aria-pressed="${doel === n}" data-actie="trainingdoel" data-n="${n}">${n}×</button>`).join("")}
                 </div>
                 <form data-form="doel">
-                    <label class="veld"><span>Lichaamsgewicht per week in kg. Positief voor een bulk, negatief voor een cut, 0 voor geen doel.</span>
-                        <div class="invoer-knop"><input name="doel" type="number" step="0.05" inputmode="decimal" value="${punt(doelPerWeek())}">
+                    <label class="veld"><span>Lichaamsgewicht per week in ${accountEenheid()}. Positief voor een bulk, negatief voor een cut, 0 voor geen doel.</span>
+                        <div class="invoer-knop"><input name="doel" type="number" step="0.05" inputmode="decimal" value="${punt(naarEenheid(doelPerWeek(), accountEenheid()))}">
                         <button class="knop" type="submit">Opslaan</button></div></label>
                 </form>
             </div>
@@ -1669,9 +1713,12 @@
                 <div class="rij-velden">
                     <label class="veld"><span>Min. reps</span><input name="rep_min" type="number" inputmode="numeric" value="${o.rep_min}"></label>
                     <label class="veld"><span>Max. reps</span><input name="rep_max" type="number" inputmode="numeric" value="${o.rep_max}"></label>
-                    <label class="veld"><span>Stap (kg)</span><input name="stap_kg" type="number" step="any" inputmode="decimal" value="${punt(o.stap_kg)}"></label>
+                    <label class="veld"><span>Stap (${eenheidVan(o)})</span><input name="stap_kg" type="number" step="any" inputmode="decimal" value="${gwPunt(o.stap_kg, eenheidVan(o))}"></label>
                 </div>
-                <label class="veld"><span>Spiergroep</span><select name="spiergroep">${SPIERGROEPEN.map((g) => `<option ${g === o.spiergroep ? "selected" : ""}>${g}</option>`).join("")}</select></label>
+                <div class="rij-velden twee">
+                    <label class="veld"><span>Spiergroep</span><select name="spiergroep">${SPIERGROEPEN.map((g) => `<option ${g === o.spiergroep ? "selected" : ""}>${g}</option>`).join("")}</select></label>
+                    ${eenheidKeuze(o.eenheid || "")}
+                </div>
                 <div class="knoppen">
                     <button type="button" class="knop knop-klein" data-actie="archiveer" data-id="${o.id}">${o.gearchiveerd ? "Terugzetten" : "Archiveren"}</button>
                     <button type="button" class="knop knop-klein" data-actie="bewerk-dicht">Annuleer</button>
@@ -1681,7 +1728,7 @@
         }
         return `<button class="oef-instelling" data-actie="bewerk-oef" data-id="${o.id}" ${stijl}>
             <span class="kies-naam">${esc(o.naam)}</span>
-            <span class="kies-meta">${o.rep_min}–${o.rep_max} reps, +${getal(o.stap_kg, 2)} kg</span>
+            <span class="kies-meta">${o.rep_min}–${o.rep_max} reps, +${gw(o.stap_kg, eenheidVan(o))} ${eenheidVan(o)}</span>
             ${ico("pijl")}
         </button>`;
     }
@@ -1797,6 +1844,7 @@
             case "afronden": {
                 const tid = state.actief;
                 const heeftSets = setsVan(tid).length;
+                if (window.GymVrienden && heeftSets) window.GymVrienden.naTraining(tid, true);
                 zetActief(null); localStorage.removeItem(LS.rust);
                 state.samenvatting = heeftSets ? tid : null;
                 state.samenvattingNet = true;
@@ -1860,9 +1908,14 @@
                 if (state.openGroepen.has(g)) state.openGroepen.delete(g); else state.openGroepen.add(g);
                 render(); break;
             }
+            case "eenheid":
+                slaMetaOp({ eenheid: el.dataset.n });
+                toast(el.dataset.n === "lb" ? "Alles in pounds (lb). Per oefening kun je afwijken." : "Alles in kilogram (kg). Per oefening kun je afwijken.");
+                break;
             case "trainingdoel": {
                 const n = Number(el.dataset.n);
                 slaMetaOp({ trainingen_per_week: trainingDoel() === n && state.tab === "instellingen" ? 0 : n });
+                if (window.GymVrienden) window.GymVrienden.doelGewijzigd(trainingDoel());
                 toast(trainingDoel() ? `Doel: ${trainingDoel()}× per week` : "Geen trainingsdoel meer");
                 break;
             }
@@ -1932,7 +1985,7 @@
             case "set": {
                 const gewicht = num(d.get("gewicht")), reps = parseInt(d.get("reps"), 10);
                 if (gewicht == null || !reps) return;
-                logSet(f.dataset.tid, f.dataset.oef, gewicht, reps);
+                logSet(f.dataset.tid, f.dataset.oef, naarKg(gewicht, eenheidVan(oef(f.dataset.oef))), reps);
                 break;
             }
             case "start":
@@ -1940,17 +1993,18 @@
                 startTraining();
                 break;
             case "weeg-snel": {
-                const kg = num(d.get("kg"));
-                if (kg) { slaGewichtOp(vandaag(), kg); toast(`${getal(kg, 2)} kg opgeslagen`); }
+                const x = num(d.get("kg"));
+                if (x) { slaGewichtOp(vandaag(), naarKg(x, accountEenheid())); toast(`${getal(x, 2)} ${accountEenheid()} opgeslagen`); }
                 break;
             }
             case "weeg": {
-                const kg = num(d.get("kg"));
-                if (!kg) return;
+                const x = num(d.get("kg"));
+                if (!x) return;
+                const kg = naarKg(x, accountEenheid());
                 const datum = d.get("datum") || vandaag();
                 state.weegBewerk = false; state.andereDag = false;
                 slaGewichtOp(datum, kg);
-                toast(`${getal(kg, 2)} kg opgeslagen${datum === vandaag() ? "" : ` voor ${mooiDatum(datum)}`}`);
+                toast(`${getal(x, 2)} ${accountEenheid()} opgeslagen${datum === vandaag() ? "" : ` voor ${mooiDatum(datum)}`}`);
                 break;
             }
             case "login":
@@ -1958,7 +2012,7 @@
                 break;
             case "doel": {
                 const doel = num(d.get("doel")) ?? 0;
-                slaDoelOp(doel);
+                slaDoelOp(naarKg(doel, accountEenheid()));
                 toast("Weekdoel opgeslagen");
                 break;
             }
@@ -1966,22 +2020,31 @@
                 const rep_min = parseInt(d.get("rep_min"), 10) || 8;
                 const rep_max = Math.max(rep_min, parseInt(d.get("rep_max"), 10) || 12);
                 const voorTraining = state.tab === "training" && state.actief ? state.actief : null;
-                nieuweOefening({
+                const e = d.get("eenheid") || "";
+                const eff = e || accountEenheid();
+                const velden = {
                     naam: String(d.get("naam")).trim(),
                     spiergroep: d.get("spiergroep") || "overig",
                     rep_min, rep_max,
-                    stap_kg: num(d.get("stap_kg")) || 2.5,
-                }, voorTraining);
+                    stap_kg: naarKg(num(d.get("stap_kg")) || (eff === "lb" ? 5 : 2.5), eff),
+                };
+                if (e) velden.eenheid = e;   // leeg = zoals je account
+                nieuweOefening(velden, voorTraining);
                 break;
             }
             case "bewerk-oef": {
                 const rep_min = parseInt(d.get("rep_min"), 10) || 1;
-                wijzigOefening(f.dataset.id, {
+                const o = oef(f.dataset.id);
+                const e = d.get("eenheid") || "";
+                const eff = e || accountEenheid();
+                const velden = {
                     rep_min,
                     rep_max: Math.max(rep_min, parseInt(d.get("rep_max"), 10) || rep_min),
-                    stap_kg: num(d.get("stap_kg")) || 2.5,
+                    stap_kg: naarKg(num(d.get("stap_kg")) || (eff === "lb" ? 5 : 2.5), eff),
                     spiergroep: d.get("spiergroep"),
-                });
+                };
+                if (e !== (o.eenheid || "")) velden.eenheid = e || null;
+                wijzigOefening(f.dataset.id, velden);
                 break;
             }
         }
@@ -2060,6 +2123,7 @@
         if (wacht && !confirm(`Er ${wacht === 1 ? "staat nog 1 wijziging" : `staan nog ${wacht} wijzigingen`} te wachten op verbinding. Die worden verstuurd als je hier weer inlogt. Toch uitloggen?`)) return;
         const token = sessie && sessie.access_token;
         if (window.GymFotos) window.GymFotos.reset();
+        if (window.GymVrienden) window.GymVrienden.reset();
         bewaarSessie(null);
         for (const k of Object.keys(LS)) delete LS[k];
         Object.assign(state, {
@@ -2119,7 +2183,11 @@
         render: () => render(),
         toast: (...a) => toast(...a),
         esc, ico, mooiDatum, relDatum, getal, vandaag, datumStr, dagenTussen,
+        sb, schrijf, uuid, training, setsVan, oef, isPr, score, duurMinuten, eenheidVan, gedaneTrainingen, trainDagen, maandagVan, trainingDoel,
+        tab: () => state.tab,
+        naarTab: (t) => { state.tab = t; render(); window.scrollTo(0, 0); },
         gewichtOp: (d) => { const g = state.gewicht.find((x) => x.datum === d); return g ? Number(g.kg) : null; },
+        gewichtTekst: (d) => { const g = state.gewicht.find((x) => x.datum === d); return g ? `${gw(g.kg, accountEenheid())} ${accountEenheid()}` : ""; },
     };
 
     // ---------- Start ----------
@@ -2136,6 +2204,14 @@
             await laadAlles();
             if (!state.oefeningen.length) await zaaiOefeningen();
             if (window.GymFotos) window.GymFotos.laad().then(() => { if (state.tab === "training") render(); }).catch(() => {});
+            if (window.GymVrienden) {
+                let code = null;
+                try { code = sessionStorage.getItem("gym_vriendcode"); sessionStorage.removeItem("gym_vriendcode"); } catch { /* geen probleem */ }
+                window.GymVrienden.laad().then(() => {
+                    if (code) window.GymVrienden.voegToe(code);
+                    else render();
+                }).catch(() => {});
+            }
         } catch (e) {
             console.error(e);
             if (e.status === 401) return toonLogin("Je sessie is verlopen, log opnieuw in.");
