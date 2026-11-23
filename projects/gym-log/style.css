@@ -1138,3 +1138,16 @@ body { letter-spacing: 0.002em; }
 .vr-lijst li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--lijn-zacht); }
 .vr-lijst li span:not(.avatar) { flex: 1; font-weight: 600; }
 .vr-naam { margin-top: 12px; }
+
+/* Exporteren */
+.kop-actie { margin-left: auto; gap: 7px; flex: none; }
+.kop-actie .ico { width: 18px; height: 18px; }
+.export-uitleg { font-size: 14px; color: var(--krijt-3); line-height: 1.45; margin-bottom: 10px; }
+.export-tekst {
+    flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain;
+    margin: 0; padding: 12px 14px; border-radius: var(--r-klein); background: var(--vloer); border: 1px solid var(--lijn-zacht);
+    font-family: var(--tekst); font-size: 13px; line-height: 1.5; color: var(--krijt-2);
+    white-space: pre-wrap; overflow-wrap: anywhere; user-select: text; -webkit-user-select: text;
+}
+.sheet .export-tekst + .knoppen { margin-top: 12px; }
+.export-tekst + .knoppen .knop { flex: 1; }

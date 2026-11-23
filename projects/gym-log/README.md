@@ -52,6 +52,9 @@ Veilig om nog eens te draaien. Zonder dit script laat de Vrienden-tab zien dat d
 - **Profiel**: je doelen (trainingen per week, lichaamsgewicht per week) staan bij je account. Oefeningen beheer je op een
   eigen pagina met zoeken en inklapbare spiergroepen.
 - **Historie**: per week, tik op een training voor de samenvatting, aanpassen of verwijderen.
+  **Exporteer** (rechtsboven) zet je laatste 2 of 4 weken, of je laatste 10 trainingen, als platte tekst klaar:
+  alle sets, rep-ranges, PR's, doelen, lichaamsgewicht en sets per spiergroep. Kopiëren of delen, bijvoorbeeld om in een chat
+  feedback te vragen. Er verandert niets in de database.
 - Een set, meting of training verwijderen kun je ongedaan maken via de melding onderin.
 - **Slecht bereik in de gym**: sets en metingen die niet verstuurd konden worden blijven lokaal bewaard en gaan vanzelf
   mee zodra er weer verbinding is (rechtsboven zie je hoeveel er wachten).

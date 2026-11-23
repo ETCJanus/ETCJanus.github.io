@@ -50,7 +50,8 @@
         laatsteSet: null,               // net gelogde set (voor de korte markering)
         samenvatting: null,             // id van de training waarvan de samenvatting open staat
         samenvattingNet: false,         // net afgerond (dan "Push klaar")
-        sheet: null,                    // "kies" of "nieuw": het paneel van onderaf
+        sheet: null,                    // "kies", "nieuw" of "export": het paneel van onderaf
+        exportBereik: "2w",             // "2w", "4w" of "10" (laatste 10 trainingen)
         zoek: "",
         nieuweSpier: null,
         statsOef: null,
@@ -620,6 +621,7 @@
         geest: '<rect x="4" y="3.5" width="11" height="14.5" rx="2"/><rect x="9" y="6" width="11" height="14.5" rx="2" stroke-dasharray="2.2 2.2"/>',
         wissel: '<path d="M4.5 10a7.5 7.5 0 0 1 13.4-3.4M19.5 14a7.5 7.5 0 0 1-13.4 3.4"/><path d="M18.5 3.5v3.6h-3.6M5.5 20.5v-3.6h3.6"/>',
         vrienden: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="16.5" cy="9.5" r="2.6"/><path d="M15.5 14.2a4.6 4.6 0 0 1 5 4.8"/>',
+        export: '<path d="M12 4v11"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14"/>',
         doel: '<circle cx="12" cy="12" r="7.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/>',
     };
     function ico(n, extra = "") {
@@ -752,6 +754,9 @@
         }
         if (state.tab === "instellingen" && state.instPagina === "oefeningen") {
             return `<button class="kop-terug" data-actie="inst-terug" aria-label="Terug naar instellingen">${ico("terug")}</button><h1>Oefeningen</h1>`;
+        }
+        if (state.tab === "historie" && gedaneTrainingen().length) {
+            return `<h1>Historie</h1><button class="knop knop-klein kop-actie" data-actie="export-open">${ico("export")}Exporteer</button>`;
         }
         return `<h1>${{ weegschaal: "Lichaam", stats: "Stats", vrienden: "Vrienden", historie: "Historie", instellingen: "Profiel" }[state.tab]}</h1>`;
     }
@@ -1062,6 +1067,7 @@
         sheetEl.hidden = false;
         document.body.classList.add("sheet-open");
         const nieuw = state.sheet === "nieuw";
+        if (state.sheet === "export") { sheetEl.innerHTML = sheetExport(); return; }
         sheetEl.innerHTML = `<div class="sheet-achter" data-actie="sheet-dicht"></div>
             <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-titel">
                 <div class="sheet-greep" aria-hidden="true"></div>
@@ -1073,6 +1079,124 @@
                 ${nieuw ? formNieuweOef() : `<label class="zoek">${ico("zoek")}<input id="zoek" type="search" value="${esc(state.zoek)}" placeholder="Zoek of typ een nieuwe naam" autocomplete="off" enterkeyhint="go"></label>
                     <div class="sheet-lijst" id="sheet-lijst">${kiezerLijst()}</div>`}
             </div>`;
+    }
+
+    // ---------- Exporteren: je trainingen als platte tekst ----------
+
+    function exportTrainingen(bereik) {
+        const alle = gedaneTrainingen();
+        if (bereik === "10") {
+            const lijst = alle.slice(0, 10).reverse();
+            return { lijst, van: lijst.length ? lijst[0].datum : null, tot: vandaag(), weken: null };
+        }
+        const weken = bereik === "4w" ? 4 : 2;
+        const grens = new Date(); grens.setDate(grens.getDate() - weken * 7 + 1);
+        const van = datumStr(grens);
+        return { lijst: alle.filter((t) => t.datum >= van).reverse(), van, tot: vandaag(), weken };
+    }
+
+    function exportTekst({ lijst, van, tot, weken }) {
+        if (!lijst.length) return "";
+        const E = accountEenheid();
+        const datum = (s) => { const d = parseDatum(s); return `${DAGEN[d.getDay()]} ${d.getDate()} ${MAANDEN[d.getMonth()]} ${d.getFullYear()}`; };
+        const r = [];
+        const n = `${lijst.length} ${lijst.length === 1 ? "training" : "trainingen"}`;
+        r.push(weken ? `Trainingslog van de laatste ${weken} weken (${datum(van)} t/m ${datum(tot)}): ${n}.`
+            : `Trainingslog van mijn laatste ${n} (${datum(van)} t/m ${datum(tot)}).`);
+        r.push("Sets staan als gewicht×reps. PR = beste geschatte 1RM tot dan toe. Ik werk met double progression: eerst reps tot de bovenkant van de rep-range, dan gewicht omhoog.");
+        const doelen = [];
+        if (trainingDoel()) doelen.push(`${trainingDoel()} trainingen per week`);
+        const dw = doelPerWeek();
+        doelen.push(dw ? `lichaamsgewicht ${dw > 0 ? "+" : "−"}${gw(Math.abs(dw), E)} ${E} per week` : "lichaamsgewicht gelijk houden");
+        r.push(`Doelen: ${doelen.join(", ")}.`);
+        const metingen = state.gewicht.filter((g) => g.datum >= van && g.datum <= tot);
+        if (metingen.length >= 2) {
+            const a = metingen[0], b = metingen[metingen.length - 1];
+            r.push(`Lichaamsgewicht: ${gw(a.kg, E)} ${E} (${mooiDatum(a.datum, false)}) naar ${gw(b.kg, E)} ${E} (${mooiDatum(b.datum, false)}), ${metingen.length} metingen.`);
+        } else if (metingen.length === 1) r.push(`Lichaamsgewicht: ${gw(metingen[0].kg, E)} ${E} (${mooiDatum(metingen[0].datum, false)}).`);
+
+        const perGroep = {}, perOef = new Map();
+        for (const t of lijst) {
+            const sets = setsVan(t.id);
+            const duur = duurMinuten(sets);
+            r.push("", `## ${datum(t.datum)}, ${t.label || "Training"}${duur ? ` (${duur} min)` : ""}${t.id === state.actief ? " (nog bezig)" : ""}`);
+            for (const id of oefeningenIn(t.id)) {
+                const o = oef(id), ss = sets.filter((s) => s.oefening_id === id);
+                if (!o || !ss.length) continue;
+                const e = eenheidVan(o);
+                const zonder = ss.every((s) => !(Number(s.gewicht) > 0));
+                const tekst = ss.map((s) => (zonder ? `${s.reps}` : `${gw(s.gewicht, e)}×${s.reps}`) + (isPr(s) ? " PR" : "")).join(", ");
+                r.push(`- ${o.naam} (${o.spiergroep}, ${o.rep_min}–${o.rep_max} reps, ${zonder ? "reps met lichaamsgewicht" : e}): ${tekst}`);
+                perGroep[o.spiergroep] = (perGroep[o.spiergroep] || 0) + ss.length;
+                const beste = ss.reduce((a, s) => (score(s) > score(a) ? s : a));
+                const p = perOef.get(id) || { o, keer: [] };
+                p.keer.push(beste); perOef.set(id, p);
+            }
+        }
+        const nWeken = weken || Math.max(1, Math.round((dagenTussen(van, tot) + 1) / 7));
+        r.push("", `## Sets per spiergroep (totaal over ${nWeken === 1 ? "1 week" : `${nWeken} weken`})`);
+        r.push(SPIERGROEPEN.filter((g) => perGroep[g]).map((g) => `${g} ${perGroep[g]}`).join(", "));
+        const vergelijk = [...perOef.values()].filter((p) => p.keer.length >= 2);
+        if (vergelijk.length) {
+            r.push("", "## Beste set per oefening, eerste en laatste keer in deze periode");
+            for (const { o, keer } of vergelijk) {
+                const e = eenheidVan(o), f = (s) => (Number(s.gewicht) > 0 ? `${gw(s.gewicht, e)}×${s.reps}` : `${s.reps} reps`);
+                r.push(`- ${o.naam}: ${f(keer[0])} naar ${f(keer[keer.length - 1])} (${keer.length} keer gedaan)`);
+            }
+        }
+        r.push("", "Kun je feedback geven op mijn progressie, volume en oefeningkeuze, en wat ik de komende weken anders kan doen?");
+        return r.join("\n");
+    }
+
+    function sheetExport() {
+        const sel = exportTrainingen(state.exportBereik), lijst = sel.lijst;
+        const tekst = exportTekst(sel);
+        const opties = [["2w", "2 weken"], ["4w", "4 weken"], ["10", "10 trainingen"]];
+        return `<div class="sheet-achter" data-actie="sheet-dicht"></div>
+            <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-titel">
+                <div class="sheet-greep" aria-hidden="true"></div>
+                <div class="sheet-kop">
+                    <h2 id="sheet-titel">Exporteer</h2>
+                    <button class="knop-icoon" data-actie="sheet-dicht" aria-label="Sluiten">${ico("x")}</button>
+                </div>
+                <div class="chips" role="group" aria-label="Welke trainingen">${opties.map(([id, naam]) =>
+                    `<button class="chip" data-actie="export-bereik" data-n="${id}" aria-pressed="${state.exportBereik === id}">${naam}</button>`).join("")}</div>
+                ${tekst ? `<p class="export-uitleg">${lijst.length} ${lijst.length === 1 ? "training" : "trainingen"} als tekst, met al je sets, je doelen en je lichaamsgewicht. Plak het in een chat en vraag om feedback.</p>
+                    <pre class="export-tekst" tabindex="0">${esc(tekst)}</pre>
+                    <div class="knoppen">
+                        <button class="knop knop-hoofd" data-actie="export-kopieer">Kopieer</button>
+                        <button class="knop" data-actie="export-deel">${navigator.share ? "Deel" : "Download"}</button>
+                    </div>`
+                : `<p class="uitleg">Geen trainingen in deze periode.</p>`}
+            </div>`;
+    }
+
+    async function exportActie(soort) {
+        const tekst = exportTekst(exportTrainingen(state.exportBereik));
+        if (!tekst) return;
+        if (soort === "kopieer") {
+            try { await navigator.clipboard.writeText(tekst); toast("Gekopieerd"); }
+            catch {
+                const pre = sheetEl.querySelector(".export-tekst");
+                const sel = getSelection(), rg = document.createRange();
+                rg.selectNodeContents(pre); sel.removeAllRanges(); sel.addRange(rg);
+                toast("Kopiëren lukte niet. De tekst is geselecteerd, kopieer hem zelf.", null, "fout");
+            }
+            return;
+        }
+        const naam = `gym-log-${vandaag()}.txt`;
+        if (navigator.share) {
+            try {
+                const bestand = new File([tekst], naam, { type: "text/plain" });
+                if (navigator.canShare && navigator.canShare({ files: [bestand] })) await navigator.share({ files: [bestand], title: "Gym Log" });
+                else await navigator.share({ text: tekst, title: "Gym Log" });
+            } catch (e) { if (e && e.name !== "AbortError") toast("Delen lukte niet", null, "fout"); }
+            return;
+        }
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([tekst], { type: "text/plain" }));
+        a.download = naam; a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     }
 
     function kiezerLijst() {
@@ -1861,6 +1985,10 @@
                 render(); break;
             case "sheet-open": state.sheet = "kies"; state.zoek = ""; renderSheet(); focusZoek(); break;
             case "sheet-dicht": state.sheet = null; renderSheet(); break;
+            case "export-open": state.sheet = "export"; renderSheet(); break;
+            case "export-bereik": state.exportBereik = el.dataset.n; renderSheet(); break;
+            case "export-kopieer": exportActie("kopieer"); break;
+            case "export-deel": exportActie("deel"); break;
             case "sheet-nieuw":
                 if (!el.closest(".sheet")) state.zoek = "";   // vanuit de lijst: getypte naam meenemen
                 state.sheet = "nieuw"; renderSheet(); focusEerste(); break;
