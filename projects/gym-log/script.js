@@ -29,6 +29,8 @@
         LS.kaarten = `gym_kaarten_${uid}`;   // oefeningen die al op een training staan maar nog geen sets hebben
         LS.actief = `gym_actief_${uid}`;     // id van de training die open staat
         LS.rust = `gym_rust_${uid}`;
+        LS.rustDoel = `gym_rustdoel_${uid}`; // rusttijd die nu aftelt: { sec, oef, af }
+        LS.volgorde = `gym_volgorde_${uid}`; // zelf gekozen volgorde van oefeningen per training
     }
 
     const SPIERGROEPEN = ["borst", "rug", "schouders", "benen", "armen", "core", "overig"];
@@ -336,7 +338,84 @@
         const volgorde = [];
         for (const s of setsVan(trainingId)) if (!volgorde.includes(s.oefening_id)) volgorde.push(s.oefening_id);
         for (const id of kaarten(trainingId)) if (!volgorde.includes(id)) volgorde.push(id);
+        const eigen = alleVolgordes()[trainingId];
+        if (eigen) {
+            const rang = (id) => { const i = eigen.indexOf(id); return i < 0 ? 1000 + volgorde.indexOf(id) : i; };
+            volgorde.sort((a, b) => rang(a) - rang(b));
+        }
         return volgorde.filter((id) => oef(id));
+    }
+
+    function alleVolgordes() { try { return JSON.parse(localStorage.getItem(LS.volgorde) || "{}"); } catch { return {}; } }
+    function zetVolgorde(tid, lijst) {
+        const v = alleVolgordes();
+        v[tid] = lijst;
+        localStorage.setItem(LS.volgorde, JSON.stringify(v));
+    }
+
+    // ---------- Rusttijd per oefening (staat in je account, dus ook op je andere apparaten) ----------
+    function rustVoor(id) {
+        const m = sessie && sessie.user.meta && sessie.user.meta.rust;
+        const n = m && Number(m[id]);
+        return n > 0 ? n : 0;
+    }
+    function zetRust(id, sec) {
+        const m = { ...((sessie.user.meta && sessie.user.meta.rust) || {}) };
+        if (sec > 0) m[id] = sec; else delete m[id];
+        slaMetaOp({ rust: m });
+    }
+    const mmss = (sec) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+    function rustDoel() { try { return JSON.parse(localStorage.getItem(LS.rustDoel) || "null"); } catch { return null; } }
+    function stopRust() {
+        localStorage.removeItem(LS.rust); localStorage.removeItem(LS.rustDoel);
+        houdSchermAan(false);
+    }
+
+    // Piepje via Web Audio. Moet één keer "ontgrendeld" worden door een tik (bij het opslaan van een set).
+    let geluid = null;
+    function ontgrendelGeluid() {
+        try {
+            geluid = geluid || new (window.AudioContext || window.webkitAudioContext)();
+            if (geluid.state === "suspended") geluid.resume();
+        } catch { geluid = null; }
+    }
+    function piep() {
+        if (!geluid) return;
+        const t0 = geluid.currentTime;
+        [0, 0.28, 0.56].forEach((d, i) => {
+            const o = geluid.createOscillator(), g = geluid.createGain();
+            o.type = "sine"; o.frequency.value = i === 2 ? 1320 : 880;
+            g.gain.setValueAtTime(0.0001, t0 + d);
+            g.gain.exponentialRampToValueAtTime(0.5, t0 + d + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.22);
+            o.connect(g).connect(geluid.destination);
+            o.start(t0 + d); o.stop(t0 + d + 0.25);
+        });
+    }
+    // Scherm aan houden zolang de rusttimer aftelt, anders kan de telefoon hem niet laten afgaan.
+    let schermSlot = null;
+    async function houdSchermAan(aan) {
+        try {
+            if (aan && !schermSlot && navigator.wakeLock && document.visibilityState === "visible") {
+                schermSlot = await navigator.wakeLock.request("screen");
+                schermSlot.addEventListener("release", () => { schermSlot = null; });
+            } else if (!aan && schermSlot) { const s = schermSlot; schermSlot = null; await s.release(); }
+        } catch { schermSlot = null; }
+    }
+    document.addEventListener("visibilitychange", () => {
+        const d = rustDoel();
+        if (document.visibilityState === "visible" && d && !d.af) houdSchermAan(true);
+    });
+    function rustAlarm(d) {
+        d.af = true;
+        localStorage.setItem(LS.rustDoel, JSON.stringify(d));
+        houdSchermAan(false);
+        const o = oef(d.oef);
+        const t = training(state.actief);
+        const n = t ? setsVan(t.id).filter((s) => s.oefening_id === d.oef).length : 0;
+        if (navigator.vibrate) navigator.vibrate([300, 120, 300, 120, 500]);
+        piep();
+        toast(o ? `Rust voorbij. Tijd voor set ${n + 1} van ${esc(o.naam)}` : "Rust voorbij", null, "alarm");
     }
 
     function alleKaarten() { try { return JSON.parse(localStorage.getItem(LS.kaarten) || "{}"); } catch { return {}; } }
@@ -452,6 +531,7 @@
         // Oefeningen van de gekozen eerdere training alvast klaarzetten.
         const bron = bronTraining();
         if (bron) zetKaarten(t.id, oefeningenIn(bron.id));
+        if (bron && alleVolgordes()[bron.id]) zetVolgorde(t.id, oefeningenIn(bron.id));
         state.trainingen.push(t);
         sorteerTrainingen();
         zetActief(t.id);
@@ -499,6 +579,11 @@
         state.sets.push(s);
         state.laatsteSet = s.id;
         localStorage.setItem(LS.rust, String(Date.now()));
+        const rs = rustVoor(oefId);
+        if (rs) {
+            localStorage.setItem(LS.rustDoel, JSON.stringify({ sec: rs, oef: oefId, af: false }));
+            ontgrendelGeluid(); houdSchermAan(true);
+        } else { localStorage.removeItem(LS.rustDoel); houdSchermAan(false); }
         render();
         if (isPr(s)) {
             toast(`Nieuw record op ${esc(oef(oefId).naam)}: ${gw(gewicht, eenheidVan(oef(oefId)))} ${eenheidVan(oef(oefId))} × ${reps}`, null, "pr");
@@ -622,6 +707,7 @@
         wissel: '<path d="M4.5 10a7.5 7.5 0 0 1 13.4-3.4M19.5 14a7.5 7.5 0 0 1-13.4 3.4"/><path d="M18.5 3.5v3.6h-3.6M5.5 20.5v-3.6h3.6"/>',
         vrienden: '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><circle cx="16.5" cy="9.5" r="2.6"/><path d="M15.5 14.2a4.6 4.6 0 0 1 5 4.8"/>',
         export: '<path d="M12 4v11"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14"/>',
+        greep: '<circle cx="9" cy="6" r=".6"/><circle cx="15" cy="6" r=".6"/><circle cx="9" cy="12" r=".6"/><circle cx="15" cy="12" r=".6"/><circle cx="9" cy="18" r=".6"/><circle cx="15" cy="18" r=".6"/>',
         doel: '<circle cx="12" cy="12" r="7.5"/><path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4"/>',
     };
     function ico(n, extra = "") {
@@ -771,11 +857,14 @@
         const lijst = oefeningenIn(t.id);
         const open = openOefVoor(t, lijst);
         const aantal = setsVan(t.id).length;
+        if (state.sorteren && lijst.length > 1) return viewSorteren(t, lijst);
+        state.sorteren = false;
         return `
             ${t.datum === vandaag() ? weegRij() : ""}
             ${lijst.length
                 ? `<div class="oef-lijst">${lijst.map((id) => kaartOefening(t, oef(id), id === open)).join("")}</div>`
                 : `<div class="leeg-groot"><p>Voeg je eerste oefening toe. De volgende keer dat je deze training herhaalt staan ze meteen klaar.</p></div>`}
+            ${lijst.length > 1 ? `<button class="knop-link volgorde-knop" data-actie="sorteer">${ico("greep")}Volgorde aanpassen</button>` : ""}
             <button class="knop-stippel" data-actie="sheet-open">${ico("plus")}<span>Oefening toevoegen</span></button>
             <button class="knop ${aantal ? "knop-hoofd" : ""} breed afronden" data-actie="afronden">${aantal ? "Training afronden" : "Training sluiten"}</button>`;
     }
@@ -978,6 +1067,7 @@
                 ${vergelijk(s, vorige && vorige.sets[i])}
                 <button class="knop-icoon set-weg" data-actie="weg-set" data-id="${s.id}" aria-label="Set ${i + 1} verwijderen">${ico("x")}</button>
             </li>`).join("")}</ol>` : ""}
+            ${rustRegel(o)}
             <form class="invoer" data-form="set" data-tid="${t.id}" data-oef="${o.id}">
                 <div class="teller">
                     <button type="button" data-actie="stap" data-d="-${gwPunt(o.stap_kg, eenheidVan(o))}" aria-label="${gw(o.stap_kg, eenheidVan(o))} ${eenheidVan(o)} minder">${ico("min")}</button>
@@ -994,6 +1084,38 @@
                 ${!sets.length ? `<button type="button" class="knop-link" data-actie="weg-kaart" data-id="${o.id}">Haal ${esc(o.naam)} van deze training</button>` : ""}
             </form>
         </section>`;
+    }
+
+    function rustRegel(o) {
+        const r = rustVoor(o.id);
+        if (state.rustBewerk !== o.id) {
+            return `<button type="button" class="rust-knop ${r ? "aan" : ""}" data-actie="rust-bewerk" data-id="${o.id}" aria-expanded="false">${ico("klok")}${r ? `Rust ${mmss(r)}, telt af na elke set` : "Rusttimer instellen"}</button>`;
+        }
+        return `<form class="rust-form" data-form="rust" data-oef="${o.id}">
+            <div class="rust-kop"><span>Rust na elke set van ${esc(o.naam)}</span>
+                <button type="button" class="knop-icoon" data-actie="rust-bewerk" data-id="${o.id}" aria-label="Sluiten">${ico("x")}</button></div>
+            <div class="chips">${[60, 90, 120, 180].map((s) => `<button type="button" class="chip" data-actie="rust-preset" data-id="${o.id}" data-sec="${s}" aria-pressed="${r === s}">${mmss(s)}</button>`).join("")}</div>
+            <div class="rust-invoer">
+                <label><input name="min" type="number" min="0" max="15" step="1" inputmode="numeric" value="${r ? Math.floor(r / 60) : ""}" placeholder="0" aria-label="Minuten"><span>min</span></label>
+                <label><input name="sec" type="number" min="0" max="59" step="1" inputmode="numeric" value="${r ? r % 60 : ""}" placeholder="0" aria-label="Seconden"><span>sec</span></label>
+                <button class="knop knop-klein knop-hoofd" type="submit">Opslaan</button>
+            </div>
+            ${r ? `<button type="button" class="knop-link" data-actie="rust-uit" data-id="${o.id}">Rusttimer uitzetten</button>` : ""}
+        </form>`;
+    }
+
+    function viewSorteren(t, lijst) {
+        return `<p class="sorteer-uitleg">Sleep een oefening naar een andere plek. Met het toetsenbord: pijltje omhoog of omlaag.</p>
+            <ol class="sorteer-lijst">${lijst.map((id, i) => {
+                const o = oef(id), n = setsVan(t.id).filter((s) => s.oefening_id === id).length;
+                return `<li class="sorteer-rij" data-id="${id}" tabindex="0" style="--spier:${spierKleur(o.spiergroep)}"
+                    aria-label="${esc(o.naam)}, plek ${i + 1} van ${lijst.length}">
+                    <span class="greep" aria-hidden="true">${ico("greep")}</span>
+                    <span class="oef-naam">${esc(o.naam)}</span>
+                    <span class="oef-telling">${n ? `${n} ${n === 1 ? "set" : "sets"}` : ""}</span>
+                </li>`;
+            }).join("")}</ol>
+            <button class="knop knop-hoofd breed" data-actie="sorteer-klaar">Klaar</button>`;
     }
 
     function volgendeOef(t, naId) {
@@ -1906,9 +2028,19 @@
         } else duurEl.hidden = true;
         const start = Number(localStorage.getItem(LS.rust) || 0);
         const sec = Math.floor((Date.now() - start) / 1000);
+        const d = start ? rustDoel() : null;
         if (start && sec <= 15 * 60) {
             rustEl.hidden = false;
-            rustEl.innerHTML = `<span>rust</span> ${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+            if (d) {
+                const over = d.sec - sec;
+                if (over <= 0 && !d.af) { if (over > -30) rustAlarm(d); else { d.af = true; localStorage.setItem(LS.rustDoel, JSON.stringify(d)); houdSchermAan(false); } }
+                rustEl.className = `klok-rust ${over > 0 ? "rust-telt" : "rust-om"}`;
+                rustEl.innerHTML = over > 0 ? `<span>rust</span> ${mmss(over)}` : `<span>rust</span> +${mmss(-over)}`;
+                rustEl.setAttribute("aria-label", over > 0 ? "Rusttimer stoppen" : "Rust voorbij, tik om te stoppen");
+            } else {
+                rustEl.className = "klok-rust";
+                rustEl.innerHTML = `<span>rust</span> ${mmss(sec)}`;
+            }
         } else rustEl.hidden = true;
         if (!klokInterval) klokInterval = setInterval(tikKlok, 1000);
     }
@@ -1969,7 +2101,7 @@
                 const tid = state.actief;
                 const heeftSets = setsVan(tid).length;
                 if (window.GymVrienden && heeftSets) window.GymVrienden.naTraining(tid, true);
-                zetActief(null); localStorage.removeItem(LS.rust);
+                zetActief(null); stopRust(); state.sorteren = false;
                 state.samenvatting = heeftSets ? tid : null;
                 state.samenvattingNet = true;
                 render(); window.scrollTo(0, 0); break;
@@ -2006,7 +2138,12 @@
                 input.value = punt(nieuw);
                 break;
             }
-            case "rust-reset": localStorage.removeItem(LS.rust); tikKlok(); break;
+            case "rust-reset": stopRust(); tikKlok(); break;
+            case "rust-bewerk": state.rustBewerk = state.rustBewerk === id ? null : id; render(); break;
+            case "rust-preset": state.rustBewerk = null; zetRust(id, Number(el.dataset.sec)); toast(`Rust ${esc(oef(id).naam)}: ${mmss(Number(el.dataset.sec))}`); break;
+            case "rust-uit": state.rustBewerk = null; zetRust(id, 0); toast(`Rusttimer voor ${esc(oef(id).naam)} staat uit`); break;
+            case "sorteer": state.sorteren = true; render(); break;
+            case "sorteer-klaar": state.sorteren = false; render(); break;
             case "weg-set": verwijderSet(id); break;
             case "weg-gewicht": verwijderGewicht(el.dataset.datum); break;
             case "lichaam": state.lichaam = el.dataset.n; render(); break;
@@ -2070,6 +2207,67 @@
     function focusZoek() { requestAnimationFrame(() => { const z = document.getElementById("zoek"); if (z) z.focus(); }); }
     function focusEerste(sel = ".sheet input") { requestAnimationFrame(() => { const z = document.querySelector(sel); if (z) z.focus(); }); }
 
+    // ---------- Slepen om de volgorde van oefeningen te veranderen ----------
+    let sleep = null;
+    function bewaarVolgorde(ids, focusId) {
+        zetVolgorde(state.actief, ids);
+        render();
+        if (focusId) { const r = document.querySelector(`.sorteer-rij[data-id="${focusId}"]`); if (r) r.focus(); }
+    }
+    document.addEventListener("pointerdown", (e) => {
+        const rij = e.target.closest(".sorteer-rij");
+        if (!rij || e.button > 0 || sleep) return;
+        const rijen = [...rij.parentElement.children];
+        const rects = rijen.map((r) => r.getBoundingClientRect());
+        const van = rijen.indexOf(rij);
+        const tussen = rects.length > 1 ? rects[1].top - rects[0].bottom : 0;
+        sleep = { rij, rijen, rects, van, naar: van, startY: e.clientY, id: e.pointerId, stap: rects[van].height + tussen };
+        rij.setPointerCapture(e.pointerId);
+        rij.classList.add("sleept");
+        rij.parentElement.classList.add("bezig");
+        if (navigator.vibrate) navigator.vibrate(10);
+        e.preventDefault();
+    });
+    document.addEventListener("pointermove", (e) => {
+        if (!sleep || e.pointerId !== sleep.id) return;
+        const { rij, rijen, rects, van, stap } = sleep;
+        const eerste = rects[0].top, laatste = rects[rects.length - 1].bottom;
+        const ruw = e.clientY - sleep.startY;
+        const dy = Math.max(eerste - rects[van].top, Math.min(laatste - rects[van].bottom, ruw));
+        rij.style.transform = `translateY(${dy}px)`;
+        const midden = rects[van].top + rects[van].height / 2 + ruw;
+        const naar = rects.filter((r, i) => i !== van && r.top + r.height / 2 < midden).length;
+        if (naar !== sleep.naar && navigator.vibrate) navigator.vibrate(5);
+        sleep.naar = naar;
+        rijen.forEach((r, i) => {
+            if (i === van) return;
+            const schuif = van < i && i <= naar ? -stap : naar <= i && i < van ? stap : 0;
+            r.style.transform = schuif ? `translateY(${schuif}px)` : "";
+        });
+    });
+    function stopSlepen(e) {
+        if (!sleep || e.pointerId !== sleep.id) return;
+        const { rijen, van, naar, rij } = sleep;
+        sleep = null;
+        const ids = rijen.map((r) => r.dataset.id);
+        if (van === naar) { rijen.forEach((r) => { r.style.transform = ""; }); rij.classList.remove("sleept"); rij.parentElement.classList.remove("bezig"); return; }
+        const [weg] = ids.splice(van, 1);
+        ids.splice(naar, 0, weg);
+        bewaarVolgorde(ids);
+    }
+    document.addEventListener("pointerup", stopSlepen);
+    document.addEventListener("pointercancel", stopSlepen);
+    document.addEventListener("keydown", (e) => {
+        const rij = e.target.closest && e.target.closest(".sorteer-rij");
+        if (!rij || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+        e.preventDefault();
+        const ids = [...rij.parentElement.children].map((r) => r.dataset.id);
+        const i = ids.indexOf(rij.dataset.id), j = i + (e.key === "ArrowUp" ? -1 : 1);
+        if (j < 0 || j >= ids.length) return;
+        [ids[i], ids[j]] = [ids[j], ids[i]];
+        bewaarVolgorde(ids, rij.dataset.id);
+    });
+
     document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && state.sheet) { state.sheet = null; renderSheet(); }
     });
@@ -2110,6 +2308,13 @@
         const f = e.target;
         const d = new FormData(f);
         switch (f.dataset.form) {
+            case "rust": {
+                const sec = (parseInt(d.get("min"), 10) || 0) * 60 + (parseInt(d.get("sec"), 10) || 0);
+                const o = oef(f.dataset.oef);
+                state.rustBewerk = null; zetRust(o.id, Math.min(sec, 15 * 60));
+                toast(sec ? `Rust ${esc(o.naam)}: ${mmss(Math.min(sec, 15 * 60))}` : `Rusttimer voor ${esc(o.naam)} staat uit`);
+                break;
+            }
             case "set": {
                 const gewicht = num(d.get("gewicht")), reps = parseInt(d.get("reps"), 10);
                 if (gewicht == null || !reps) return;

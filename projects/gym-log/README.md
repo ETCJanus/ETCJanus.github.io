@@ -51,6 +51,11 @@ Veilig om nog eens te draaien. Zonder dit script laat de Vrienden-tab zien dat d
   Alles wordt in kg opgeslagen en alleen bij het tonen omgerekend, dus wisselen kan altijd.
 - **Profiel**: je doelen (trainingen per week, lichaamsgewicht per week) staan bij je account. Oefeningen beheer je op een
   eigen pagina met zoeken en inklapbare spiergroepen.
+- **Volgorde**: onder de oefeningen van je training staat "Volgorde aanpassen". Sleep ze in de volgorde die je wilt.
+  De volgende keer dat je die training herhaalt, staat hij weer zo. (Bewaard op dit apparaat.)
+- **Rusttimer per oefening**: tik in een oefening op "Rusttimer instellen" en kies 1:00, 1:30, 2:00, 3:00 of zelf minuten en seconden.
+  Na elke set telt de timer rechtsboven af en bij 0 trilt en piept je telefoon. Het scherm blijft aan zolang hij aftelt.
+  Tik op de timer om hem te stoppen. Rusttijden staan in je account, dus ook op je andere apparaten.
 - **Historie**: per week, tik op een training voor de samenvatting, aanpassen of verwijderen.
   **Exporteer** (rechtsboven) zet je laatste 2 of 4 weken, of je laatste 10 trainingen, als platte tekst klaar:
   alle sets, rep-ranges, PR's, doelen, lichaamsgewicht en sets per spiergroep. Kopiëren of delen, bijvoorbeeld om in een chat

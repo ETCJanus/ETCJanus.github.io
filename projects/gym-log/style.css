@@ -1151,3 +1151,47 @@ body { letter-spacing: 0.002em; }
 }
 .sheet .export-tekst + .knoppen { margin-top: 12px; }
 .export-tekst + .knoppen .knop { flex: 1; }
+
+/* Rusttimer per oefening */
+.klok-rust.rust-telt { background: var(--krijt); color: var(--vloer); border-color: var(--krijt); }
+.klok-rust.rust-telt span { color: rgba(18, 20, 23, 0.6); }
+.klok-rust.rust-om { background: var(--pr); color: #fff; border-color: var(--pr); }
+.klok-rust.rust-om span { color: rgba(255, 255, 255, 0.8); }
+.toast.alarm { background: var(--pr); color: #fff; font-weight: 650; }
+.rust-knop {
+    display: inline-flex; align-items: center; gap: 6px; margin: 2px 0 10px; padding: 6px 0;
+    background: none; border: 0; cursor: pointer; font: inherit; font-size: 14px; font-weight: 500; color: var(--krijt-3);
+}
+.rust-knop .ico { width: 16px; height: 16px; }
+.rust-knop.aan { color: var(--krijt-2); }
+.rust-form { margin: 2px 0 12px; padding: 12px; border-radius: var(--r-klein); background: var(--vloer); border: 1px solid var(--lijn-zacht); }
+.rust-kop { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -4px -4px 8px 0; font-size: 14px; font-weight: 600; color: var(--krijt-2); }
+.rust-kop .knop-icoon { width: 32px; height: 32px; }
+.rust-form .chips { margin: 0 0 10px; }
+.rust-invoer { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; align-items: center; }
+.rust-invoer label { display: flex; align-items: center; gap: 6px; background: var(--vlak); border: 1px solid var(--lijn); border-radius: var(--r-klein); padding: 0 10px; }
+.rust-invoer label:focus-within { border-color: var(--krijt-2); }
+.rust-invoer input { border: 0; background: none; padding: 9px 0; min-height: 0; font-family: var(--cijfer); font-weight: 700; font-size: 20px; width: 100%; }
+.rust-invoer span { font-size: 13px; color: var(--krijt-3); }
+.rust-form .knop-link { margin-top: 8px; }
+
+/* Volgorde aanpassen */
+.volgorde-knop { display: inline-flex; align-items: center; gap: 6px; margin: 2px 0 10px; }
+.volgorde-knop .ico { width: 18px; height: 18px; }
+.sorteer-uitleg { font-size: 14px; color: var(--krijt-3); margin: 4px 0 12px; line-height: 1.45; }
+.sorteer-lijst { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.sorteer-rij {
+    position: relative; display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 14px 0 10px;
+    background: var(--vlak); border-radius: var(--r); cursor: grab;
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+    box-shadow: inset 3px 0 0 var(--spier);
+}
+.bezig .sorteer-rij { transition: transform 0.16s ease; }
+.sorteer-rij.sleept { transition: none !important; z-index: 2; cursor: grabbing; background: var(--vlak-2); box-shadow: inset 3px 0 0 var(--spier), 0 10px 24px rgba(0, 0, 0, 0.45); }
+.sorteer-rij:focus-visible { outline: 2px solid var(--krijt); outline-offset: 2px; }
+.sorteer-rij .greep { color: var(--krijt-3); display: grid; }
+.sorteer-rij .greep .ico { width: 22px; height: 22px; stroke-width: 2.6; }
+.sorteer-rij .oef-naam { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .bezig .sorteer-rij { transition: none; } }
+.oef.open .rust-knop { margin: 6px 16px -6px 24px; }
+.oef.open .rust-form { margin: 10px 16px 0 24px; }
